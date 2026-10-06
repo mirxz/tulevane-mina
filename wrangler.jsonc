@@ -1,13 +1,16 @@
 {
-  // Tulevane Mina – staatiline prototüüp Cloudflare Workersis (ainult failid, serveriloogikat pole).
+  // Tulevane Mina – staatiline mäng + üks väike liides (/api/tts) Cloudflare Workersis.
   // NB: "name" peab klappima Cloudflare'i armatuurlaual oleva Workeri nimega, muidu build kukub.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mina",
+  "main": "src/index.js",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "preview_urls": true,
   "assets": {
     "directory": "./public",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   }
 }

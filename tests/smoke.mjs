@@ -18,7 +18,7 @@ for (const vp of viewports) {
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
   // oma failid peavad laadima; väliseid (Google Fonts) ei arvesta
-  const own = (u) => new URL(u).origin === new URL(url).origin;
+  const own = (u) => new URL(u).origin === new URL(url).origin && !new URL(u).pathname.startsWith("/api/"); // /api/ testib eraldi kontroll
   page.on("requestfailed", (r) => { if (own(r.url())) errors.push("ei laadinud: " + r.url()); });
   page.on("response", (r) => { if (own(r.url()) && r.status() >= 400) errors.push(r.status() + " " + r.url()); });
   await page.goto(url, { waitUntil: "domcontentloaded" });

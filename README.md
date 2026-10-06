@@ -2,7 +2,7 @@
 
 Tuleva häkatoni 2026 prototüüp: pane pensioniaastad panuseks, ratas veeretab su elu läbi suremusstatistika ja tulevane sina helistab. Lõpuks näitab mäng kõiki elusid ja paljastab kasiinovõtted.
 
-Kogu mäng on üks fail: `public/index.html`. Serverit ega andmebaasi pole. Mäng ei salvesta midagi ega kogu isikuandmeid.
+Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index.js` (`/api/tts`), mis loeb tulevase mina kõne ette eesti häälega. Andmebaasi pole, mäng ei salvesta midagi ega kogu isikuandmeid.
 
 ## Aadressid
 
@@ -25,12 +25,22 @@ Kogu mäng on üks fail: `public/index.html`. Serverit ega andmebaasi pole. Män
 ## Reeglid
 
 - `main` muutub ainult pull requesti kaudu: roheline suitsutest + keegi on eelvaate telefonis läbi mänginud.
-- Üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts.
+- Mäng on üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts. Server teeb ainult `/api/tts`.
 - Ei mingit analüütikat, küpsiseid ega andmete saatmist. Kui tahame mõõta, otsustame selle enne logis.
 - Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda ka testi oodatud väärtust (`tests/smoke.mjs`) ja allikaviidet lehe jaluses.
 - Tuleva logo avalikul lehel ei kasuta. Silt „prototüüp“ ja lahtiütlus jäävad alles.
 - **Külmutus:** viimased 60 minutit enne lõppesitlust `main`-i ei muudeta. Esitlus tehakse versioonist, mis on märgitud git-sildiga `pitch`.
-- **Tagasivõtmine:** Cloudflare → Workers & Pages → tulevane-mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
+- **Tagasivõtmine:** Cloudflare → Workers & Pages → mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
+
+## Hääl (kõnesüntees)
+
+Kõne-ekraanil loeb tulevane mina tsitaadi ette. Tekst läheb `/api/tts` kaudu TartuNLP Neurokõnele (Tartu Ülikool) ja tagasi tuleb heli. Sõnumis on ainult vanus ja summa, mitte isikuandmed.
+
+- Hääled: mees `albert`, naine `kylli` (`VOICES` failis `public/index.html`). Võimalikud: albert, indrek, kalev, kylli, lee, liivika, luukas, mari, meelis, peeter, tambet, vesta.
+- Kiire kontroll brauseris: `/api/tts?proov=1&haal=albert` peab mängima lause „Tere! Siin räägib sinu tulevane mina.“
+- Hääl välja (nt Wizard of Oz, kui tiimiliige räägib ise): lisa aadressile `?haal=vaikne`.
+- Kui kõnesüntees ei vasta, jätkub mäng tekstiga.
+- Häält tasub kuulata Google Home kõlarist (Bluetooth), mitte telefonist.
 
 ## Käsitsi kontrollnimekiri (eelvaade telefonis)
 
@@ -38,7 +48,7 @@ Kogu mäng on üks fail: `public/index.html`. Serverit ega andmebaasi pole. Män
 - [ ] Sünniaasta, sugu ja pension muudavad pensioniiga ja eeldatavat eluiga.
 - [ ] Panus: kõik 11 koefitsiendinuppu töötavad ja kupong muutub.
 - [ ] Ratas keerleb ja jääb seisma, keskel on vanus.
-- [ ] Kõne heliseb. Nii „Vasta“ kui ka „Keeldu“ viivad tsitaadini.
+- [ ] Kõne heliseb. Nii „Vasta“ kui ka „Keeldu“ viivad tsitaadini ja hääl loeb selle ette.
 - [ ] Tõde: graafik, kolm numbrit, paljastatud võtted ja tabel on olemas.
 - [ ] „Proovi teist panust“ ja „Alusta otsast“ töötavad.
 - [ ] Mõlemad sood ja vähemalt valikud −5, 0 ja +5 on läbi proovitud.
@@ -48,7 +58,7 @@ Kogu mäng on üks fail: `public/index.html`. Serverit ega andmebaasi pole. Män
 ```
 npm install
 npx playwright install chromium
-npx wrangler dev            # http://localhost:8787
+npx wrangler dev            # http://localhost:8787 (mäng + /api/tts)
 npm test                    # teises aknas
 ```
 
@@ -56,11 +66,10 @@ npm test                    # teises aknas
 
 1. **GitHub:** repo on [mirxz/tulevane-mina](https://github.com/mirxz/tulevane-mina) (privaatne kuni pühapäevase demoni) ja lisa sinna selle kausta failid, näiteks GitHub Desktopis: *Add existing repository* → *Publish*.
 2. **Cloudflare:** Workers & Pages → *Create* → *Import a repository* → vali `tulevane-mina`.
-   - Workeri nimi: `tulevane-mina` (peab klappima `wrangler.jsonc` failiga).
+   - Workeri nimi: `mina` (peab klappima `wrangler.jsonc` failiga); konto alamdomeen `tulevane`.
    - Build command: tühi.
    - Deploy command: `npx wrangler deploy`.
    - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
-3. Kirjuta tekkinud aadressid ülal olevasse tabelisse.
 
 ## Allikad
 
