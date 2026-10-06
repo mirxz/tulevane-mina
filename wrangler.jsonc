@@ -2,7 +2,7 @@
   // Tulevane Mina – staatiline prototüüp Cloudflare Workersis (ainult failid, serveriloogikat pole).
   // NB: "name" peab klappima Cloudflare'i armatuurlaual oleva Workeri nimega, muidu build kukub.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tulevane-mina",
+  "name": "mina",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "preview_urls": true,
