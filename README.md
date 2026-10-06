@@ -8,10 +8,8 @@ Kogu mäng on üks fail: `public/index.html`. Serverit ega andmebaasi pole. Män
 
 | Mis | Aadress | Kust tuleb |
 | --- | --- | --- |
-| Toodang (žürii, testijad) | `https://tulevane-mina.<konto>.workers.dev` | haru `main` |
-| Eelvaade | `https://<haru>-tulevane-mina.<konto>.workers.dev` | iga teine haru |
-
-`<konto>` on Cloudflare'i workers.dev alamdomeen. Kirjuta päris aadressid siia, kui need on olemas.
+| Toodang (žürii, testijad) | https://mina.tulevane.workers.dev | haru `main` |
+| Eelvaade | `https://<haru>-mina.tulevane.workers.dev` | iga teine haru |
 
 ## Töövoog
 
