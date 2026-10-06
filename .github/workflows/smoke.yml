@@ -2,10 +2,11 @@ name: Suitsutest
 on:
   pull_request:
   push:
-    branches: [main]
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -13,8 +14,10 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Serveeri public/ ja käivita test
+      - name: Kontrolli Workeri seadistust
+        run: npx wrangler deploy --dry-run
+      - name: Käivita Worker kohapeal ja testi mängu
         run: |
-          python3 -m http.server 8787 --directory public &
-          sleep 1
-          npm test -- http://localhost:8787
+          npx wrangler dev --port 8787 --ip 127.0.0.1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8787/ && break; sleep 1; done
+          npm test -- http://127.0.0.1:8787

@@ -335,6 +335,9 @@ th:first-child, td:first-child { text-align: left; }
   function S(sx, x) { return Math.exp(-cumH(A[sx], x)); }
 
   var st = { by: 1970, sex: "M", P: 800, k: 3, R: 66, rot: 0, refreshes: 0, nudged: false, declined: false, D: null, audio: true };
+  // Hääl: ?haal=vaikne lülitab kõnesünteesi välja (nt Wizard of Oz, kui tiimiliige räägib ise).
+  var VOICE = (function () { try { return new URLSearchParams(location.search).get("haal") || "elav"; } catch (e) { return "elav"; } })();
+  var VOICES = { M: "albert", N: "kylli" }; // vanema kõlaga hääled; vahetatavad testides
   function alt(k) { return k === 0 ? 3 : 0; }
   function total(k, D) { return Math.max(0, D - (st.R + k)) * 12 * st.P * (1 + COEF[k]); }
   function diff(k, D) { return total(k, D) - total(alt(k), D); }
@@ -371,7 +374,7 @@ th:first-child, td:first-child { text-align: left; }
     document.querySelectorAll("[data-screen]").forEach(function (s) { s.hidden = s.getAttribute("data-screen") !== String(n); });
     document.querySelectorAll("#steps li").forEach(function (li, i) { li.className = i + 1 === n ? "on" : i + 1 < n ? "done" : ""; });
     if (n === 2) startTimers(); else stopTimers();
-    if (n !== 4) stopRing();
+    if (n !== 4) { stopRing(); if (voiceAudio) { try { voiceAudio.pause(); } catch (e) {} } }
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }
 
@@ -520,6 +523,7 @@ th:first-child, td:first-child { text-align: left; }
       else q = "Elasin kauem, kui arvasid. " + a + " aastat oodates oleksin saanud " + amt + " rohkem.";
     }
     $("quote").textContent = "„" + q + "“"; $("quote").hidden = true;
+    loadVoice(q);
     $("call-actions").hidden = false; $("after").hidden = true;
     $("phone").classList.add("ringing");
   }
@@ -530,11 +534,38 @@ th:first-child, td:first-child { text-align: left; }
     if (declined) $("callsub").textContent = "Tulevikust ei saa keelduda. Ta jättis sõnumi:";
     else $("callsub").textContent = "kõne kestab";
     $("quote").hidden = false; $("after").hidden = false; $("go-truth").focus();
+    voiceWanted = true; playVoice();
+  }
+
+  // ---------- voice (live TTS via /api/tts) ----------
+  var voiceAudio = null, voiceUrl = null, voiceWanted = false, voiceSeq = 0;
+  function spoken(t) {
+    return t.replace(/(\d)[\s\u00a0\u202f](?=\d{3}\b)/g, "$1").replace(/\s*€/g, " eurot");
+  }
+  function loadVoice(q) {
+    stopVoice(); voiceWanted = false;
+    if (VOICE !== "elav" || !window.fetch) return;
+    var seq = ++voiceSeq;
+    fetch("/api/tts", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: spoken(q), speaker: VOICES[st.sex] || "albert", speed: 0.9 }) })
+      .then(function (r) { if (!r.ok || !/audio/.test(r.headers.get("content-type") || "")) throw new Error("tts " + r.status); return r.blob(); })
+      .then(function (b) { if (seq !== voiceSeq) return; voiceUrl = URL.createObjectURL(b); voiceAudio = new Audio(voiceUrl); if (voiceWanted) playVoice(); })
+      .catch(function () { /* hääl ei ole kättesaadav: mäng jätkub tekstiga */ });
+  }
+  function playVoice() {
+    if (!voiceAudio || !st.audio) return;
+    try { voiceAudio.currentTime = 0; var p = voiceAudio.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+  }
+  function stopVoice() {
+    voiceSeq++;
+    if (voiceAudio) { try { voiceAudio.pause(); } catch (e) {} }
+    if (voiceUrl) { try { URL.revokeObjectURL(voiceUrl); } catch (e) {} }
+    voiceAudio = null; voiceUrl = null;
   }
   $("accept").addEventListener("click", function () { answer(false); });
   $("decline").addEventListener("click", function () { answer(true); });
   $("go-truth").addEventListener("click", function () { buildTruth(); show(5); });
-  $("mute").addEventListener("click", function () { st.audio = !st.audio; $("mute").textContent = st.audio ? "Heli välja" : "Heli sisse"; if (!st.audio) stopRing(); });
+  $("mute").addEventListener("click", function () { st.audio = !st.audio; $("mute").textContent = st.audio ? "Heli välja" : "Heli sisse"; if (!st.audio) { stopRing(); if (voiceAudio) { try { voiceAudio.pause(); } catch (e) {} } } });
 
   // ring tone (starts only after the player has clicked)
   var ac = null, ringT = null;
