@@ -7,6 +7,8 @@
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "preview_urls": true,
+  // Eelvaated (iga haru peale main): Cloudflare'i build käivitab `wrangler preview`, mis nõuab seda plokki.
+  "previews": {},
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
