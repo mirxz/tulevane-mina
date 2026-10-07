@@ -118,6 +118,12 @@ a:hover { text-decoration-color: currentColor; }
 .slip-sel { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--gray-border-3); }
 .win { font-size: 24px; line-height: 32px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
 .nudge { background: var(--note-bg); border: 1px solid var(--note-border); border-radius: var(--r-lg); padding: 10px 12px; font-size: 14px; line-height: 20px; }
+.slip-body > *, .slip-sel > div { min-width: 0; }
+#s-win, #s-stake { white-space: nowrap; }
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.chips button { padding: 8px 12px; border: 1px solid var(--blue); border-radius: var(--r); background: var(--white); color: var(--blue); font: inherit; font-weight: 450; cursor: pointer; text-align: left; }
+.chips button[aria-pressed="true"] { background: var(--blue); color: var(--white); }
+.raamlink { text-align: center; margin: 0; }
 .timer { font-size: 13px; color: var(--red); font-weight: 500; text-align: center; }
 
 /* Wheel */
@@ -147,6 +153,7 @@ a:hover { text-decoration-color: currentColor; }
 .after-call { margin-top: auto; padding-top: 24px; width: 100%; }
 .btn-onnavy { background: var(--white); color: var(--navy); border-color: var(--white); }
 .btn-onnavy:hover { background: var(--hero-tint); }
+.callsafe { margin: 14px 0 0; font-size: 12px; line-height: 16px; color: var(--blue-border-2); }
 .mute { background: none; border: 0; color: var(--blue-border-2); font-size: 12px; cursor: pointer; text-decoration: underline; }
 
 /* Reveal */
@@ -206,13 +213,14 @@ th:first-child, td:first-child { text-align: left; }
   <section data-screen="1" class="app">
     <div class="hero">
       <h1>Millal pensionile minna?</h1>
-      <p class="lead">Iga ooteaasta tõstab sinu riiklikku pensioni kogu eluks. Aga ainult siis, kui elad piisavalt kaua. <span class="hl">Paneme oma elu panuseks</span> ja vaatame, mida tulevane sina sellest arvab.</p>
+      <p class="lead" id="lead1">Iga ooteaasta tõstab sinu riiklikku pensioni kogu eluks. Aga ainult siis, kui elad piisavalt kaua. <span class="hl">Paneme oma elu panuseks</span> ja vaatame, mida tulevane sina sellest arvab.</p>
     </div>
     <div class="calc">
       <div class="calc-in">
         <div class="row"><label for="by">Sünniaasta</label><div class="ig"><input id="by" type="number" inputmode="numeric" min="1955" max="2005" value="1970"></div></div>
         <div class="row"><span id="sexlbl">Sugu</span><div class="seg" role="group" aria-labelledby="sexlbl"><button type="button" data-sex="M" aria-pressed="true">Mees</button><button type="button" data-sex="N" aria-pressed="false">Naine</button></div></div>
         <div class="row"><label for="pen">Oodatav riiklik pension</label><div class="ig"><input id="pen" type="number" inputmode="numeric" min="100" max="5000" step="10" value="800"><span>€ kuus</span></div></div>
+        <div class="row" id="actrow" hidden><span id="actlbl">Mida tahaksid pensionil teha?</span><div class="chips" role="group" aria-labelledby="actlbl"><button type="button" data-act="reis" aria-pressed="true">Reisida</button><button type="button" data-act="lapsed" aria-pressed="false">Olla lastelastega</button><button type="button" data-act="aed" aria-pressed="false">Aias ja maakodus</button><button type="button" data-act="kultuur" aria-pressed="false">Õppida, käia kultuuris</button></div></div>
       </div>
       <div class="calc-out">
         <div class="line"><span>Sinu pensioniiga</span><span class="num" id="o-age">66 a</span></div>
@@ -225,11 +233,11 @@ th:first-child, td:first-child { text-align: left; }
 
   <!-- 2 Panus -->
   <section data-screen="2" class="app" hidden>
-    <div><h2>Tee oma panus</h2><p class="small" style="margin:6px 0 0">Koefitsient näitab, mitu korda suurem või väiksem on sinu kuupension.</p></div>
-    <div class="ticker"><span class="live">LIVE</span><span class="small">Koefitsiendid uuenevad <span id="tick">0</span> s pärast</span></div>
+    <div><h2 id="b-title">Tee oma panus</h2><p class="small" style="margin:6px 0 0" id="b-sub">Koefitsient näitab, mitu korda suurem või väiksem on sinu kuupension.</p></div>
+    <div class="ticker" id="ticker"><span class="live">LIVE</span><span class="small">Koefitsiendid uuenevad <span id="tick">0</span> s pärast</span></div>
     <div class="odds-grid" id="odds" role="group" aria-label="Millal pensionile"></div>
     <div class="slip">
-      <div class="slip-head"><span>Sinu kupong</span><span class="badge">1 valik</span></div>
+      <div class="slip-head"><span id="slip-h">Sinu kupong</span><span class="badge" id="slip-b">1 valik</span></div>
       <div class="slip-body">
         <div class="slip-sel"><div><div id="s-title">Lükkan pensioni 3 aastat edasi</div><div class="small" id="s-sub">Pension algab 69-aastaselt</div></div><span class="num" id="s-odds">1,18</span></div>
         <div class="line" style="padding:0"><span id="s-stake-l">Panus</span><span class="num red" id="s-stake">−28 800 €</span></div>
@@ -263,6 +271,7 @@ th:first-child, td:first-child { text-align: left; }
         <button class="cbtn yes" id="accept" aria-label="Vasta kõnele">Vasta</button>
       </div>
       <div class="after-call" id="after" hidden><button class="btn btn-onnavy btn-lg btn-block" id="go-truth">Vaata kõiki oma elusid</button></div>
+      <p class="callsafe" id="callsafe">Tulevane Mina ei küsi kunagi koode, PIN-i ega raha.</p>
       <button class="mute" id="mute" type="button">Heli välja</button>
     </div>
   </section>
@@ -271,7 +280,7 @@ th:first-child, td:first-child { text-align: left; }
   <section data-screen="5" class="app" hidden>
     <div><h2>See oli üks elu. Siin on kõik.</h2><p class="lead" style="margin-top:8px" id="t-lead"></p></div>
     <div class="tiles">
-      <div class="tile"><span class="k">Sinu valik võidab</span><span class="v" id="t-p">–</span><span class="small" id="t-p2">eludest</span></div>
+      <div class="tile"><span class="k" id="t-pk">Sinu valik võidab</span><span class="v" id="t-p">–</span><span class="small" id="t-p2">eludest</span></div>
       <div class="tile"><span class="k">Tasuvuspunkt</span><span class="v" id="t-be">–</span><span class="small" id="t-be2"></span></div>
       <div class="tile"><span class="k">Keskmine tulemus</span><span class="v" id="t-ev">–</span><span class="small">kõigi elude peale</span></div>
     </div>
@@ -288,7 +297,7 @@ th:first-child, td:first-child { text-align: left; }
     </div>
 
     <div>
-      <h2 style="font-size:22px;line-height:30px;margin-bottom:6px">Kasiino tuleb sinu juurde. Pensioninõu juurde pead ise minema.</h2>
+      <h2 style="font-size:22px;line-height:30px;margin-bottom:6px">Sulle helistavad kasiinod ja petturid. Sinu pensioninõustaja mitte.</h2>
       <p class="small" style="margin:0 0 12px">Samad küsimused kahele teele. Vastused lisame viidetega (Heidi Reinsoni doktoritöö, seadused).</p>
       <div class="reveal">
         <div class="rcol rcas"><h3>Veebikasiino</h3>
@@ -306,9 +315,20 @@ th:first-child, td:first-child { text-align: left; }
       </div>
     </div>
 
+    <div class="card">
+      <h2 style="font-size:22px;line-height:30px">Kui pensionivara saab kiiresti välja võtta</h2>
+      <ul class="tricks" style="list-style:none">
+        <li><span class="n">€</span><span><b>Eestis septembris 2021</b>, kui II sambast välja võetud raha inimesteni jõudis, oli jaekaubanduse müük rekordiline: 790 miljonit eurot, aasta varem 640 miljonit.</span></li>
+        <li><span class="n">♣</span><span><b>Austraalias</b> oli pärast pensionivara varajase väljavõtu lubamist kaheksa nädala jooksul suurim kulukategooria hasartmäng.</span></li>
+        <li><span class="n">?</span><span><b>Kõige tugevamalt</b> ennustas Eestis nii mittesäästmist kui ka II samba väljavõttu madal usaldus finantsasutuste vastu. Seepärast ei küsi Tulevane Mina sinult midagi: usaldus tuleb ausatest arvudest, mitte trikkidest.</span></li>
+      </ul>
+      <p class="fine" style="margin:0">Allikas: <a href="https://doi.org/10.1017/S147474722610016X" target="_blank" rel="noopener">Reinson, Post, Uusberg 2026, Journal of Pension Economics and Finance</a>; jaekaubandus Statistikaamet 2021 ja Austraalia Hamilton jt 2024 artikli kaudu.</p>
+    </div>
+
     <div class="note"><b>Päris otsuses loeb rohkem kui ratas:</b> sinu tervis, muud sissetulekud, kas sul on kaaslane ja II–III samba vara. Paindliku pensioniga võid võtta ka poole pensioni ja lasta teisel poolel kasvada. <a href="https://sotsiaalkindlustusamet.ee/en/pension-and-benefits/types-pensions/deferred-old-age-pension" target="_blank" rel="noopener">Loe Sotsiaalkindlustusametist</a>.</div>
 
     <div class="btn-row"><button class="btn btn-primary btn-lg" id="again">Proovi teist panust</button><button class="btn btn-outline btn-lg" id="restart">Alusta otsast</button></div>
+    <p class="raamlink small"><a id="raamlink" href="?raam=kingitus">Proovi sama otsust kingituse raamis</a></p>
 
     <p class="fine">Häkatoni prototüüp, mitte finantsnõu ega Tuleva ametlik toode. Kordajad: Sotsiaalkindlustusameti paindliku vanaduspensioni tabel (−5 a −22,98% … +5 a +33,68%). Suremus: Gompertzi mudel, kalibreeritud Eurostati 2023. a eeldatavale elueale 65-aastaselt (mehed 15,9, naised 21,1 a); tulevast eluea kasvu ei arvestata. Pensioniiga: Tuleva pensionikalkulaatori hinnang (65 a + ~1,5 kuud iga sünniaasta kohta alates 1962). Summad ilma indekseerimise, maksude ja diskonteerimiseta.</p>
   </section>
@@ -338,6 +358,16 @@ th:first-child, td:first-child { text-align: left; }
   // Hääl: ?haal=vaikne lülitab kõnesünteesi välja (nt Wizard of Oz, kui tiimiliige räägib ise).
   var VOICE = (function () { try { return new URLSearchParams(location.search).get("haal") || "elav"; } catch (e) { return "elav"; } })();
   var VOICES = { M: "albert", N: "kylli" }; // vanema kõlaga hääled; vahetatavad testides
+  // Raam: ?raam=kingitus näitab sama otsust kingitusena tulevasele minale (ilma kasiinovõteteta). Vaikimisi panus.
+  var RAAM = (function () { try { return new URLSearchParams(location.search).get("raam") === "kingitus" ? "kingitus" : "panus"; } catch (e) { return "panus"; } })();
+  var GIFT = RAAM === "kingitus";
+  st.act = "reis";
+  var ACT = {
+    reis: "Selle rahaga sain igal aastal reisile minna.",
+    lapsed: "Selle rahaga sain lastelastega rohkem aega veeta.",
+    aed: "Selle rahaga sain maakodu korras hoida.",
+    kultuur: "Selle rahaga käisin teatris ja kursustel."
+  };
   function alt(k) { return k === 0 ? 3 : 0; }
   function total(k, D) { return Math.max(0, D - (st.R + k)) * 12 * st.P * (1 + COEF[k]); }
   function diff(k, D) { return total(k, D) - total(alt(k), D); }
@@ -364,6 +394,8 @@ th:first-child, td:first-child { text-align: left; }
   function eurSigned(v) { return (v >= 0 ? "+" : "−") + nf.format(Math.abs(Math.round(v))) + " €"; }
   function round100(v) { return Math.round(Math.abs(v) / 100) * 100; }
   function odds(k) { return (1 + COEF[k]).toFixed(2).replace(".", ","); }
+  function gpct(k) { var v = Math.round(COEF[k] * 100); return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v) + "%"; }
+  function oddsShow(k) { return GIFT ? gpct(k) : odds(k); }
   function pct(v) { return (Math.round(v * 1000) / 10).toString().replace(".", ",") + "%"; }
   function ageYM(x) { var y = Math.floor(x), m = Math.round((x - y) * 12); if (m === 12) { y++; m = 0; } return y + " a" + (m ? " " + m + " k" : ""); }
   function kLabel(k) { return k === 0 ? "Õigel ajal" : Math.abs(k) + " a " + (k < 0 ? "varem" : "hiljem"); }
@@ -394,6 +426,12 @@ th:first-child, td:first-child { text-align: left; }
       readSetup();
     });
   });
+  document.querySelectorAll("[data-act]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      st.act = b.getAttribute("data-act");
+      document.querySelectorAll("[data-act]").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
+    });
+  });
   $("go-bet").addEventListener("click", function () { readSetup(); buildOdds(); updateSlip(); show(2); });
 
   // ---------- step 2 ----------
@@ -404,15 +442,16 @@ th:first-child, td:first-child { text-align: left; }
       var b = document.createElement("button");
       b.type = "button"; b.className = "odds"; b.dataset.k = k;
       b.setAttribute("aria-pressed", String(k === st.k));
-      b.innerHTML = '<span class="lbl">' + kLabel(k) + '</span><span class="val">' + odds(k) + "</span>";
+      b.innerHTML = '<span class="lbl">' + kLabel(k) + '</span><span class="val">' + oddsShow(k) + "</span>";
       b.addEventListener("click", function () { st.k = k; g.querySelectorAll(".odds").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); }); updateSlip(); });
       g.appendChild(b);
     });
   }
   function updateSlip() {
     var k = st.k, P = st.P, c = COEF[k];
-    $("s-odds").textContent = odds(k);
+    $("s-odds").textContent = oddsShow(k);
     $("s-sub").textContent = "Pension algab " + (st.R + k) + "-aastaselt · " + eur(P * (1 + c)) + " kuus";
+    if (GIFT) { giftSlip(k, P, c); return; }
     $("s-nudge").hidden = k !== 0;
     if (k === 0) st.nudged = true;
     if (k > 0) {
@@ -429,9 +468,26 @@ th:first-child, td:first-child { text-align: left; }
       $("s-win-l").textContent = "Võimalik võit"; $("s-win").textContent = "+" + eur(P * 12 * 3);
     }
   }
+  function giftSlip(k, P, c) {
+    $("s-nudge").hidden = true;
+    var yrs = function (n) { return n + " " + (n === 1 ? "aasta" : "aastat"); };
+    if (k > 0) {
+      $("s-title").textContent = "Kingin oma tulevasele minale " + yrs(k) + " ootamist";
+      $("s-stake-l").textContent = "Täna loobud"; $("s-stake").textContent = "−" + eur(P * 12 * k);
+      $("s-win-l").textContent = "Tulevane sina saab kogu eluks"; $("s-win").textContent = "+" + eur(P * c) + " kuus";
+    } else if (k < 0) {
+      $("s-title").textContent = "Kingin tänasele minale " + yrs(-k) + " varem pensioni";
+      $("s-stake-l").textContent = "Tulevane sina saab kogu eluks vähem"; $("s-stake").textContent = "−" + eur(-P * c) + " kuus";
+      $("s-win-l").textContent = "Täna saad"; $("s-win").textContent = "+" + eur(P * (1 + c) * 12 * -k);
+    } else {
+      $("s-title").textContent = "Võtan pensioni õigel ajal, kingitust ei tee";
+      $("s-stake-l").textContent = "Tulevane sina jääb ilma"; $("s-stake").textContent = "−" + eur(P * COEF[3]) + " kuus";
+      $("s-win-l").textContent = "Täna saad"; $("s-win").textContent = "+" + eur(P * 12 * 3);
+    }
+  }
   var tickT = null, tLeft = 20;
   function startTimers() {
-    stopTimers(); tLeft = 20; paintTimer();
+    stopTimers(); if (GIFT) return; tLeft = 20; paintTimer();
     tickT = setInterval(function () {
       tLeft--; if (tLeft <= 0) { tLeft = 20; refreshOdds(); }
       paintTimer();
@@ -484,8 +540,9 @@ th:first-child, td:first-child { text-align: left; }
     $("spin").hidden = false; $("spin").disabled = false;
     var mine = earlyIsMine ? "Sured enne " + ageYM(be) : "Elad üle " + ageYM(be);
     var other = earlyIsMine ? "Elad üle " + ageYM(be) : "Sured enne " + ageYM(be);
-    $("w-legend").innerHTML = '<li><span class="dot" style="background:var(--green)"></span>Sinu valik võidab: ' + mine.toLowerCase() + '</li><li><span class="dot" style="background:var(--red)"></span>Kaotab: ' + other.toLowerCase() + "</li>";
-    $("w-title").textContent = kLabel(st.k) + " · koefitsient " + odds(st.k);
+    var wl = GIFT ? ["Kingitus tasub end ära: ", "Ei tasu: "] : ["Sinu valik võidab: ", "Kaotab: "];
+    $("w-legend").innerHTML = '<li><span class="dot" style="background:var(--green)"></span>' + wl[0] + mine.toLowerCase() + '</li><li><span class="dot" style="background:var(--red)"></span>' + wl[1] + other.toLowerCase() + "</li>";
+    $("w-title").textContent = GIFT ? kLabel(st.k) + " · pension " + gpct(st.k) : kLabel(st.k) + " · koefitsient " + odds(st.k);
     $("w-sub").textContent = k === 0 ? "Võrdleme sinu valikut 3-aastase ootamisega. Sektori suurus on tõenäosus surra selles vanuses." : "Võrdleme sinu valikut õigel ajal minekuga. Sektori suurus on tõenäosus surra selles vanuses.";
   }
   $("spin").addEventListener("click", function () {
@@ -510,7 +567,8 @@ th:first-child, td:first-child { text-align: left; }
     $("callsub").textContent = "helistab · aasta " + (st.by + age);
     var amt = eur(round100(d)), q;
     var neverPaid = D < st.R + k;
-    if (k > 0) {
+    if (GIFT) q = giftQuote(k, D, d, a, amt, neverPaid);
+    else if (k > 0) {
       if (neverPaid) q = "Ootasin, et pension oleks suurem. Ma ei jõudnudki seda saada. Kui oleksin kohe võtnud, oleks mul " + eur(round100(total(0, D))) + " rohkem olnud.";
       else if (d > 0) q = "Aitäh, et ootasid " + k + (k === 1 ? " aasta" : " aastat") + ". Sain kokku " + amt + " rohkem. Iga kuu natuke rohkem, pikalt.";
       else q = "Ootasin " + k + (k === 1 ? " aasta" : " aastat") + " ja jäin ikka " + amt + " miinusesse. Oleksin pidanud kohe võtma.";
@@ -526,6 +584,22 @@ th:first-child, td:first-child { text-align: left; }
     loadVoice(q);
     $("call-actions").hidden = false; $("after").hidden = true;
     $("phone").classList.add("ringing");
+  }
+  function giftQuote(k, D, d, a, amt, neverPaid) {
+    var act = ACT[st.act] || "";
+    var heir = " Riiklik pension ei pärandu, aga teine ja kolmas sammas päranduvad.";
+    if (k > 0) {
+      if (neverPaid) return "Sa kinkisid mulle ootamise, aga ma ei jõudnud seda kätte saada. See ei ole sinu süü: keegi ei tea, kui kaua ta elab." + heir;
+      if (d > 0) return "Aitäh kingituse eest. Sain kokku " + amt + " rohkem. " + act;
+      return "Aitäh, et mõtlesid mulle. Kingitus jõudis kohale, aga jäi väiksemaks: kokku " + amt + " vähem kui kohe võttes. See ei ole sinu süü.";
+    }
+    if (k < 0) {
+      if (d > 0) return "Sa kinkisid pensioni varem tänasele minale ja see tasus: sain " + amt + " rohkem. " + act;
+      return "Sa kinkisid varasema pensioni tänasele minale. Mina elasin kaua ja sain kokku " + amt + " vähem. Loodan, et need aastad olid seda väärt.";
+    }
+    if (D < st.R + a) return "Võtsid pensioni õigel ajal ja see oli õige: ooteaastate kingitus poleks minuni jõudnud." + heir;
+    if (d > 0) return "Hea, et ei oodanud. Sain " + amt + " rohkem kui " + a + " aastat oodates. " + act;
+    return "Elasin kauem, kui arvasid. " + a + " aastat oodates oleks minuni jõudnud " + amt + " rohkem. Aga ma ei ole pahane.";
   }
   function answer(declined) {
     st.declined = declined; stopRing();
@@ -606,11 +680,14 @@ th:first-child, td:first-child { text-align: left; }
     $("tbl").innerHTML = rows;
 
     var tr = [];
-    tr.push("<b>Koefitsiendid „uuenesid“ " + st.refreshes + " korda, aga ükski number ei muutunud.</b> Vilkuv roheline ja punane tekitavad kiirustamise tunde. Pensionikordajad on seaduses kirjas ega liigu.");
-    tr.push("<b>Taimer oli võlts.</b> „Pakkumine kehtib 0:20“ algas iga kord uuesti. Pensioniotsusel pole tähtaega ja kiirustav inimene ei kaalu.");
-    if (st.nudged) tr.push("<b>Kui valisid õigel ajal, ütlesime, et julgemad mängijad valivad +5.</b> Kasiino õõnestab kindlat valikut ja premeerib suuremat riski.");
+    if (GIFT) tr.push("<b>Sama otsus, teine raam.</b> Nimetasime ootamist kingituseks tulevasele minale, mitte panuseks. Numbrid on täpselt samad mis kasiino-versioonis. Katsetes on side tulevase minaga (nt vananenud näopilt) suurendanud säästmist (Hershfield jt 2011), kuigi hilisemates kordustes on mõju olnud väiksem. Raam muudab tunnet, mitte tõenäosust.");
+    else tr.push("<b>Koefitsiendid „uuenesid“ " + st.refreshes + " korda, aga ükski number ei muutunud.</b> Vilkuv roheline ja punane tekitavad kiirustamise tunde. Pensionikordajad on seaduses kirjas ega liigu.");
+    if (!GIFT) tr.push("<b>Taimer oli võlts.</b> „Pakkumine kehtib 0:20“ algas iga kord uuesti. Pensioniotsusel pole tähtaega ja kiirustav inimene ei kaalu.");
+    if (st.nudged && !GIFT) tr.push("<b>Kui valisid õigel ajal, ütlesime, et julgemad mängijad valivad +5.</b> Kasiino õõnestab kindlat valikut ja premeerib suuremat riski.");
     tr.push("<b>Ratas näitas ühte elu.</b> Ühe pöörde tulemus on anekdoot. Otsus peab arvestama kõiki elusid ülal graafikul. Erinevalt kasiinost olid meie sektorid ausad ja nähtavad enne pööret.");
+    if (GIFT) tr.push("<b>Riiklik pension ei pärandu.</b> Kui sured enne, jääb ootamise kingitus kätte saamata. II ja III samba vara pärandub, seepärast loeb päris otsuses kogu pensionivara.");
     tr.push("<b>Kõne mängis emotsioonidele.</b> " + (st.declined ? "Isegi kui keeldusid, jättis ta sõnumi. " : "") + "Tulevase mina tänu või pahameel on võimas, aga see ei muuda tõenäosust.");
+    tr.push("<b>Kõne kasutas samu võtteid nagu telefonipetturid:</b> ootamatu kõne, tuttav hääl, tugev emotsioon ja kiire otsus. Päris kõne, mis neid kasutab, küsib lõpuks koodi, PIN-i või raha. Tulevane Mina ei küsi kunagi. Kahtluse korral lõpeta kõne ja helista ise oma panka.");
     $("tricks").innerHTML = tr.map(function (t, i) { return '<li><span class="n">' + (i + 1) + "</span><span>" + t + "</span></li>"; }).join("");
   }
 
@@ -663,6 +740,23 @@ th:first-child, td:first-child { text-align: left; }
   $("again").addEventListener("click", function () { buildOdds(); updateSlip(); show(2); });
   $("restart").addEventListener("click", function () { st.refreshes = 0; st.nudged = false; show(1); });
 
+  function applyRaam() {
+    var q = new URLSearchParams(location.search); q.set("raam", GIFT ? "panus" : "kingitus");
+    $("raamlink").href = "?" + q.toString();
+    if (!GIFT) return;
+    document.documentElement.setAttribute("data-raam", "kingitus");
+    $("lead1").innerHTML = 'Iga ooteaasta on <span class="hl">kingitus tulevasele sinule</span>: suurem pension kogu eluks. Aga kingitus jõuab kohale ainult siis, kui elad piisavalt kaua.';
+    $("actrow").hidden = false;
+    $("go-bet").textContent = "Vali oma kingitus";
+    $("b-title").textContent = "Mida kingid tulevasele minale?";
+    $("b-sub").textContent = "Protsent näitab, kui palju suurem või väiksem on sinu pension kogu eluks.";
+    $("ticker").hidden = true; $("timer").hidden = true;
+    $("slip-h").textContent = "Sinu kingitus"; $("slip-b").textContent = "kogu eluks";
+    $("go-spin").textContent = "Kas kingitus jõuab kohale?";
+    $("t-pk").textContent = "Kingitus tasub end ära";
+    $("raamlink").textContent = "Proovi sama otsust kasiino raamis";
+  }
+  try { applyRaam(); } catch (e) {}
   readSetup(); buildOdds(); updateSlip(); show(1);
 })();
 </script>

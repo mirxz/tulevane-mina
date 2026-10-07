@@ -33,6 +33,7 @@ for (const vp of viewports) {
   await page.click("#spin");
   await page.waitForSelector('[data-screen="4"]:not([hidden])', { timeout: 8000 });
   check(true, "4. kõne avaneb");
+  check(await page.isVisible("text=ei küsi kunagi koode, PIN-i ega raha"), "turvarida kõne-ekraanil nähtav");
   await page.click("#accept");
   check(await page.isVisible("#quote"), "tsitaat nähtav");
   await page.click("#go-truth");
@@ -40,6 +41,45 @@ for (const vp of viewports) {
   const p = await page.textContent("#t-p");
   check(/^\d+(,\d)?%$/.test(p), `võidu tõenäosus kuvatud (${p})`);
   check((await page.$$("#chart path")).length > 20, "graafik joonistatud");
+  check(/telefonipetturid/.test(await page.textContent("#tricks")), "petturivõtete paljastus olemas");
+  check(await page.isVisible("text=Reinson, Post, Uusberg 2026"), "uuringu viide nähtav");
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  check(!overflow, "horisontaalset kerimist pole");
+  check(errors.length === 0, "konsoolis vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
+  await page.close();
+}
+
+// Kingituse raam (?raam=kingitus): sama mudel, teine sõnastus, kasiinovõtteid pole
+{
+  const vp = viewports[0];
+  console.log(`\nkingituse raam, ${vp.name}`);
+  const page = await browser.newPage({ viewport: vp, reducedMotion: "reduce" });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const sep = url.includes("?") ? "&" : "?";
+  await page.goto(url + sep + "raam=kingitus", { waitUntil: "domcontentloaded" });
+  check(await page.isVisible("text=Mida tahaksid pensionil teha?"), "tegevuse küsimus nähtav");
+  await page.click('[data-act="lapsed"]');
+  await page.click("#go-bet");
+  check(!(await page.isVisible("#ticker")) && !(await page.isVisible("#timer")), "LIVE-riba ja taimer peidetud");
+  await page.click('.odds[data-k="3"]');
+  check(await page.textContent("#s-odds") === "+18%", "kingitus +3 a = +18%");
+  check(/Kingin oma tulevasele minale 3 aastat/.test(await page.textContent("#s-title")), "kupong on kingitus");
+  check(/kogu eluks/.test(await page.textContent("#s-win-l")) && await page.textContent("#s-win") === "+147 € kuus", "tulevase mina vaade");
+  check(await page.evaluate(() => { const s = document.querySelector(".slip"); return s.scrollWidth <= s.clientWidth + 1; }), "kupong mahub telefoni");
+  await page.click("#go-spin");
+  await page.click("#spin");
+  await page.waitForSelector('[data-screen="4"]:not([hidden])', { timeout: 8000 });
+  check(await page.isVisible("#callsafe"), "turvarida kõne-ekraanil nähtav");
+  await page.click("#accept");
+  const q = await page.textContent("#quote");
+  check(/kingi|Kingitus|kinkisid/i.test(q) && !/Oleksin pidanud/.test(q), "kõne räägib kingitusest, ei süüdista");
+  await page.click("#go-truth");
+  check(await page.textContent("#t-be") === "85 a 4 k", "tasuvuspunkt sama mis panuse raamis");
+  const tricks = await page.textContent("#tricks");
+  check(/Sama otsus, teine raam/.test(tricks) && !/Taimer oli võlts/.test(tricks), "paljastus nimetab raami");
+  check(/ei pärandu/.test(tricks), "pärandumise märkus olemas");
+  check(/raam=panus/.test(await page.getAttribute("#raamlink", "href")), "link teise raami");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   check(!overflow, "horisontaalset kerimist pole");
   check(errors.length === 0, "konsoolis vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
