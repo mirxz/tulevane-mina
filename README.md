@@ -136,3 +136,25 @@ npm test                    # teises aknas
 - Pensioni kordajad: Sotsiaalkindlustusamet, paindlik vanaduspension.
 - Suremus: Gompertzi mudel, kalibreeritud Eurostati 2023 eeldatavale elueale 65-aastaselt (mehed 15,9, naised 21,1 a).
 - Pensioniiga: TulevaEE/onboarding-client `pensionCalculator/calculation.ts` (MIT).
+
+## Lauamäng (`/mang/`)
+
+Paberprototüübi v0.1 reeglid kolmel tasemel, et häki ajal testida, itereerida ja lihtsustada:
+
+- **L1 kaaslane** `/mang/kaaslane.html`: paberlaua kõrvale. Majandus-, sündmus- ja vestluskaardid, elukell (2 täringut + muutjad) ja tulevase mina kõne (TartuNLP hääl).
+- **L2 üksi** `/mang/`: kogu mäng telefonis. Stardikaart või „Minu enda elu“ (suurusjärgud, 1 münt ≈ 5 000 €).
+- **L3 paar ja seltskond** `/mang/`, kaks moodust:
+  - **Ühes telefonis**: kordamööda, iga käigu ees „Anna telefon“, sest tervisekaart on salajane.
+  - **Igaüks oma telefonis**: võrgutuba, 5-täheline kood ja link. Olek on D1 tabelis `mang_toad` versiooniga; samaaegsed käigud saavad vastuseks 409 ja proovivad uuesti. Toad kustuvad 3 päevaga. Salvestatakse ainult mänguolek.
+
+Reeglid elavad failis `public/mang/engine.js` (puhtad funktsioonid) ja kaardid failis `public/mang/kaardid.json`. Reeglit muutes muuda mootorit ja kaarte, mitte kasutajaliidest.
+
+Testid:
+
+- `node tests/engine.mjs`: 400 juhuslikku mängu.
+- `node tests/mang.mjs http://127.0.0.1:8787`: kaaslane, üksi, paar, kolm telefoni toas, axe.
+
+Teadaolevad lüngad v0.1-s:
+
+- „Säästumäära seadja“ eriõigus (Rõõmu asemel +1 Vara) pole digis rakendatud.
+- Tervisekontroll valib automaatselt (+1 Tervis või kõrge riski ohjamine).

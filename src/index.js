@@ -4,6 +4,7 @@
 // /tulemused → variantide võrdlus (parooliga, Cloudflare secret TULEMUSED_VOTI); /tulemused.csv → vastused CSV-na.
 // Kogu sait on parooliga (Cloudflare secret PROTO_VOTI) kuni Heidi Reinsoni ülevaatuseni; ilma saladuseta on sait suletud
 // (v.a kohalik arendus ja CI aadressil localhost/127.0.0.1). /tulemused kasutab eraldi parooli TULEMUSED_VOTI.
+// /api/mang/tuba → lauamängu võrgutoad (sama D1, tabel mang_toad): olek JSON-ina, versiooniga, et samaaegsed käigud ei kirjutaks üksteist üle.
 // Kõik muu → staatilised failid kaustast public/.
 
 const TTS_URL = "https://api.tartunlp.ai/text-to-speech/v2";
@@ -17,6 +18,7 @@ export default {
     if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
+    if (url.pathname.startsWith("/api/mang/tuba")) return room(request, env, url);
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
     return env.ASSETS.fetch(request);
   },
@@ -202,4 +204,51 @@ async function results(request, env, url) {
 <section><h2>Mis jäi meelde</h2><ul>${quotes || "<li>Veel pole.</li>"}</ul></section>
 </main></body></html>`;
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+}
+
+// ---------------------------------------------------------------------------
+// Lauamängu võrgutoad. Ainult mänguolek (nimed, mängu ressursid); isikuandmeid ega IP-sid ei salvestata. Toad kustuvad 3 päevaga.
+const ROOM_ABC = "ABCDEFGHJKMNPRSTUVXYZ";
+const ROOM_MAX = 200000;
+let roomReady = false;
+async function ensureRoom(db) {
+  if (roomReady) return;
+  await db.prepare("CREATE TABLE IF NOT EXISTS mang_toad (kood TEXT PRIMARY KEY, ver INTEGER NOT NULL, olek TEXT NOT NULL, ts TEXT NOT NULL)").run();
+  roomReady = true;
+}
+async function room(request, env, url) {
+  if (!env.DB) return json({ viga: "Andmebaas pole seadistatud" }, 503);
+  await ensureRoom(env.DB);
+  const code = (url.pathname.split("/")[4] || "").toUpperCase();
+  const now = new Date().toISOString();
+  const readBody = async () => { const t = await request.text(); if (t.length > ROOM_MAX) throw new Error("liiga suur"); return JSON.parse(t); };
+  if (!code && request.method === "POST") {
+    let b; try { b = await readBody(); } catch { return json({ viga: "Vigane olek" }, 400); }
+    await env.DB.prepare("DELETE FROM mang_toad WHERE ts < ?").bind(new Date(Date.now() - 3 * 864e5).toISOString()).run();
+    for (let i = 0; i < 8; i++) {
+      const k = Array.from(crypto.getRandomValues(new Uint8Array(5)), (x) => ROOM_ABC[x % ROOM_ABC.length]).join("");
+      const r = await env.DB.prepare("INSERT OR IGNORE INTO mang_toad (kood, ver, olek, ts) VALUES (?, 1, ?, ?)").bind(k, JSON.stringify(b.olek ?? null), now).run();
+      if (r.meta.changes) return json({ kood: k, ver: 1 }, 200);
+    }
+    return json({ viga: "Ei leidnud vaba koodi" }, 500);
+  }
+  if (!/^[A-Z]{5}$/.test(code)) return json({ viga: "Vigane toa kood" }, 400);
+  if (request.method === "GET") {
+    const r = await env.DB.prepare("SELECT ver, olek FROM mang_toad WHERE kood = ?").bind(code).first();
+    if (!r) return json({ viga: "Tuba ei leitud" }, 404);
+    const known = Number(url.searchParams.get("ver"));
+    if (known && known === r.ver) return json({ ver: r.ver, muutus: false }, 200);
+    return new Response('{"ver":' + r.ver + ',"muutus":true,"olek":' + r.olek + "}", { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  }
+  if (request.method === "PUT") {
+    let b; try { b = await readBody(); } catch { return json({ viga: "Vigane olek" }, 400); }
+    const ver = Number(b.ver);
+    const r = await env.DB.prepare("UPDATE mang_toad SET ver = ver + 1, olek = ?, ts = ? WHERE kood = ? AND ver = ?").bind(JSON.stringify(b.olek ?? null), now, code, ver).run();
+    if (!r.meta.changes) {
+      const cur = await env.DB.prepare("SELECT ver FROM mang_toad WHERE kood = ?").bind(code).first();
+      return json({ viga: cur ? "Keegi jõudis enne" : "Tuba ei leitud", ver: cur?.ver }, cur ? 409 : 404);
+    }
+    return json({ ver: ver + 1 }, 200);
+  }
+  return json({ viga: "Lubatud: POST, GET, PUT" }, 405);
 }
