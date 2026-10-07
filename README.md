@@ -61,6 +61,14 @@ Sama otsust saab näidata kahes raamis. Arvutus on mõlemas identne, muutub ainu
 - **Kingitus** (`?raam=kingitus`): ootamine on kingitus tulevasele minale. Mängija valib, mida tahaks pensionil teha. Protsendid koefitsientide asemel, LIVE-riba ja taimerit pole. Kõne tänab kingituse eest või ütleb ilma süüdistamata, et see ei jõudnud kohale (riiklik pension ei pärandu, II ja III sammas pärandub).
 - Mõlema raami lõpus on link teise raami. Valikuid ei loendata ega salvestata (andmete kogumine vajab otsuste logis otsust).
 
+## Elu-kupong (`?raam=kupong`)
+
+Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingitus, Elu-kupong); valik jõuab aadressiribale `?raam=` kujul.
+
+- **Turud:** pensioni ajastus (−3, 0, +3, +5 a) koos valikuga, kas varem saadud raha kulub või kasvab sambas; fondivalik (kallis 1,0% vs indeks 0,3%, näited); lubadus riigile (alkohol ühikutes nädalas, suitsetamine) ehk BOOST; üle/alla inflatsioon, palgakasv, indeksi tootlus (5% marginaaliga).
+- **Mudel:** 2000 seemnega simuleeritud elu ja majandust. Panused on seotud: lubadus muudab elukõverat ja seega ajastuse koefitsienti. Lubaduste mõju eluea kaotusena (Wood jt 2018, Doll jt 2004). Kuusissetulek = riiklik pension + sambavara jagatud eeldatava allesjäänud elueaga (fondipensioni loogika), tänases rahas. Tervelt elatud aastad Eurostati 2023 näitaja järgi.
+- **Paljastus:** sõltumatuse eeldus vs päris tõenäosus, suur koefitsient = halb panus, raha kasv vahepeal, makropanused ei muuda pensioni, „võimalik võit“ = parim 10%, populaarne kombo, petturivõtted.
+
 ## Käsitsi kontrollnimekiri (eelvaade telefonis)
 
 - [ ] Avaneb telefonis, teksti ei lõigata ja külgsuunas kerida ei saa.
@@ -71,6 +79,7 @@ Sama otsust saab näidata kahes raamis. Arvutus on mõlemas identne, muutub ainu
 - [ ] Tõde: graafik, kolm numbrit, paljastatud võtted ja tabel on olemas.
 - [ ] „Proovi teist panust“ ja „Alusta otsast“ töötavad.
 - [ ] Mõlemad sood ja vähemalt valikud −5, 0 ja +5 on läbi proovitud.
+- [ ] Elu-kupong: mänguvalik avaekraanil, lubadus muudab ajastuse koefitsienti, kõne ja arveldatud kupong.
 - [ ] `?raam=kingitus`: tegevuse küsimus, protsendid, kingituse kupong, kõne ja paljastus raami kohta; link teise raami töötab.
 
 ## Kohalik test

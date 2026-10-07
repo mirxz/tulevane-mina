@@ -79,9 +79,57 @@ for (const vp of viewports) {
   const tricks = await page.textContent("#tricks");
   check(/Sama otsus, teine raam/.test(tricks) && !/Taimer oli võlts/.test(tricks), "paljastus nimetab raami");
   check(/ei pärandu/.test(tricks), "pärandumise märkus olemas");
-  check(/raam=panus/.test(await page.getAttribute("#raamlink", "href")), "link teise raami");
+  check(await page.isVisible("#other-game"), "nupp „Vali teine mäng“ olemas");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   check(!overflow, "horisontaalset kerimist pole");
+  check(errors.length === 0, "konsoolis vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
+  await page.close();
+}
+// Elu-kupong: valitakse avaekraanil
+for (const vp of viewports) {
+  console.log(`\nelu-kupong, ${vp.name}`);
+  const page = await browser.newPage({ viewport: vp, reducedMotion: "reduce" });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.click('[data-game="kupong"]');
+  check(/raam=kupong/.test(page.url()), "mänguvalik jõuab aadressiribale");
+  check(await page.isVisible("#v0"), "sambavara väli nähtav");
+  await page.click("#go-bet");
+  check((await page.$$("#m-def .odds")).length === 4, "ajastuse turg: 4 valikut");
+  const oIdx = parseFloat((await page.textContent('[data-fund="indeks"] .val')).replace(",", "."));
+  const oExp = parseFloat((await page.textContent('[data-fund="kallis"] .val')).replace(",", "."));
+  check(oIdx < oExp && oIdx < 1.5, `indeksfond on kindlam panus (${oIdx} vs ${oExp})`);
+  await page.click('#alc-now button[data-i="2"]');
+  const before = await page.textContent('#m-def [data-k="3"] .val');
+  check(/BOOST/.test(await page.textContent("#boostline")) === false, "praegune tase üksi ei anna boosti");
+  await page.click('#alc-prom button[data-i="0"]');
+  check(/BOOST/.test(await page.textContent("#boostline")), "lubadus annab boosti");
+  const after = await page.textContent('#m-def [data-k="3"] .val');
+  check(before !== after, `lubadus muudab ajastuse koefitsienti (${before} → ${after})`);
+  await page.click('[data-mac="infl"][data-side="yle"]');
+  check((await page.$$("#k-legs li")).length === 4, "kupongil 3 panust + lubadus");
+  check(/^\d+,\d\d$/.test(await page.textContent("#k-odds")), "kogukoefitsient kuvatud");
+  check(await page.evaluate(() => { const s = document.querySelector('[data-screen="6"] .slip'); return s.scrollWidth <= s.clientWidth + 1; }), "kupong mahub ekraanile");
+  await page.click("#go-life");
+  check(await page.isVisible("#wsvg path"), "elu-ratas joonistatud");
+  await page.click("#spin");
+  await page.waitForSelector('[data-screen="4"]:not([hidden])', { timeout: 8000 });
+  check(await page.isVisible("#callsafe"), "turvarida kõne-ekraanil nähtav");
+  await page.click("#accept");
+  const q = await page.textContent("#quote");
+  check(q.length <= 400 && q.length > 30, `kõne mahub häälesse (${q.length} märki)`);
+  await page.click("#go-truth");
+  check((await page.$$("#k-settled tr")).length >= 4, "kupong arveldatud");
+  check(/sõltumatud/.test(await page.textContent("#tricks")), "kombo paljastus olemas");
+  check(await page.isVisible("text=pole sinu kontrolli all"), "kontrolli all / mitte eristus");
+  check(!(await page.isVisible("#chart")), "panuse graafik peidetud");
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  check(!overflow, "horisontaalset kerimist pole");
+  await page.click("#other-game");
+  await page.click('[data-game="panus"]');
+  await page.click("#go-bet");
+  check(await page.textContent("#s-odds") !== null && await page.isVisible("#ticker"), "tagasi kasiinosse: LIVE-riba olemas");
   check(errors.length === 0, "konsoolis vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
   await page.close();
 }
