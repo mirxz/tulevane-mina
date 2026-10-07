@@ -8,11 +8,16 @@
   "workers_dev": true,
   "preview_urls": true,
   // Eelvaated (iga haru peale main): Cloudflare'i build käivitab `wrangler preview`, mis nõuab seda plokki.
-  "previews": {},
+  "previews": {
+    // Eelvaated kirjutavad samasse andmebaasi; tulemuste leht näitab vaikimisi ainult toodangu aadressi vastuseid.
+    "d1_databases": [{ "binding": "DB", "database_name": "mina-tagasiside", "database_id": "c85712bf-d45e-41c3-a048-eaf733f58daf" }]
+  },
+  // Anonüümne tagasiside (otsuste logi 7.10). Tabelid luuakse esimesel päringul ise.
+  "d1_databases": [{ "binding": "DB", "database_name": "mina-tagasiside", "database_id": "c85712bf-d45e-41c3-a048-eaf733f58daf" }],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/tulemused", "/tulemused.csv"]
   }
 }

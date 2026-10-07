@@ -1,6 +1,9 @@
 // Suitsutest: käib mängu 5 sammu läbi telefonis ja arvutis ning kontrollib põhiarvu.
 // Kasutus: node tests/smoke.mjs <URL>   (vaikimisi http://localhost:8787)
 import { chromium } from "playwright";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+const AXE = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
 
 const url = process.argv[2] || "http://localhost:8787";
 const viewports = [
@@ -10,6 +13,15 @@ const viewports = [
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 let failed = 0;
 const check = (ok, msg) => { console.log((ok ? "  ✓ " : "  ✗ ") + msg); if (!ok) failed++; };
+// Ligipääsetavus: axe-core WCAG 2.1 AA reeglid nähtaval ekraanil; tõsised ja kriitilised vead kukutavad testi.
+async function a11y(page, label) {
+  if (!(await page.evaluate(() => !!window.axe))) await page.addScriptTag({ content: AXE });
+  const r = await page.evaluate(async () => {
+    const res = await window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] }, resultTypes: ["violations"] });
+    return res.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id + " (" + v.nodes.length + "): " + v.nodes.slice(0, 2).map((n) => n.target.join(" ")).join(", "));
+  });
+  check(r.length === 0, "ligipääsetavus: " + label + (r.length ? " → " + r.join(" | ") : ""));
+}
 
 for (const vp of viewports) {
   console.log(`\n${vp.name} (${vp.width}×${vp.height})`);
@@ -21,26 +33,33 @@ for (const vp of viewports) {
   const own = (u) => new URL(u).origin === new URL(url).origin && !new URL(u).pathname.startsWith("/api/"); // /api/ testib eraldi kontroll
   page.on("requestfailed", (r) => { if (own(r.url())) errors.push("ei laadinud: " + r.url()); });
   page.on("response", (r) => { if (own(r.url()) && r.status() >= 400) errors.push(r.status() + " " + r.url()); });
-  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.goto(url + (url.includes("?") ? "&" : "?") + "raam=panus", { waitUntil: "domcontentloaded" });
 
   check(await page.isVisible("text=Millal pensionile minna?"), "1. samm avaneb");
   check(await page.textContent("#o-age") === "66 a (aastal 2036)", "pensioniiga 1970 → 66 a");
+  await a11y(page, "1. avaekraan");
   await page.click("#go-bet");
   await page.click('.odds[data-k="3"]');
   check(await page.textContent("#s-odds") === "1,18", "koefitsient +3 a = 1,18");
+  await a11y(page, "2. panus");
   await page.click("#go-spin");
   check(await page.isVisible("#wsvg path"), "3. ratas joonistatud");
+  check(!(await page.$$eval("#wsvg path", (ps) => ps.some((p) => /green|red/.test(p.getAttribute("fill") || "")))), "ratas ei kasuta rohelist ega punast");
+  await a11y(page, "3. ratas");
   await page.click("#spin");
   await page.waitForSelector('[data-screen="4"]:not([hidden])', { timeout: 8000 });
   check(true, "4. kõne avaneb");
   check(await page.isVisible("text=ei küsi kunagi koode, PIN-i ega raha"), "turvarida kõne-ekraanil nähtav");
   await page.click("#accept");
   check(await page.isVisible("#quote"), "tsitaat nähtav");
+  await a11y(page, "4. kõne");
   await page.click("#go-truth");
   check(await page.textContent("#t-be") === "85 a 4 k", "tasuvuspunkt mees 1970 +3 a = 85 a 4 k");
   const p = await page.textContent("#t-p");
   check(/^\d+(,\d)?%$/.test(p), `võidu tõenäosus kuvatud (${p})`);
   check((await page.$$("#chart path")).length > 20, "graafik joonistatud");
+  check(await page.$$eval("#chart path", (ps) => ps.some((p) => (p.getAttribute("fill") || "").includes("hatch"))), "kaotus on graafikul triibuline (mitte ainult värv)");
+  await a11y(page, "5. tõde");
   check(/telefonipetturid/.test(await page.textContent("#tricks")), "petturivõtete paljastus olemas");
   check(await page.isVisible("text=Reinson, Post, Uusberg 2026"), "uuringu viide nähtav");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
@@ -92,11 +111,13 @@ for (const vp of viewports) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  check((await page.$$('[data-game][aria-pressed="true"]')).length === 1 && await page.isVisible("#loosnote"), "mäng loositi avaekraanil");
   await page.click('[data-game="kupong"]');
   check(/raam=kupong/.test(page.url()), "mänguvalik jõuab aadressiribale");
   check(await page.isVisible("#v0"), "sambavara väli nähtav");
   await page.click("#go-bet");
   check((await page.$$("#m-def .odds")).length === 4, "ajastuse turg: 4 valikut");
+  await a11y(page, "elu-kupong");
   const oIdx = parseFloat((await page.textContent('[data-fund="indeks"] .val')).replace(",", "."));
   const oExp = parseFloat((await page.textContent('[data-fund="kallis"] .val')).replace(",", "."));
   check(oIdx < oExp && oIdx < 1.5, `indeksfond on kindlam panus (${oIdx} vs ${oExp})`);
@@ -121,12 +142,25 @@ for (const vp of viewports) {
   check(q.length <= 400 && q.length > 30, `kõne mahub häälesse (${q.length} märki)`);
   await page.click("#go-truth");
   check((await page.$$("#k-settled tr")).length >= 4, "kupong arveldatud");
+  await a11y(page, "kupongi tõde");
   check(/sõltumatud/.test(await page.textContent("#tricks")), "kombo paljastus olemas");
   check(await page.isVisible("text=pole sinu kontrolli all"), "kontrolli all / mitte eristus");
   check(!(await page.isVisible("#chart")), "panuse graafik peidetud");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   check(!overflow, "horisontaalset kerimist pole");
-  await page.click("#other-game");
+  // tagasiside
+  await page.click("#go-fb");
+  check(await page.isVisible("text=Mis oli sinu pensioni puhul"), "tagasiside küsib kupongi arusaamist");
+  await a11y(page, "tagasiside");
+  await page.click("#fb-send");
+  check(await page.isVisible("#fb-need"), "kohustuslikud küsimused kontrollitud");
+  await page.click("#fq1o button >> nth=0"); await page.click("#fq2o button >> nth=3"); await page.click("#fq3o button >> nth=0");
+  const sent = page.waitForResponse((r) => r.url().endsWith("/api/s") && r.request().postData().includes("feedback"), { timeout: 5000 }).catch(() => null);
+  await page.click("#fb-send");
+  const resp = await sent;
+  check(await page.isVisible("#fb-thanks"), "tänu kuvatud");
+  check(resp && resp.status() === 200, "vastus salvestati (" + (resp ? resp.status() : "päringut polnud") + ")");
+  await page.click("#fb-other");
   await page.click('[data-game="panus"]');
   await page.click("#go-bet");
   check(await page.textContent("#s-odds") !== null && await page.isVisible("#ticker"), "tagasi kasiinosse: LIVE-riba olemas");

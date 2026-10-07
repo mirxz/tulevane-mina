@@ -18,11 +18,14 @@
   --navy: #002f63; --blue: #006ce6; --blue-hover: #005cc4; --bright-blue: #00aeea;
   --red: #db2200; --green: #008300; --green-light: #00a100; --yellow: #fce228;
   --note-bg: #fff6d9; --note-border: #faeed0;
-  --text: #293036; --text-2: #6b7074; --text-navy-2: #5c738c;
+  --text: #293036; --text-2: #6b7074; --text-navy-2: #4f6680;
   --white: #ffffff; --gray-bg-1: #fafbfc; --gray-bg-2: #f5f7f9;
   --gray-border-1: #e0e6ec; --gray-border-2: #d6dee6; --gray-border-3: #c8d0d8;
   --blue-bg-2: #edf7fd; --blue-border-1: #d3e8f5; --blue-border-2: #c9e0ee; --hero-tint: #d1f4ff;
-  --win-tint: #e3f4e3; --lose-tint: #fde7e2;
+  /* Võit/kaotus: värvipimedusele sobiv sinine–oranž paar (mitte roheline–punane) + alati teine vihje: muster, sümbol või sõna. */
+  --gain: #0072b2; --gain-text: #005a9c; --gain-tint: #e5f0f8;
+  --loss: #e69f00; --loss-text: #a64b00; --loss-tint: #fdf1dc;
+  --accept: #007a33;
   --font-serif: Merriweather, Georgia, "Times New Roman", serif;
   --font-sans: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --r: 6px; --r-lg: 8px; --r-xl: 16px;
@@ -37,7 +40,7 @@ button { font: inherit; }
 .top { background: var(--white); box-shadow: 0 1px 0 0 rgba(0,0,0,0.08); padding-inline: 16px; }
 .top-in { max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; flex-wrap: wrap; padding-block: 8px; }
 .wordmark { font-family: var(--font-serif); font-weight: 700; color: var(--navy); font-size: 20px; letter-spacing: -0.01em; }
-.wordmark span { color: var(--bright-blue); }
+.wordmark span { color: var(--blue); } /* bright-blue on tekstina liiga hele (2,6:1) */
 .chip { font-size: 12px; line-height: 16px; color: var(--text-navy-2); background: var(--blue-bg-2); border: 1px solid var(--blue-border-1); border-radius: 999px; padding: 4px 10px; }
 
 .wrap { padding-inline: 16px; padding-block: 24px 64px; }
@@ -56,7 +59,12 @@ h2 { font-size: 28px; line-height: 36px; }
 .lead { font-size: 18px; line-height: 28px; color: var(--navy); margin: 0; }
 .small { font-size: 14px; line-height: 20px; color: var(--text-2); }
 .num { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
-.red { color: var(--red); } .green { color: var(--green); }
+.loss { color: var(--loss-text); } .gain { color: var(--gain-text); }
+.sw-gain { background: var(--gain); }
+.sw-loss { background: repeating-linear-gradient(45deg, var(--loss) 0 3px, #fff 3px 5px); box-shadow: inset 0 0 0 1px var(--loss); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* Puutealad vähemalt 44 px (WCAG 2.5.5 / Apple HIG) */
+.btn, .seg button, .chips button, .chips4 button, .chips1 button, .chips5 button, .odds, .game, .mute { min-height: 44px; }
 .hl { background-image: linear-gradient(var(--yellow), var(--yellow)); background-position: 0 0.78em; background-repeat: repeat-x; background-size: 0.4em 0.4em; padding: 0 0.08em; }
 a { color: var(--blue); text-decoration-color: rgba(0,108,230,0.3); text-underline-offset: 0.125em; }
 a:hover { text-decoration-color: currentColor; }
@@ -98,16 +106,16 @@ a:hover { text-decoration-color: currentColor; }
 .odds[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
 .odds[aria-pressed="true"] .lbl { color: var(--blue-border-2); }
 .odds[aria-pressed="true"] .val { color: var(--white); }
-.odds.up { box-shadow: inset 0 -3px 0 var(--green); animation: fu 1.1s ease-out 2; }
-.odds.down { box-shadow: inset 0 -3px 0 var(--red); animation: fd 1.1s ease-out 2; }
-.odds.up .val::after { content: " ▲"; font-size: 11px; color: var(--green); }
-.odds.down .val::after { content: " ▼"; font-size: 11px; color: var(--red); }
+.odds.up { box-shadow: inset 0 -3px 0 var(--gain); animation: fu 1.1s ease-out 2; }
+.odds.down { box-shadow: inset 0 -3px 0 var(--loss); animation: fd 1.1s ease-out 2; }
+.odds.up .val::after { content: " ▲"; font-size: 11px; color: var(--gain-text); }
+.odds.down .val::after { content: " ▼"; font-size: 11px; color: var(--loss-text); }
 .odds[aria-pressed="true"].up .val::after, .odds[aria-pressed="true"].down .val::after { color: var(--yellow); }
-@keyframes fu { 0% { background: var(--win-tint); } 100% { background: var(--white); } }
-@keyframes fd { 0% { background: var(--lose-tint); } 100% { background: var(--white); } }
+@keyframes fu { 0% { background: var(--gain-tint); } 100% { background: var(--white); } }
+@keyframes fd { 0% { background: var(--loss-tint); } 100% { background: var(--white); } }
 .ticker { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; line-height: 18px; }
 .ticker .live { color: var(--red); font-weight: 600; letter-spacing: 0.04em; }
-.ticker .live::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); margin-right: 6px; animation: blink 1s steps(2) infinite; }
+.ticker .live::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); margin-right: 6px; animation: blink 1s steps(2) 5; } /* WCAG 2.2.2: vilkumine lõpeb 5 s jooksul */
 @keyframes blink { 50% { opacity: 0.2; } }
 
 /* Bet slip */
@@ -116,7 +124,7 @@ a:hover { text-decoration-color: currentColor; }
 .badge { background: var(--yellow); color: var(--navy); border-radius: 999px; padding: 0 10px; font-size: 12px; font-weight: 700; line-height: 20px; }
 .slip-body { padding: 16px; display: grid; gap: 12px; }
 .slip-sel { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--gray-border-3); }
-.win { font-size: 24px; line-height: 32px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+.win { font-size: 24px; line-height: 32px; font-weight: 700; color: var(--gain-text); font-variant-numeric: tabular-nums; }
 .nudge { background: var(--note-bg); border: 1px solid var(--note-border); border-radius: var(--r-lg); padding: 10px 12px; font-size: 14px; line-height: 20px; }
 .slip-body > *, .slip-sel > div { min-width: 0; }
 #s-win, #s-stake { white-space: nowrap; }
@@ -138,20 +146,30 @@ a:hover { text-decoration-color: currentColor; }
 .ou .odds { padding: 6px 4px; }
 .ou .odds .val { font-size: 17px; line-height: 24px; }
 .subl { font-size: 13px; line-height: 18px; color: var(--text-2); }
-.boostline { background: var(--win-tint); border-radius: var(--r); padding: 8px 10px; font-size: 14px; line-height: 20px; color: var(--navy); }
+.boostline { background: var(--gain-tint); border-radius: var(--r); padding: 8px 10px; font-size: 14px; line-height: 20px; color: var(--navy); }
 .chips4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; width: 100%; }
 .chips4 button { padding: 6px 4px; border: 1px solid var(--blue); border-radius: var(--r); background: var(--white); color: var(--blue); font: inherit; font-size: 14px; cursor: pointer; }
 .chips4 button[aria-pressed="true"] { background: var(--blue); color: var(--white); }
 .legs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .legs li { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--gray-border-3); font-size: 14px; line-height: 20px; }
 .legs li > span:first-child { min-width: 0; }
-.legs .boost { color: var(--green); font-weight: 500; }
+.legs .boost { color: var(--gain-text); font-weight: 500; }
 #k-win { white-space: nowrap; font-size: 20px; line-height: 28px; }
-.settled td .ok { color: var(--green); font-weight: 600; } .settled td .no { color: var(--red); font-weight: 600; }
+.settled td .ok { color: var(--gain-text); font-weight: 600; } .settled td .no { color: var(--loss-text); font-weight: 600; }
 .ctl { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .ctl li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--gray-border-1); font-size: 14px; line-height: 20px; }
 .ctl .tag { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 0 8px; white-space: nowrap; align-self: start; }
-.ctl .yes { background: var(--win-tint); color: var(--green); } .ctl .noc { background: var(--gray-bg-2); color: var(--text-2); }
+.fbq { display: grid; gap: 8px; }
+.fbq > b { color: var(--navy); font-weight: 600; }
+.chips1 { display: grid; gap: 6px; }
+.chips1 button, .chips5 button { padding: 8px 12px; border: 1px solid var(--blue); border-radius: var(--r); background: var(--white); color: var(--blue); font: inherit; cursor: pointer; text-align: left; }
+.chips5 { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; }
+.chips5 button { text-align: center; font-weight: 600; }
+.chips1 button[aria-pressed="true"], .chips5 button[aria-pressed="true"] { background: var(--blue); color: var(--white); }
+.fbtext { width: 100%; min-height: 72px; font: inherit; padding: 8px 12px; border: 1px solid var(--gray-border-3); border-radius: var(--r); resize: vertical; }
+.fbtext:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(0,108,230,0.25); }
+.loosnote { margin: 0; text-align: center; }
+.ctl .yes { background: var(--gain-tint); color: var(--gain-text); } .ctl .noc { background: var(--gray-bg-2); color: var(--text-2); }
 .timer { font-size: 13px; color: var(--red); font-weight: 500; text-align: center; }
 
 /* Wheel */
@@ -170,14 +188,14 @@ a:hover { text-decoration-color: currentColor; }
 /* Phone call */
 .phone { width: min(320px, 100%); margin: 0 auto; min-height: 540px; border-radius: 40px; background: var(--navy); color: var(--white); display: flex; flex-direction: column; align-items: center; padding: 52px 24px 36px; gap: 6px; text-align: center; box-shadow: 0 0 0 8px #0b1a2e, 0 18px 40px rgba(0,47,99,0.35); }
 .avatar { width: 112px; height: 112px; border-radius: 50%; background: var(--hero-tint); color: var(--navy); display: grid; place-items: center; font-family: var(--font-serif); font-size: 44px; font-weight: 700; margin-bottom: 14px; }
-.ringing .avatar { animation: ring 1.4s ease-out infinite; }
+.ringing .avatar { animation: ring 1.4s ease-out 4; }
 @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(209,244,255,0.6); } 100% { box-shadow: 0 0 0 26px rgba(209,244,255,0); } }
 .caller { font-family: var(--font-serif); font-size: 30px; line-height: 38px; font-weight: 700; }
 .callsub { color: var(--blue-border-2); }
 .quote { margin: 20px 0 0; font-family: var(--font-serif); font-style: italic; font-size: 19px; line-height: 30px; text-wrap: balance; }
 .call-actions { margin-top: auto; display: flex; gap: 64px; padding-top: 24px; }
 .cbtn { width: 72px; height: 72px; border-radius: 50%; border: 0; color: var(--white); cursor: pointer; font-size: 13px; font-weight: 500; }
-.cbtn.no { background: var(--red); } .cbtn.yes { background: var(--green-light); }
+.cbtn.no { background: var(--red); } .cbtn.yes { background: var(--accept); }
 .after-call { margin-top: auto; padding-top: 24px; width: 100%; }
 .btn-onnavy { background: var(--white); color: var(--navy); border-color: var(--white); }
 .btn-onnavy:hover { background: var(--hero-tint); }
@@ -235,8 +253,9 @@ th:first-child, td:first-child { text-align: left; }
 </div></header>
 
 <main class="wrap"><div class="app">
+  <div id="sr" class="sr-only" aria-live="polite"></div>
   <ol class="steps" id="steps" aria-label="Mängu sammud">
-    <li><span>1 Sina</span></li><li><span>2 Panus</span></li><li><span>3 Ratas</span></li><li><span>4 Kõne</span></li><li><span>5 Tõde</span></li>
+    <li><span>1 Sina</span></li><li><span>2 Panus</span></li><li><span>3 Ratas</span></li><li><span>4 Kõne</span></li><li><span>5 Tõde</span></li><li><span>6 Arvan</span></li>
   </ol>
 
   <!-- 1 Seadistus -->
@@ -246,6 +265,7 @@ th:first-child, td:first-child { text-align: left; }
       <button type="button" class="game" data-game="kingitus" aria-pressed="false"><b>Kingitus tulevasele minale</b><span>Sama otsus ilma kasiinovõteteta</span></button>
       <button type="button" class="game" data-game="kupong" aria-pressed="false"><b>Elu-kupong</b><span>Spordiennustus: ajastus, fond, tervis ja majandus ühel kupongil</span></button>
     </div>
+    <p class="small loosnote" id="loosnote" hidden></p>
     <div class="hero">
       <h1>Millal pensionile minna?</h1>
       <p class="lead" id="lead1">Iga ooteaasta tõstab sinu riiklikku pensioni kogu eluks. Aga ainult siis, kui elad piisavalt kaua. <span class="hl">Paneme oma elu panuseks</span> ja vaatame, mida tulevane sina sellest arvab.</p>
@@ -277,7 +297,7 @@ th:first-child, td:first-child { text-align: left; }
       <div class="slip-head"><span id="slip-h">Sinu kupong</span><span class="badge" id="slip-b">1 valik</span></div>
       <div class="slip-body">
         <div class="slip-sel"><div><div id="s-title">Lükkan pensioni 3 aastat edasi</div><div class="small" id="s-sub">Pension algab 69-aastaselt</div></div><span class="num" id="s-odds">1,18</span></div>
-        <div class="line" style="padding:0"><span id="s-stake-l">Panus</span><span class="num red" id="s-stake">−28 800 €</span></div>
+        <div class="line" style="padding:0"><span id="s-stake-l">Panus</span><span class="num loss" id="s-stake">−28 800 €</span></div>
         <div class="line" style="padding:0;align-items:baseline"><span id="s-win-l">Võimalik võit</span><span class="win" id="s-win">+147 € kuus</span></div>
         <div class="nudge" id="s-nudge" hidden>Kindel valik? <b>Julgemad mängijad valivad +5 aastat.</b> Koefitsient 1,34.</div>
         <button class="btn btn-primary btn-lg btn-block" id="go-spin">Keeruta oma elu</button>
@@ -334,6 +354,23 @@ th:first-child, td:first-child { text-align: left; }
     </div>
   </section>
 
+  <!-- 6 Tagasiside -->
+  <section data-screen="7" class="app" hidden>
+    <div><h2>Mida sa sellest arvad?</h2><p class="small" style="margin:6px 0 0">Vastused on anonüümsed. Me ei salvesta sinu sünniaastat, pensioni, sambavara ega tervisevalikuid.</p></div>
+    <form id="fb" class="card" novalidate>
+      <div class="fbq"><b id="fq1">1. Küsimus</b><div class="chips1" id="fq1o" role="group" aria-labelledby="fq1"></div></div>
+      <div class="fbq"><b id="fq2">2. Kas mäng pani sind oma pensioni peale mõtlema?</b><div class="chips5" id="fq2o" role="group" aria-labelledby="fq2"></div><div class="row subl"><span>1 = üldse mitte</span><span>5 = väga</span></div></div>
+      <div class="fbq"><b id="fq3">3. Mida teeksid järgmiseks?</b><div class="chips1" id="fq3o" role="group" aria-labelledby="fq3"></div></div>
+      <div class="fbq"><b id="fq4">4. Mäng tundus…</b><div class="chips1" id="fq4o" role="group" aria-labelledby="fq4"></div></div>
+      <div class="fbq"><b id="fq5">5. Mis kirjeldab sind kõige paremini?</b><div class="chips1" id="fq5o" role="group" aria-labelledby="fq5"></div></div>
+      <div class="fbq" id="fq6w" hidden><b id="fq6">Mängisid mitut mängu. Milline oli parem?</b><div class="chips1" id="fq6o" role="group" aria-labelledby="fq6"></div></div>
+      <div class="fbq"><label for="fq7"><b style="color:var(--navy)">6. Üks asi, mis jäi meelde?</b></label><textarea id="fq7" class="fbtext" maxlength="280" placeholder="Vabatahtlik"></textarea></div>
+      <p class="small" id="fb-need" role="alert" style="margin:0" hidden>Vasta palun vähemalt küsimustele 1–3.</p>
+      <button type="submit" class="btn btn-primary btn-lg btn-block" id="fb-send">Saada</button>
+    </form>
+    <div class="card" id="fb-thanks" hidden><h2 style="font-size:22px;line-height:30px">Aitäh!</h2><p class="small" style="margin:0">Sinu vastus aitab valida, milline mäng häkatonil esitada. Proovi ka teist mängu, siis saame neid võrrelda.</p><button type="button" class="btn btn-primary btn-lg btn-block" id="fb-other">Vali teine mäng</button></div>
+  </section>
+
   <!-- 3 Ratas -->
   <section data-screen="3" class="app" hidden>
     <div><h2 id="w-title">Ratas otsustab</h2><p class="small" style="margin:6px 0 0" id="w-sub">Sektorite suurus on sinu tõenäosus surra eri vanuses.</p></div>
@@ -372,8 +409,8 @@ th:first-child, td:first-child { text-align: left; }
       <div class="tile"><span class="k">Keskmine tulemus</span><span class="v" id="t-ev">–</span><span class="small">kõigi elude peale</span></div>
     </div>
     <div class="chart-card">
-      <div><b style="color:var(--navy)">Kui tõenäoline on surra igas vanuses</b><div class="small">Iga tulp on üks eluaasta. Värv näitab, kas sinu valik oleks selles elus võitnud.</div></div>
-      <div class="chart-wrap"><svg id="chart" viewBox="0 0 560 260" role="img" aria-label="Surma tõenäosus vanuse järgi ja sinu valiku tulemus"></svg><div class="tip" id="tip" hidden></div></div>
+      <div><b style="color:var(--navy)">Kui tõenäoline on surra igas vanuses</b><div class="small">Iga tulp on üks eluaasta. Sinine tulp: sinu valik oleks selles elus võitnud; oranž triibuline: kaotanud.</div></div>
+      <div class="chart-wrap" tabindex="0" role="region" aria-label="Graafik: surma tõenäosus vanuse järgi, keritav"><svg id="chart" viewBox="0 0 560 260" role="img" aria-label="Surma tõenäosus vanuse järgi ja sinu valiku tulemus"></svg><div class="tip" id="tip" hidden></div></div>
       <ul class="legend" id="c-legend" style="justify-content:flex-start"></ul>
       <details><summary>Näita tabelina</summary><div style="overflow-x:auto;margin-top:8px"><table id="tbl"></table></div></details>
     </div>
@@ -415,6 +452,7 @@ th:first-child, td:first-child { text-align: left; }
 
     <div class="note"><b>Päris otsuses loeb rohkem kui ratas:</b> sinu tervis, muud sissetulekud, kas sul on kaaslane ja II–III samba vara. Paindliku pensioniga võid võtta ka poole pensioni ja lasta teisel poolel kasvada. <a href="https://sotsiaalkindlustusamet.ee/en/pension-and-benefits/types-pensions/deferred-old-age-pension" target="_blank" rel="noopener">Loe Sotsiaalkindlustusametist</a>.</div>
 
+    <div class="card" style="background:var(--hero-tint);box-shadow:none"><b style="color:var(--navy)">Aita meil valida, milline mäng häkatonile viia.</b><span class="small" style="margin:0;color:var(--navy)">Kuus lühikest küsimust, alla minuti. Vastused on anonüümsed.</span><button class="btn btn-primary btn-lg btn-block" id="go-fb">Anna tagasisidet</button></div>
     <div class="btn-row"><button class="btn btn-primary btn-lg" id="again">Proovi teist panust</button><button class="btn btn-outline btn-lg" id="restart">Alusta otsast</button></div>
     <p class="raamlink small"><button type="button" class="btn btn-outline" id="other-game">Vali teine mäng</button></p>
 
@@ -449,7 +487,16 @@ th:first-child, td:first-child { text-align: left; }
   var VOICES = { M: "albert", N: "kylli" }; // vanema kõlaga hääled; vahetatavad testides
   // Raam: ?raam=kingitus näitab sama otsust kingitusena tulevasele minale (ilma kasiinovõteteta). Vaikimisi panus.
   // Mäng: panus (kasiino), kingitus (?raam=kingitus) või kupong (?raam=kupong, spordiennustus). Valitav avaekraanil.
-  var GAME = (function () { try { var r = new URLSearchParams(location.search).get("raam"); return r === "kingitus" || r === "kupong" ? r : "panus"; } catch (e) { return "panus"; } })();
+  // Kui aadressil pole ?raam=, loositakse mäng (sama telefon saab järgmisel korral sama loosi). Mängija võib vahetada.
+  var GAMES = ["panus", "kingitus", "kupong"];
+  var LOOS = (function () {
+    var r = null; try { r = new URLSearchParams(location.search).get("raam"); } catch (e) {}
+    if (GAMES.indexOf(r) >= 0) return { game: r, src: "link" };
+    var saved = null; try { saved = localStorage.getItem("mina-loos"); } catch (e) {}
+    if (GAMES.indexOf(saved) < 0) { saved = GAMES[Math.floor(Math.random() * GAMES.length)]; try { localStorage.setItem("mina-loos", saved); } catch (e) {} }
+    return { game: saved, src: saved };
+  })();
+  var GAME = LOOS.game;
   var GIFT = GAME === "kingitus";
   st.act = "reis";
   var ACT = {
@@ -492,10 +539,15 @@ th:first-child, td:first-child { text-align: left; }
   var $ = function (id) { return document.getElementById(id); };
 
   // ---------- screens ----------
+  var shownOnce = false;
+  function say(t) { var r = $("sr"); r.textContent = ""; setTimeout(function () { r.textContent = t; }, 50); }
   function show(n) {
     document.querySelectorAll("[data-screen]").forEach(function (s) { s.hidden = s.getAttribute("data-screen") !== String(n); });
-    var sn = n === 6 ? 2 : n;
-    document.querySelectorAll("#steps li").forEach(function (li, i) { li.className = i + 1 === sn ? "on" : i + 1 < sn ? "done" : ""; });
+    var sn = n === 6 ? 2 : n === 7 ? 6 : n;
+    document.querySelectorAll("#steps li").forEach(function (li, i) { li.className = i + 1 === sn ? "on" : i + 1 < sn ? "done" : ""; if (i + 1 === sn) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
+    // Ekraanilugeja ja klaviatuur: pärast sammu vahetust liigub fookus uue ekraani pealkirjale.
+    if (shownOnce) { var sec = document.querySelector('[data-screen="' + n + '"]'), hd = sec && sec.querySelector("h1, h2, .caller"); if (hd) { hd.setAttribute("tabindex", "-1"); try { hd.focus({ preventScroll: true }); } catch (e) {} } }
+    shownOnce = true;
     if (n === 2) startTimers(); else stopTimers();
     if (n !== 4) { stopRing(); if (voiceAudio) { try { voiceAudio.pause(); } catch (e) {} } }
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
@@ -525,7 +577,7 @@ th:first-child, td:first-child { text-align: left; }
       document.querySelectorAll("[data-act]").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
     });
   });
-  $("go-bet").addEventListener("click", function () { readSetup(); if (GAME === "kupong") { kOpen(); show(6); return; } buildOdds(); updateSlip(); show(2); });
+  $("go-bet").addEventListener("click", function () { readSetup(); track("start"); if (GAME === "kupong") { kOpen(); show(6); return; } buildOdds(); updateSlip(); show(2); });
 
   // ---------- step 2 ----------
   var KS = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
@@ -609,10 +661,14 @@ th:first-child, td:first-child { text-align: left; }
     var k = st.k; curDist = dist(k);
     var be = GAME === "kupong" ? beK(k) : breakEven(k), Fbe = cdfAt(curDist, be) * 360;
     var earlyIsMine = k < alt(k);
-    var cEarly = earlyIsMine ? "var(--green)" : "var(--red)", cLate = earlyIsMine ? "var(--red)" : "var(--green)";
-    var svg = '<circle r="152" fill="var(--navy)"/>';
+    var GAINF = "var(--gain)", LOSSF = "url(#hatch-w)";
+    var cEarly = earlyIsMine ? GAINF : LOSSF, cLate = earlyIsMine ? LOSSF : GAINF;
+    var svg = '<defs><pattern id="hatch-w" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><rect width="8" height="8" fill="#e69f00"/><rect width="3" height="8" fill="#ffffff" fill-opacity="0.55"/></pattern></defs><circle r="152" fill="var(--navy)"/>';
     svg += '<path d="' + arc(140, 0, Math.max(0.01, Fbe)) + '" fill="' + cEarly + '"/>';
     svg += '<path d="' + arc(140, Math.min(359.99, Fbe), 360) + '" fill="' + cLate + '"/>';
+    svg += '<circle r="140" fill="none" stroke="#ffffff" stroke-width="2"/>';
+    var pE = Math.round(Fbe / 3.6), mineP = earlyIsMine ? pE : 100 - pE;
+    $("wsvg").setAttribute("aria-label", "Elu-ratas: sinine osa " + mineP + "% (sinu valik võidab), oranž triibuline osa " + (100 - mineP) + "% (kaotab).");
     // year spokes and labels
     for (var age = Math.ceil(curDist.A0); age <= 100; age++) {
       var a = cdfAt(curDist, age) * 360, rr = (a - 90) * Math.PI / 180;
@@ -625,7 +681,7 @@ th:first-child, td:first-child { text-align: left; }
       if (age <= curDist.A0) return;
       var a = cdfAt(curDist, age) * 360; if (a - lastA < 14 || a > 352) return; lastA = a;
       var rr = (a - 90) * Math.PI / 180, x = 118 * Math.cos(rr), y = 118 * Math.sin(rr);
-      svg += '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="var(--white)" font-size="13" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(' + a.toFixed(1) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')">' + age + "</text>";
+      svg += '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="var(--navy)" stroke="#ffffff" stroke-width="3" paint-order="stroke" font-size="13" font-weight="700" text-anchor="middle" dominant-baseline="central" transform="rotate(' + a.toFixed(1) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')">' + age + "</text>";
     });
     svg += '<circle r="146" fill="none" stroke="var(--yellow)" stroke-width="2" stroke-dasharray="2 10"/>';
     $("wsvg").innerHTML = svg;
@@ -634,9 +690,9 @@ th:first-child, td:first-child { text-align: left; }
     var mine = earlyIsMine ? "Sured enne " + ageYM(be) : "Elad üle " + ageYM(be);
     var other = earlyIsMine ? "Elad üle " + ageYM(be) : "Sured enne " + ageYM(be);
     var wl = GIFT ? ["Kingitus tasub end ära: ", "Ei tasu: "] : ["Sinu valik võidab: ", "Kaotab: "];
-    $("w-legend").innerHTML = '<li><span class="dot" style="background:var(--green)"></span>' + wl[0] + mine.toLowerCase() + '</li><li><span class="dot" style="background:var(--red)"></span>' + wl[1] + other.toLowerCase() + "</li>";
-    if (GAME === "kupong" && be >= 110) $("w-legend").innerHTML = '<li><span class="dot" style="background:' + (earlyIsMine ? "var(--green)" : "var(--red)") + '"></span>' + (earlyIsMine ? "Sinu ajastus võidab peaaegu igas elus" : "Kui raha kasvab vahepeal, ei tasu ootamine end ära üheski realistlikus elus") + "</li>";
-    if (GAME === "kupong") { $("w-title").textContent = "Elu loosimine"; $("w-sub").textContent = "Ratas loosib sinu eluea ja majanduse. Sektorid arvestavad sinu lubadust riigile; roheline on ajastuse panuse võit."; return; }
+    $("w-legend").innerHTML = '<li><span class="dot sw-gain"></span>' + wl[0] + mine.toLowerCase() + '</li><li><span class="dot sw-loss"></span>' + wl[1] + other.toLowerCase() + "</li>";
+    if (GAME === "kupong" && be >= 110) $("w-legend").innerHTML = '<li><span class="dot ' + (earlyIsMine ? "sw-gain" : "sw-loss") + '"></span>' + (earlyIsMine ? "Sinu ajastus võidab peaaegu igas elus" : "Kui raha kasvab vahepeal, ei tasu ootamine end ära üheski realistlikus elus") + "</li>";
+    if (GAME === "kupong") { $("w-title").textContent = "Elu loosimine"; $("w-sub").textContent = "Ratas loosib sinu eluea ja majanduse. Sektorid arvestavad sinu lubadust riigile. Sinine osa: ajastuse panus võidab; oranž triibuline: kaotab."; return; }
     $("w-title").textContent = GIFT ? kLabel(st.k) + " · pension " + gpct(st.k) : kLabel(st.k) + " · koefitsient " + odds(st.k);
     $("w-sub").textContent = k === 0 ? "Võrdleme sinu valikut 3-aastase ootamisega. Sektori suurus on tõenäosus surra selles vanuses." : "Võrdleme sinu valikut õigel ajal minekuga. Sektori suurus on tõenäosus surra selles vanuses.";
   }
@@ -652,6 +708,7 @@ th:first-child, td:first-child { text-align: left; }
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setTimeout(function () {
       $("hub-age").textContent = Math.floor(D); $("hub-sub").textContent = "aastat";
+      say("Ratas peatus. See elu kestis " + Math.floor(D) + " aastat. Sulle helistatakse.");
       setTimeout(function () { prepCall(); show(4); startRing(); }, 1300);
     }, reduce ? 100 : 4700);
   });
@@ -736,7 +793,7 @@ th:first-child, td:first-child { text-align: left; }
   }
   $("accept").addEventListener("click", function () { answer(false); });
   $("decline").addEventListener("click", function () { answer(true); });
-  $("go-truth").addEventListener("click", function () { buildTruth(); show(5); });
+  $("go-truth").addEventListener("click", function () { buildTruth(); show(5); track("reveal"); });
   $("mute").addEventListener("click", function () { st.audio = !st.audio; $("mute").textContent = st.audio ? "Heli välja" : "Heli sisse"; if (!st.audio) { stopRing(); if (voiceAudio) { try { voiceAudio.pause(); } catch (e) {} } } });
 
   // ring tone (starts only after the player has clicked)
@@ -764,7 +821,7 @@ th:first-child, td:first-child { text-align: left; }
     $("t-be").textContent = ageYM(be);
     $("t-be2").textContent = k < a ? "kui elad kauem, oleks ootamine tasunud" : "pead elama kauem, et ootamine tasuks";
     $("t-ev").textContent = eurSigned(ev);
-    $("t-ev").className = "v " + (ev >= 0 ? "green" : "red");
+    $("t-ev").className = "v " + (ev >= 0 ? "gain" : "loss");
     var cmp = a === 0 ? "õigel ajal minekuga" : "3-aastase ootamisega";
     $("t-lead").textContent = "Ratas valis " + Math.floor(st.D) + "-aastase elu. Kõigi sinu võimalike elude peale võidab valik „" + kLabel(k).toLowerCase() + "“ võrreldes " + cmp + " " + pct(pWin) + " juhtudest.";
 
@@ -781,7 +838,7 @@ th:first-child, td:first-child { text-align: left; }
 
     var tr = [];
     if (GIFT) tr.push("<b>Sama otsus, teine raam.</b> Nimetasime ootamist kingituseks tulevasele minale, mitte panuseks. Numbrid on täpselt samad mis kasiino-versioonis. Katsetes on side tulevase minaga (nt vananenud näopilt) suurendanud säästmist (Hershfield jt 2011), kuigi hilisemates kordustes on mõju olnud väiksem. Raam muudab tunnet, mitte tõenäosust.");
-    else tr.push("<b>Koefitsiendid „uuenesid“ " + st.refreshes + " korda, aga ükski number ei muutunud.</b> Vilkuv roheline ja punane tekitavad kiirustamise tunde. Pensionikordajad on seaduses kirjas ega liigu.");
+    else tr.push("<b>Koefitsiendid „uuenesid“ " + st.refreshes + " korda, aga ükski number ei muutunud.</b> Vilkuvad nooled ja värvid tekitavad kiirustamise tunde. Pensionikordajad on seaduses kirjas ega liigu.");
     if (!GIFT) tr.push("<b>Taimer oli võlts.</b> „Pakkumine kehtib 0:20“ algas iga kord uuesti. Pensioniotsusel pole tähtaega ja kiirustav inimene ei kaalu.");
     if (st.nudged && !GIFT) tr.push("<b>Kui valisid õigel ajal, ütlesime, et julgemad mängijad valivad +5.</b> Kasiino õõnestab kindlat valikut ja premeerib suuremat riski.");
     tr.push("<b>Ratas näitas ühte elu.</b> Ühe pöörde tulemus on anekdoot. Otsus peab arvestama kõiki elusid ülal graafikul. Erinevalt kasiinost olid meie sektorid ausad ja nähtavad enne pööret.");
@@ -798,14 +855,14 @@ th:first-child, td:first-child { text-align: left; }
     var n = bins.length, bw = iw / n, gap = Math.min(2, bw * 0.25);
     var x = function (age) { return L + (age - bins[0].age) * bw; };
     var yv = function (p) { return T + ih - (p / top) * ih; };
-    var s = "";
+    var s = '<defs><pattern id="hatch-c" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><rect width="6" height="6" fill="#e69f00"/><rect width="2" height="6" fill="#ffffff" fill-opacity="0.6"/></pattern></defs>';
     [0, top / 2, top].forEach(function (v) {
       s += '<line x1="' + L + '" x2="' + (W - Rr) + '" y1="' + yv(v) + '" y2="' + yv(v) + '" stroke="var(--gray-border-1)"/>';
       s += '<text x="' + (L - 6) + '" y="' + yv(v) + '" font-size="11" fill="var(--text-2)" text-anchor="end" dominant-baseline="central">' + pct(v) + "</text>";
     });
     bins.forEach(function (b, i) {
       var h = Math.max(0, (b.p / top) * ih), bx = x(b.age) + gap / 2, w = Math.max(1, bw - gap), by = T + ih - h;
-      var col = b.d > 0 ? "var(--green)" : "var(--red)";
+      var col = b.d > 0 ? "var(--gain)" : "url(#hatch-c)";
       var rr = Math.min(3, w / 2, h);
       s += '<path data-i="' + i + '" d="M' + bx + " " + (T + ih) + " V" + (by + rr) + " Q" + bx + " " + by + " " + (bx + rr) + " " + by + " H" + (bx + w - rr) + " Q" + (bx + w) + " " + by + " " + (bx + w) + " " + (by + rr) + " V" + (T + ih) + ' Z" fill="' + col + '"/>';
       s += '<rect data-i="' + i + '" x="' + x(b.age) + '" y="' + T + '" width="' + bw + '" height="' + ih + '" fill="transparent"/>';
@@ -823,7 +880,7 @@ th:first-child, td:first-child { text-align: left; }
     var dx = L + (Math.min(D, 100.99) - bins[0].age) * bw;
     s += '<path d="M' + (dx - 6) + " " + (T + ih + 12) + " L" + (dx + 6) + " " + (T + ih + 12) + " L" + dx + " " + (T + ih + 2) + ' Z" fill="var(--yellow)" stroke="var(--navy)" stroke-width="1"/>';
     $("chart").innerHTML = s;
-    $("c-legend").innerHTML = '<li><span class="dot" style="background:var(--green)"></span>Sinu valik võidab selles elus</li><li><span class="dot" style="background:var(--red)"></span>Kaotab</li><li><span class="dot" style="background:var(--yellow);border:1px solid var(--navy)"></span>Ratta valitud elu (' + Math.floor(D) + " a)</li>";
+    $("c-legend").innerHTML = '<li><span class="dot sw-gain"></span>Sinu valik võidab selles elus</li><li><span class="dot sw-loss"></span>Kaotab</li><li><span class="dot" style="background:var(--yellow);border:1px solid var(--navy)"></span>Ratta valitud elu (' + Math.floor(D) + " a)</li>";
     var tip = $("tip"), svg = $("chart");
     function move(ev) {
       var t = ev.target; if (!t.hasAttribute || !t.hasAttribute("data-i")) { tip.hidden = true; return; }
@@ -1083,7 +1140,7 @@ th:first-child, td:first-child { text-align: left; }
     $("t-lead").textContent = "Ratas valis " + Math.floor(L.D) + "-aastase elu ja ühe majanduse. Siin on sinu kupong kõigi " + NSIM + " elu peale.";
     var rows = legs.map(function (l) {
       var ok = l.ok(L);
-      return "<tr><td>" + l.name + '</td><td>' + fmtOdds(l.odds) + "</td><td>" + pct(l.p) + '</td><td><span class="' + (ok ? "ok" : "no") + '">' + (ok ? "võitis" : "kaotas") + "</span></td></tr>";
+      return "<tr><td>" + l.name + '</td><td>' + fmtOdds(l.odds) + "</td><td>" + pct(l.p) + '</td><td><span class="' + (ok ? "ok" : "no") + '">' + (ok ? "✓ võitis" : "✗ kaotas") + "</span></td></tr>";
     }).join("");
     if (KM.gain > 0.05) rows += '<tr><td>Lubadus riigile</td><td>boost</td><td>+' + yrs1(KM.gain) + ' a</td><td><span class="ok">eeldame, et pidasid</span></td></tr>';
     // mis muutis kuusissetulekut
@@ -1145,6 +1202,66 @@ th:first-child, td:first-child { text-align: left; }
   }
   document.querySelectorAll("[data-game]").forEach(function (b) { b.addEventListener("click", function () { applyMode(b.dataset.game, true); }); });
   applyMode(GAME, false);
+
+  // ---------- mõõtmine: 3 anonüümset sündmust + tagasiside (otsuste logi 7.10) ----------
+  var SID = (function () { try { return crypto.randomUUID(); } catch (e) { return "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); } })();
+  var PLAYED = [];
+  function track(ev, vastus) {
+    if (ev === "start" && PLAYED.indexOf(GAME) < 0) PLAYED.push(GAME);
+    var body = { sid: SID, ev: ev, loos: LOOS.src, mang: GAME };
+    if (vastus) body.vastus = vastus;
+    try { fetch("/api/s", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), keepalive: true }).catch(function () {}); } catch (e) {}
+  }
+  if (LOOS.src !== "link") {
+    $("loosnote").textContent = "Sulle loositi „" + { panus: "Pensioniratas", kingitus: "Kingitus tulevasele minale", kupong: "Elu-kupong" }[LOOS.game] + "“. Võid valida ka teise mängu.";
+    $("loosnote").hidden = false;
+  }
+
+  var COMP = {
+    panus: { q: "Millest sõltub kõige rohkem, kas pensioni edasilükkamine end ära tasub?", o: [["Kui kaua ma elan", 1], ["Kas koefitsient parasjagu tõuseb", 0], ["Kui kiiresti otsustan", 0], ["Mida teised valivad", 0]] },
+    kingitus: { q: "Millest sõltub kõige rohkem, kas kingitus tulevasele minale kohale jõuab?", o: [["Kui kaua ma elan", 1], ["Kui suure kingituse teen", 0], ["Mida ma pensionil teha tahan", 0], ["Pensionifondi tootlusest", 0]] },
+    kupong: { q: "Mis oli sinu pensioni puhul kõige rohkem sinu enda kontrolli all?", o: [["Fondivalik ja tervis", 1], ["Inflatsioon ja turud", 0], ["Kõik võrdselt", 0], ["Mitte miski", 0]] }
+  };
+  var FB = {};
+  function chipGroup(id, opts, key, cls) {
+    var c = $(id); c.innerHTML = "";
+    opts.forEach(function (o) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = o[0];
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () {
+        FB[key] = o[1];
+        c.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        if (key === "moistis") FB.vastus = o[0];
+      });
+      c.appendChild(b);
+    });
+  }
+  function openFeedback() {
+    FB = {};
+    var cq = COMP[GAME];
+    $("fq1").textContent = "1. " + cq.q;
+    chipGroup("fq1o", cq.o, "moistis");
+    chipGroup("fq2o", [["1", 1], ["2", 2], ["3", 3], ["4", 4], ["5", 5]], "moju");
+    chipGroup("fq3o", [["Kontrollin oma fonditasu", "fonditasu"], ["Vaatan oma pensioniiga ja -summat", "pensioniiga"], ["Räägin lähedasega", "lahedane"], ["Ei midagi", "midagi"]], "tegevus");
+    chipGroup("fq4o", [["Aus", "aus"], ["Manipuleeriv", "manipuleeriv"], ["Ei oska öelda", "eioska"]], "tunne");
+    chipGroup("fq5o", [["Ma ei mõtle pensionile", "eimotle"], ["Kogun, aga ei tea täpselt, mis fondides", "kogunteadmata"], ["Tean oma säästumäära ja tahaksin nõu", "saastumaar"], ["Optimeerin portfelli eesmärgi järgi", "optimeerija"], ["Mõtlen, mis saab varast pärast mind", "parand"]], "segment");
+    $("fq6w").hidden = PLAYED.length < 2;
+    var names = { panus: "Pensioniratas", kingitus: "Kingitus tulevasele minale", kupong: "Elu-kupong" };
+    chipGroup("fq6o", PLAYED.map(function (g) { return [names[g], g]; }), "eelistus");
+    $("fq7").value = ""; $("fb-need").hidden = true;
+    $("fb").hidden = false; $("fb-thanks").hidden = true;
+    show(7);
+  }
+  $("go-fb").addEventListener("click", openFeedback);
+  $("fb").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (FB.moistis === undefined || !FB.moju || !FB.tegevus) { $("fb-need").hidden = false; $("fq1o").querySelector("button").focus(); return; }
+    track("feedback", { moistis: FB.moistis, vastus: FB.vastus, moju: FB.moju, tegevus: FB.tegevus, tunne: FB.tunne || "", segment: FB.segment || "",
+      eelistus: FB.eelistus || "", meelde: $("fq7").value.slice(0, 280), mangitud: PLAYED.join(",") });
+    $("fb").hidden = true; $("fb-thanks").hidden = false; window.scrollTo(0, 0);
+    var th = $("fb-thanks").querySelector("h2"); th.setAttribute("tabindex", "-1"); try { th.focus(); } catch (e) {}
+  });
+  $("fb-other").addEventListener("click", function () { st.refreshes = 0; st.nudged = false; show(1); });
   readSetup(); buildOdds(); updateSlip(); show(1);
 })();
 </script>

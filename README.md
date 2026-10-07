@@ -69,6 +69,28 @@ Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingi
 - **Mudel:** 2000 seemnega simuleeritud elu ja majandust. Panused on seotud: lubadus muudab elukõverat ja seega ajastuse koefitsienti. Lubaduste mõju eluea kaotusena (Wood jt 2018, Doll jt 2004). Kuusissetulek = riiklik pension + sambavara jagatud eeldatava allesjäänud elueaga (fondipensioni loogika), tänases rahas. Tervelt elatud aastad Eurostati 2023 näitaja järgi.
 - **Paljastus:** sõltumatuse eeldus vs päris tõenäosus, suur koefitsient = halb panus, raha kasv vahepeal, makropanused ei muuda pensioni, „võimalik võit“ = parim 10%, populaarne kombo, petturivõtted.
 
+## Mõõtmine ja tagasiside
+
+Otsus otsuste logis 7.10. Eesmärk: valida testijate põhjal, milline mäng häkatonil esitada.
+
+- **Loos:** kui aadressil pole `?raam=`, loositakse avaekraanil üks kolmest mängust (sama brauser saab sama loosi). Mängija võib vahetada.
+- **Sündmused (anonüümne seansi-ID):** `start` (alustas mängu), `reveal` (jõudis tõe-ekraanile), `feedback` (andis tagasisidet). Kaasas ainult loositud ja mängitud mängu nimi.
+- **Tagasiside (6. ekraan):** arusaamise küsimus (õige/vale), „pani mõtlema“ 1–5, järgmine tegevus, aus/manipuleeriv, segment, eelistus (kui mängis mitut), vaba vastus kuni 280 märki.
+- **Ei salvestata:** IP-aadressi, sünniaastat, pensioni, sambavara, tervisevalikuid.
+- **Peamine mõõdik:** osa vastajatest, kes vastas arusaamise küsimusele õigesti **ja** valis mõne tegevuse (mitte „ei midagi“).
+- **Tulemused:** `/tulemused` (parool = Cloudflare secret `TULEMUSED_VOTI`, kasutajanimi ükskõik mis), `/tulemused.csv`. Vaikimisi ainult selle aadressi vastused; eelvaated lingiga „Näita ka eelvaateid“.
+- **Andmebaas:** Cloudflare D1 `mina-tagasiside` (binding `DB`, nii toodangus kui eelvaadetes). Tabelid `sundmused` ja `vastused` luuakse esimesel päringul.
+- Kohalikus testis loob `wrangler dev` kohaliku D1; tulemuste lehe jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (fail on gitignore'is).
+
+## Ligipääsetavus
+
+Siht WCAG 2.1 AA; põhimõtted on disainisüsteemi README-s („Ligipääsetavus“).
+
+- Võit/kaotus: sinine `--gain` ja oranž triibuline `--loss`, mitte roheline–punane; alati ka sõna, märk või muster.
+- Puuteala ≥ 44 px, fookus liigub sammu vahetusel pealkirjale, ratta tulemus teatatakse ekraanilugejale.
+- Vilkumine ja helin lõpevad 5 s jooksul; `prefers-reduced-motion` peatab animatsioonid.
+- `npm test` jooksutab igal ekraanil axe-core'i (WCAG 2.1 A/AA); tõsine või kriitiline viga kukutab testi.
+
 ## Käsitsi kontrollnimekiri (eelvaade telefonis)
 
 - [ ] Avaneb telefonis, teksti ei lõigata ja külgsuunas kerida ei saa.
@@ -79,6 +101,8 @@ Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingi
 - [ ] Tõde: graafik, kolm numbrit, paljastatud võtted ja tabel on olemas.
 - [ ] „Proovi teist panust“ ja „Alusta otsast“ töötavad.
 - [ ] Mõlemad sood ja vähemalt valikud −5, 0 ja +5 on läbi proovitud.
+- [ ] Ratas ja graafik on loetavad ka halltoonis (telefoni ligipääsetavuse seadetes värvifilter → halltoonid).
+- [ ] Avaekraanil on üks mäng loositud ja loosimärkus nähtav; tagasiside saatmine näitab „Aitäh!“ ja vastus jõuab /tulemused lehele.
 - [ ] Elu-kupong: mänguvalik avaekraanil, lubadus muudab ajastuse koefitsienti, kõne ja arveldatud kupong.
 - [ ] `?raam=kingitus`: tegevuse küsimus, protsendid, kingituse kupong, kõne ja paljastus raami kohta; link teise raami töötab.
 
@@ -99,6 +123,8 @@ npm test                    # teises aknas
    - Build command: tühi.
    - Deploy command: `npx wrangler deploy`.
    - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
+3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
+4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
 
 ## Allikad
 
