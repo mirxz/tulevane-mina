@@ -14,7 +14,7 @@ Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index
 ## Töövoog
 
 1. **Otsus.** Mida muudame, on kirjas [otsuste logis](https://claude.ai/code/artifact/db97d812-22e1-4c5c-a076-89b7571d2a54). Ilma otsuseta toodangusse ei liigu midagi.
-2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/reinsoni-viited`. Kiired katsetused võib teha enne claude.ai artefaktis.
+2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/tagasiside`. Kiired katsetused võib teha enne claude.ai artefaktis.
 3. **Push.** Haru läheb GitHubi. Automaatselt käivituvad:
    - GitHub Actions → suitsutest (telefon ja arvuti, kõik 5 sammu, põhiarvud);
    - Cloudflare → eelvaate-URL.
@@ -68,6 +68,10 @@ Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingi
 - **Turud:** pensioni ajastus (−3, 0, +3, +5 a) koos valikuga, kas varem saadud raha kulub või kasvab sambas; fondivalik (kallis 1,0% vs indeks 0,3%, näited); lubadus riigile (alkohol ühikutes nädalas, suitsetamine) ehk BOOST; üle/alla inflatsioon, palgakasv, indeksi tootlus (5% marginaaliga).
 - **Mudel:** 2000 seemnega simuleeritud elu ja majandust. Panused on seotud: lubadus muudab elukõverat ja seega ajastuse koefitsienti. Lubaduste mõju eluea kaotusena (Wood jt 2018, Doll jt 2004). Kuusissetulek = riiklik pension + sambavara jagatud eeldatava allesjäänud elueaga (fondipensioni loogika), tänases rahas. Tervelt elatud aastad Eurostati 2023 näitaja järgi.
 - **Paljastus:** sõltumatuse eeldus vs päris tõenäosus, suur koefitsient = halb panus, raha kasv vahepeal, makropanused ei muuda pensioni, „võimalik võit“ = parim 10%, populaarne kombo, petturivõtted.
+
+## Ülevaatus ja õigused
+
+Kuni Heidi Reinsoni ülevaatuseni on kogu sait parooliga (`PROTO_VOTI`) ja prototüübis pole viiteid tema uurimistööle ega sealsetele leidudele. Mänguelemendid jäävad inspiratsiooniks; häkatonil kasutatavad mängureegli piirangud lepitakse kokku tema tagasiside põhjal (otsuste logi). Häkatoni tulemuste varalised õigused kuuluvad Tulevale.
 
 ## Mõõtmine ja tagasiside
 
@@ -124,6 +128,7 @@ npm test                    # teises aknas
    - Deploy command: `npx wrangler deploy`.
    - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
 3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
+5. **Prototüübi parool (ülevaatuse ajaks):** samas kohas *Secret* nimega `PROTO_VOTI`. Ilma selleta on sait suletud (avatud ainult kohalikus arenduses ja CI-s). Eelvaated ei saa toodangu saladusi, seega on ka need suletud.
 4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
 
 ## Allikad

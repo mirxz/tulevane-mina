@@ -18,6 +18,6 @@
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/tulemused", "/tulemused.csv"]
+    "run_worker_first": true // kogu sait läbib Workeri, et parool kehtiks ka staatilistele failidele
   }
 }
