@@ -2,6 +2,8 @@
 // /api/tts  → eesti kõnesüntees (TartuNLP Neurokõne) tulevase mina kõne jaoks.
 // /api/s    → anonüümsed mängusündmused ja tagasiside (Cloudflare D1, binding DB). Otsus: otsuste logi 7.10.
 // /tulemused → variantide võrdlus (parooliga, Cloudflare secret TULEMUSED_VOTI); /tulemused.csv → vastused CSV-na.
+// Kogu sait on parooliga (Cloudflare secret PROTO_VOTI) kuni Heidi Reinsoni ülevaatuseni; ilma saladuseta on sait suletud
+// (v.a kohalik arendus ja CI aadressil localhost/127.0.0.1). /tulemused kasutab eraldi parooli TULEMUSED_VOTI.
 // Kõik muu → staatilised failid kaustast public/.
 
 const TTS_URL = "https://api.tartunlp.ai/text-to-speech/v2";
@@ -11,12 +13,34 @@ const MAX_CHARS = 400; // üks kõne, mitte terve raamat
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const isResults = url.pathname === "/tulemused" || url.pathname === "/tulemused.csv";
+    if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
     return env.ASSETS.fetch(request);
   },
 };
+
+// ---------------------------------------------------------------------------
+// Prototüübi parool (HTTP Basic auth, kasutajanimi ükskõik mis). Tagastab vastuse, kui ligipääs pole lubatud.
+function protoGate(request, env, url) {
+  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if (!env.PROTO_VOTI) {
+    if (local) return null;
+    return new Response("Prototüüp on ülevaatuse ajaks suletud.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex" } });
+  }
+  if (checkBasic(request, env.PROTO_VOTI)) return null;
+  return new Response("Tulevane Mina on ülevaatuse ajaks parooliga.", { status: 401, headers: { "content-type": "text/plain; charset=utf-8", "www-authenticate": 'Basic realm="Tulevane Mina", charset="UTF-8"', "x-robots-tag": "noindex" } });
+}
+function checkBasic(request, secret) {
+  const h = request.headers.get("authorization") || "";
+  if (!h.startsWith("Basic ")) return false;
+  try {
+    const raw = new TextDecoder().decode(Uint8Array.from(atob(h.slice(6)), (c) => c.charCodeAt(0)));
+    return raw.split(":").slice(1).join(":") === secret;
+  } catch { return false; }
+}
 
 async function tts(request, url) {
   let text, speaker, speed;
@@ -112,8 +136,7 @@ async function collect(request, env, url) {
 function authorized(request, env) {
   if (!env.TULEMUSED_VOTI) return false;
   const h = request.headers.get("authorization") || "";
-  if (!h.startsWith("Basic ")) return false;
-  try { const pass = atob(h.slice(6)).split(":").slice(1).join(":"); return pass === env.TULEMUSED_VOTI; } catch { return false; }
+  return checkBasic(request, env.TULEMUSED_VOTI);
 }
 const NAMES = { panus: "Pensioniratas", kingitus: "Kingitus", kupong: "Elu-kupong" };
 const SEGN = { eimotle: "Ei mõtle pensionile", kogunteadmata: "Kogub, aga ei tea fonde", saastumaar: "Teab säästumäära, tahab nõu", optimeerija: "Optimeerib portfelli", parand: "Mõtleb pärandile", "": "Ei vastanud" };

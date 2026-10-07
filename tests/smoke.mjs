@@ -61,7 +61,7 @@ for (const vp of viewports) {
   check(await page.$$eval("#chart path", (ps) => ps.some((p) => (p.getAttribute("fill") || "").includes("hatch"))), "kaotus on graafikul triibuline (mitte ainult värv)");
   await a11y(page, "5. tõde");
   check(/telefonipetturid/.test(await page.textContent("#tricks")), "petturivõtete paljastus olemas");
-  check(await page.isVisible("text=Reinson, Post, Uusberg 2026"), "uuringu viide nähtav");
+  check(!/Reinson|doktoritöö|Uusberg/.test(await page.content()), "Heidi Reinsoni uurimistöö viiteid pole (ootab tema ülevaatust)");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   check(!overflow, "horisontaalset kerimist pole");
   check(errors.length === 0, "konsoolis vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
