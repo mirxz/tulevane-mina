@@ -42,16 +42,36 @@ Kõne-ekraanil loeb tulevane mina tsitaadi ette. Tekst läheb `/api/tts` kaudu T
 - Kui kõnesüntees ei vasta, jätkub mäng tekstiga.
 - Häält tasub kuulata Google Home kõlarist (Bluetooth), mitte telefonist.
 
+## Kõne turvareeglid
+
+Kõne tulevaselt minalt kasutab samu võtteid nagu telefonipetturid. Seepärast kehtivad kindlad reeglid, mida ükski muudatus ei muuda:
+
+1. Kõne ei küsi kunagi midagi: koode, PIN-i, ID-kaarti, Smart-ID-d, linke ega ülekandeid. Tulevane mina ainult räägib.
+2. Kõne toimub ainult mängus ja algab mängija enda tegevusest. Päris telefonikõnesid kellegi numbrile ei tee.
+3. Häälekloonimist ei kasuta.
+4. Kõne-ekraanil on alati rida „Tulevane Mina ei küsi kunagi koode, PIN-i ega raha.“ Suitsutest kontrollib seda.
+
+Mängu lõpp paljastab, et kõne kasutas petturite võtteid, ja soovitab kahtluse korral kõne lõpetada ning ise panka helistada.
+
+## Raamid: panus ja kingitus
+
+Sama otsust saab näidata kahes raamis. Arvutus on mõlemas identne, muutub ainult sõnastus.
+
+- **Panus** (vaikimisi): kasiino-kiht, koefitsiendid, LIVE-riba, võlts taimer ja nügimine. Lõpp paljastab iga võtte.
+- **Kingitus** (`?raam=kingitus`): ootamine on kingitus tulevasele minale. Mängija valib, mida tahaks pensionil teha. Protsendid koefitsientide asemel, LIVE-riba ja taimerit pole. Kõne tänab kingituse eest või ütleb ilma süüdistamata, et see ei jõudnud kohale (riiklik pension ei pärandu, II ja III sammas pärandub).
+- Mõlema raami lõpus on link teise raami. Valikuid ei loendata ega salvestata (andmete kogumine vajab otsuste logis otsust).
+
 ## Käsitsi kontrollnimekiri (eelvaade telefonis)
 
 - [ ] Avaneb telefonis, teksti ei lõigata ja külgsuunas kerida ei saa.
 - [ ] Sünniaasta, sugu ja pension muudavad pensioniiga ja eeldatavat eluiga.
 - [ ] Panus: kõik 11 koefitsiendinuppu töötavad ja kupong muutub.
 - [ ] Ratas keerleb ja jääb seisma, keskel on vanus.
-- [ ] Kõne heliseb. Nii „Vasta“ kui ka „Keeldu“ viivad tsitaadini ja hääl loeb selle ette.
+- [ ] Kõne heliseb. Nii „Vasta“ kui ka „Keeldu“ viivad tsitaadini ja hääl loeb selle ette. Turvarida on nähtav.
 - [ ] Tõde: graafik, kolm numbrit, paljastatud võtted ja tabel on olemas.
 - [ ] „Proovi teist panust“ ja „Alusta otsast“ töötavad.
 - [ ] Mõlemad sood ja vähemalt valikud −5, 0 ja +5 on läbi proovitud.
+- [ ] `?raam=kingitus`: tegevuse küsimus, protsendid, kingituse kupong, kõne ja paljastus raami kohta; link teise raami töötab.
 
 ## Kohalik test
 
