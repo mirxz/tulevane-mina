@@ -2,8 +2,9 @@
 // /api/tts  → eesti kõnesüntees (TartuNLP Neurokõne) tulevase mina kõne jaoks.
 // /api/s    → anonüümsed mängusündmused ja tagasiside (Cloudflare D1, binding DB). Otsus: otsuste logi 7.10.
 // /tulemused → variantide võrdlus (parooliga, Cloudflare secret TULEMUSED_VOTI); /tulemused.csv → vastused CSV-na.
-// Kogu sait on parooliga (Cloudflare secret PROTO_VOTI) kuni Heidi Reinsoni ülevaatuseni; ilma saladuseta on sait suletud
-// (v.a kohalik arendus ja CI aadressil localhost/127.0.0.1). /tulemused kasutab eraldi parooli TULEMUSED_VOTI.
+// Parool on valikuline: kui Cloudflare secret PROTO_VOTI on seatud, küsib sait parooli; ilma selleta on sait avatud.
+// Heidi Reinson andis 8.10 loa häkatonil avalikult testida (otsuste logi). /tulemused kasutab alati eraldi parooli TULEMUSED_VOTI.
+// /api/mang/tuba → lauamängu võrgutoad (sama D1, tabel mang_toad): olek JSON-ina, versiooniga, et samaaegsed käigud ei kirjutaks üksteist üle.
 // Kõik muu → staatilised failid kaustast public/.
 
 const TTS_URL = "https://api.tartunlp.ai/text-to-speech/v2";
@@ -19,11 +20,8 @@ export default {
     if (url.pathname === "/mang" || url.pathname.startsWith("/mang/")) return gone();
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
-<<<<<<< Updated upstream
-=======
     if (url.pathname === "/api/p") return collectPlaan(request, env, url);
     if (url.pathname.startsWith("/api/mang/tuba")) return room(request, env, url);
->>>>>>> Stashed changes
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
     return env.ASSETS.fetch(request);
   },
@@ -32,13 +30,9 @@ export default {
 // ---------------------------------------------------------------------------
 // Prototüübi parool (HTTP Basic auth, kasutajanimi ükskõik mis). Tagastab vastuse, kui ligipääs pole lubatud.
 function protoGate(request, env, url) {
-  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-  if (!env.PROTO_VOTI) {
-    if (local) return null;
-    return new Response("Prototüüp on ülevaatuse ajaks suletud.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex" } });
-  }
+  if (!env.PROTO_VOTI) return null; // parool pole seatud: sait on avatud
   if (checkBasic(request, env.PROTO_VOTI)) return null;
-  return new Response("Tulevane Mina on ülevaatuse ajaks parooliga.", { status: 401, headers: { "content-type": "text/plain; charset=utf-8", "www-authenticate": 'Basic realm="Tulevane Mina", charset="UTF-8"', "x-robots-tag": "noindex" } });
+  return new Response("Tulevane Mina on parooliga.", { status: 401, headers: { "content-type": "text/plain; charset=utf-8", "www-authenticate": 'Basic realm="Tulevane Mina", charset="UTF-8"', "x-robots-tag": "noindex" } });
 }
 function checkBasic(request, secret) {
   const h = request.headers.get("authorization") || "";
@@ -211,8 +205,6 @@ ${await plaanTulemused(env, url, all)}
 </main></body></html>`;
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }
-<<<<<<< Updated upstream
-=======
 
 // ---------------------------------------------------------------------------
 // Lauamängu võrgutoad. Ainult mänguolek (nimed, mängu ressursid); isikuandmeid ega IP-sid ei salvestata. Toad kustuvad 3 päevaga.
@@ -326,4 +318,3 @@ function gone() {
 <body><main><h1>Seda prototüüpi enam pole</h1><p>Lauamäng oli Tulevase Mina varasem katsetus ja see on nüüd suletud.</p><p><a href="/">Proovi uut prototüüpi</a></p></main></body></html>`;
   return new Response(html, { status: 410, headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex", "cache-control": "no-store" } });
 }
->>>>>>> Stashed changes
