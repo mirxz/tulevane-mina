@@ -61,7 +61,7 @@ async function step(page, opts = {}) {
 console.log("\nL1 kaaslane");
 {
   const page = await newPage();
-  await page.goto(url + "/mang/kaaslane.html");
+  await page.goto(url + "/arhiiv/lauamang/kaaslane.html");
   await page.click("#b-maj"); check((await page.textContent("#o-maj")).length > 10, "majanduskaart");
   await page.selectOption("#s-era", "III"); await page.click("#b-sy"); check(await page.isVisible("#o-sy .k-sundmus"), "sündmuskaart ajastust III");
   await page.click("[data-ve=Seltskond]"); await page.click("#b-ve"); check(await page.isVisible("#o-ve .k-vestlus"), "vestluskaart");
@@ -78,7 +78,7 @@ console.log("\nL1 kaaslane");
 console.log("\nL2 üksi");
 {
   const page = await newPage();
-  await page.goto(url + "/mang/");
+  await page.goto(url + "/arhiiv/lauamang/");
   await page.waitForSelector("[data-act=start]");
   await a11y(page, "seadistus");
   await page.selectOption("[data-in=start][data-i='0']", "5");
@@ -101,7 +101,7 @@ console.log("\nL2 üksi");
 console.log("\nL3 paar, üks telefon");
 {
   const page = await newPage();
-  await page.goto(url + "/mang/");
+  await page.goto(url + "/arhiiv/lauamang/");
   await page.waitForSelector("[data-act=start]");
   await click(page, "[data-act=mode][data-o=paar]");
   check(await page.isVisible("[data-act=device][data-o=tuba]"), "seadmevalik paaril");
@@ -122,7 +122,7 @@ console.log("\nL3 seltskond, võrgutuba (3 telefoni)");
   for (let i = 0; i < 3; i++) pages.push(await newPage(await browser.newContext()));
   const [a, b, c] = pages;
   for (const p of pages) p.online = true;
-  await a.goto(url + "/mang/");
+  await a.goto(url + "/arhiiv/lauamang/");
   await a.waitForSelector("[data-act=start]");
   await click(a, "[data-act=mode][data-o=seltskond]");
   await click(a, "[data-act=device][data-o=tuba]");
@@ -133,10 +133,10 @@ console.log("\nL3 seltskond, võrgutuba (3 telefoni)");
   check(/^[A-Z]{5}$/.test(code), "tuba loodud: " + code);
   await a11y(a, "toa kood");
   await click(a, "[data-act=seat][data-id=p1]");
-  await b.goto(url + "/mang/?tuba=" + code); await b.waitForSelector("[data-act=seat]");
+  await b.goto(url + "/arhiiv/lauamang/?tuba=" + code); await b.waitForSelector("[data-act=seat]");
   check(await b.isDisabled("[data-act=seat][data-id=p1]"), "võetud koht on lukus");
   await click(b, "[data-act=seat][data-id=p2]");
-  await c.goto(url + "/mang/"); await c.waitForSelector("#kood"); await c.fill("#kood", code.toLowerCase()); await click(c, "[data-act=join]");
+  await c.goto(url + "/arhiiv/lauamang/"); await c.waitForSelector("#kood"); await c.fill("#kood", code.toLowerCase()); await click(c, "[data-act=join]");
   await c.waitForSelector("[data-act=seat]"); await click(c, "[data-act=seat][data-id=p3]");
   check(await c.isVisible(".k-vestlus"), "ühine vestluskaart näha");
   // mängime 4 vooru korraga kolmes telefonis

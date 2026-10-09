@@ -5,7 +5,8 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 const AXE = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
 
-const url = process.argv[2] || "http://localhost:8787";
+// Kasiino-, kingitus- ja kupongimäng on arhiivis (9.10); avalehel on plaani prototüüp (tests/plaan.mjs).
+const url = (process.argv[2] || "http://localhost:8787").replace(/\/$/, "") + "/arhiiv/kasiino.html";
 const viewports = [
   { name: "telefon", width: 375, height: 812 },
   { name: "arvuti", width: 1280, height: 800 },

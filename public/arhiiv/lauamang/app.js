@@ -149,7 +149,7 @@ function setup() {
 }
 
 function koht() {
-  const link = location.origin + "/mang/?tuba=" + net.code;
+  const link = location.origin + "/arhiiv/lauamang/?tuba=" + net.code;
   let h = `<section class="hero"><h1>Tuba ${net.code}</h1><p>Jaga koodi või linki. Iga mängija avab selle oma telefonis ja valib, kes ta on.</p>
   <p class="code" aria-label="Toa kood ${net.code.split("").join(" ")}">${net.code}</p><p class="small" style="word-break:break-all">${esc(link)}</p>
   <div class="row">${btn("share", "Jaga linki", "", "btn out")}</div></section>
@@ -324,7 +324,7 @@ const H = {
     render();
   },
   join: async () => { const code = (document.getElementById("kood").value || "").toUpperCase().trim(); if (!/^[A-Z]{5}$/.test(code)) { ui.err = "Toa kood on 5 tähte."; render(); return; } ui.err = ""; await join(code); render(); },
-  share: async () => { const link = location.origin + "/mang/?tuba=" + net.code; try { if (navigator.share) await navigator.share({ title: "Tulevane Mina", text: "Tule mängima, toa kood " + net.code, url: link }); else { await navigator.clipboard.writeText(link); say("Link kopeeritud."); } } catch {} },
+  share: async () => { const link = location.origin + "/arhiiv/lauamang/?tuba=" + net.code; try { if (navigator.share) await navigator.share({ title: "Tulevane Mina", text: "Tule mängima, toa kood " + net.code, url: link }); else { await navigator.clipboard.writeText(link); say("Link kopeeritud."); } } catch {} },
   seat: async (d) => { const ok = await act((s) => { s.claims = s.claims || {}; if (s.claims[d.id]) return "See koht on juba võetud."; s.claims[d.id] = true; }); if (ok) { net.seat = d.id; try { localStorage.setItem("mina-tuba-" + net.code, d.id); } catch {} render(); } },
   uncover: () => { const p = currentPlayer(); ui.uncovered = p.id + ":" + S.round; render(); },
   health: (d) => { ui.health[d.id] = !ui.health[d.id]; render(); },

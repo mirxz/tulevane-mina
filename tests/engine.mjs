@@ -1,7 +1,7 @@
 // Mootori test: mängib palju juhuslikke mänge läbi ja kontrollib, et kõik lõpevad ja numbrid on mõistlikud.
 import { readFileSync } from "node:fs";
-import * as E from "../public/mang/engine.js";
-const cards = JSON.parse(readFileSync(new URL("../public/mang/kaardid.json", import.meta.url), "utf8"));
+import * as E from "../public/arhiiv/lauamang/engine.js";
+const cards = JSON.parse(readFileSync(new URL("../public/arhiiv/lauamang/kaardid.json", import.meta.url), "utf8"));
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6d2b79f5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log("  ✗ " + m); } };
 const stats = { rounds: [], scores: [], deaths: [] };

@@ -137,17 +137,33 @@ npm test                    # teises aknas
 - Suremus: Gompertzi mudel, kalibreeritud Eurostati 2023 eeldatavale elueale 65-aastaselt (mehed 15,9, naised 21,1 a).
 - Pensioniiga: TulevaEE/onboarding-client `pensionCalculator/calculation.ts` (MIT).
 
-## Lauamäng (`/mang/`)
+## Plaani prototüüp (avaleht, 9.10)
+
+Häkatonil sõnastatud probleem (JTBD): „Kui pean otsustama, millal ja kuidas oma pensioniraha kasutama hakata, tahan näha, kas mu plaan katab vajaduse elu lõpuni, et teha otsus, mida ma enam hiljem ei kahetse.“ Emotsioon: „Kui olen vana, ei peaks koonerdama.“
+
+Avalehel on samale plaanile kolm vaadet; vaade loositakse (`?vaade=kalk|kaar|korv` valib käsitsi):
+
+- **Kalkulaator** (`kalk`): sissetulek kuus, vajadus, turvaline kulu.
+- **Elukaar** (`kaar`): sissetulek aastate kaupa tulpadena, vajaduse joon ja otsustuspunktid (sammaste väljamakse, riiklik pension, pooled / 10% elavad kauem).
+- **Ostukorv** (`korv`): millist elu saan endale lubada; korvi summa ja plaani kandevõime.
+
+Mudel on failis `public/plaan/mudel.js`: Eurostati eluiga (ainult vanus ja sugu, terviseandmeid ei küsita), paindliku pensioni kordajad, fondipension (vara jagatud allesjäänud elueaga), tänases rahas. „Elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest. Eeldused on lehel avatavad.
+
+Mõõtmine: `/api/p` salvestab D1 tabelitesse `plaan_sundmused` ja `plaan_vastused` ainult vaate, kindluse enne/pärast (1–5), vastuse „kas plaan katab?“ (ja kas see klapib mudeliga), suurema hirmu (otsa / elamata), eelistuse ja vabateksti. Summasid ega vanust ei salvestata. Tulemused on `/tulemused` lehe ülaosas.
+
+Arhiiv: kasiino-, kingitus- ja kupongimäng on aadressil `/arhiiv/kasiino.html`, lauamäng `/arhiiv/lauamang/` (vana aadress `/mang`, ka prinditud QR-kood, annab teadlikult veateate „Seda prototüüpi enam pole“). Avalehelt neile linki pole; need on alles põhimõtete laenamiseks.
+
+## Lauamäng (`/arhiiv/lauamang/`, arhiivis)
 
 Paberprototüübi v0.1 reeglid kolmel tasemel, et häki ajal testida, itereerida ja lihtsustada:
 
-- **L1 kaaslane** `/mang/kaaslane.html`: paberlaua kõrvale. Majandus-, sündmus- ja vestluskaardid, elukell (2 täringut + muutjad) ja tulevase mina kõne (TartuNLP hääl).
-- **L2 üksi** `/mang/`: kogu mäng telefonis. Stardikaart või „Minu enda elu“ (suurusjärgud, 1 münt ≈ 5 000 €).
-- **L3 paar ja seltskond** `/mang/`, kaks moodust:
+- **L1 kaaslane** `/arhiiv/lauamang/kaaslane.html`: paberlaua kõrvale. Majandus-, sündmus- ja vestluskaardid, elukell (2 täringut + muutjad) ja tulevase mina kõne (TartuNLP hääl).
+- **L2 üksi** `/arhiiv/lauamang/`: kogu mäng telefonis. Stardikaart või „Minu enda elu“ (suurusjärgud, 1 münt ≈ 5 000 €).
+- **L3 paar ja seltskond** `/arhiiv/lauamang/`, kaks moodust:
   - **Ühes telefonis**: kordamööda, iga käigu ees „Anna telefon“, sest tervisekaart on salajane.
   - **Igaüks oma telefonis**: võrgutuba, 5-täheline kood ja link. Olek on D1 tabelis `mang_toad` versiooniga; samaaegsed käigud saavad vastuseks 409 ja proovivad uuesti. Toad kustuvad 3 päevaga. Salvestatakse ainult mänguolek.
 
-Reeglid elavad failis `public/mang/engine.js` (puhtad funktsioonid) ja kaardid failis `public/mang/kaardid.json`. Reeglit muutes muuda mootorit ja kaarte, mitte kasutajaliidest.
+Reeglid elavad failis `public/arhiiv/lauamang/engine.js` (puhtad funktsioonid) ja kaardid failis `public/arhiiv/lauamang/kaardid.json`. Reeglit muutes muuda mootorit ja kaarte, mitte kasutajaliidest.
 
 Testid:
 
