@@ -47,10 +47,25 @@ const KORV = [
 const ui = {
   ekraan: "algus", vaade: LOOS.vaade, nahtud: [], kindlusEnne: null, k: 0, W: null, viis: "fondipension",
   s: { sunniaasta: 1968, sugu: "M", pension: 800, sammas: 40000, sast: 20000, sissemakse: 150, fond: "indeks", vajadus: 1200 },
-  lisa: new Set(), fb: {}, saadetud: false, viga: "", ava: false,
+  lisa: new Set(), toit: {}, fb: {}, saadetud: false, viga: "", ava: false,
 };
 const lisaSumma = () => KORV.filter((i) => ui.lisa.has(i.id)).reduce((a, i) => a + i.hind, 0);
-const inp = () => ({ ...ui.s, k: ui.k, W: ui.W ?? pensioniiga(ui.s.sunniaasta), viis: ui.viis, vajadus: ui.s.vajadus + lisaSumma() });
+// Toidukorv (näitehinnad, € kuus ühe inimese kohta). Põhivajaduses on toit „tavalisel“ tasemel; valik lisab või vähendab vahet.
+const TOIT = [
+  { id: "piim", ic: "🥛", nimi: "Piim", t: [["Kilepiim", 20], ["Pakipiim", 28], ["Öko pakipiim", 40]] },
+  { id: "vorst", ic: "🥓", nimi: "Vorst ja sink", t: [["Vorst", 22], ["Sink", 36], ["Talusink", 54]] },
+  { id: "leib", ic: "🍞", nimi: "Leib", t: [["Poeleib", 12], ["Seemneleib", 18], ["Pagari leib", 30]] },
+  { id: "liha", ic: "🍗", nimi: "Liha", t: [["Kanakints", 24], ["Kanafilee", 38], ["Mahe liha", 60]] },
+  { id: "kala", ic: "🐟", nimi: "Kala", t: [["Konserv", 12], ["Värske lõhe", 26], ["Kalapoe kala", 42]] },
+  { id: "aed", ic: "🥕", nimi: "Köögi- ja puuviljad", t: [["Odavad, hooajal", 26], ["Tavaline valik", 40], ["Kohalik ja mahe", 60]] },
+  { id: "juust", ic: "🧀", nimi: "Juust", t: [["Odav juust", 12], ["Hea juust", 20], ["Käsitööjuust", 32]] },
+  { id: "kohv", ic: "☕", nimi: "Kohv ja tee", t: [["Odav kohv", 8], ["Hea kohv", 14], ["Röstikoja kohv", 24]] },
+  { id: "magus", ic: "🍫", nimi: "Magus", t: [["Odav šokolaad", 10], ["Hea šokolaad", 18], ["Mahe šokolaad", 30]] },
+];
+const tase = (id) => ui.toit[id] ?? 1;
+const toitSumma = () => TOIT.reduce((a, i) => a + i.t[tase(i.id)][1], 0);
+const toitDelta = () => toitSumma() - TOIT.reduce((a, i) => a + i.t[1][1], 0);
+const inp = () => ({ ...ui.s, k: ui.k, W: ui.W ?? pensioniiga(ui.s.sunniaasta), viis: ui.viis, vajadus: ui.s.vajadus + lisaSumma() + toitDelta() });
 const TAB = { kalk: "Arvud", kaar: "Elukaar", korv: "Ostukorv" };
 const proc = (x) => (Math.round(Math.abs(x) * 1000) / 10).toString().replace(".", ",") + "%";
 
@@ -59,7 +74,7 @@ function render() {
   const prev = ui._last;
   const focusKey = document.activeElement?.dataset?.k, focusIn = document.activeElement?.dataset?.in;
   app.innerHTML = (ui.viga ? `<p class="note" role="alert">${esc(ui.viga)}</p>` : "") + (ui.ekraan === "algus" ? algus() : plaanEkraan());
-  app.querySelectorAll("[data-act]").forEach((el) => (el.dataset.k = [el.dataset.act, el.dataset.v || ""].join("|")));
+  app.querySelectorAll("[data-act]").forEach((el) => (el.dataset.k = [el.dataset.act, el.dataset.id || "", el.dataset.v || ""].join("|")));
   if (ui.ekraan === "plaan" && ui.vaade === "kaar" && ui._ch) chartTip(Math.max(ui._ch.a0, Math.min(100, ui._chAge ?? ui._ch.turv)), true);
   const key = ui.ekraan;
   if (key !== prev) { const first = prev === undefined; ui._last = key; const h = app.querySelector("h1"); if (h && !first) { h.tabIndex = -1; h.focus({ preventScroll: true }); } if (!first) window.scrollTo(0, 0); }
@@ -227,14 +242,24 @@ app.addEventListener("pointerleave", () => {}, true);
 app.addEventListener("keydown", (e) => { if (e.target.id !== "chart" || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return; const c = ui._ch; e.preventDefault(); const cur = ui._chAge ?? c.a0; chartTip(e.key === "Home" ? c.a0 : e.key === "End" ? 100 : Math.max(c.a0, Math.min(100, cur + (e.key === "ArrowRight" ? 1 : -1)))); });
 
 function korv(p, vaj) {
-  const L = p.lubatav, base = ui.s.vajadus, ruum = Math.max(0, L - base), lisa = lisaSumma(), over = vaj > L;
-  const pct = Math.min(100, (vaj / Math.max(1, L)) * 100);
-  const mahub = KORV.filter((i) => !ui.lisa.has(i.id) && vaj + i.hind <= L).map((i) => i.nimi.toLowerCase());
-  return `<p class="lead">${ruum > 0 ? `Põhivajaduse (${eur(base)}) kõrval jääb sul ruumi <b>${eur(ruum)}</b> kuus. Pane korvi, mida tahad pensionil teha.` : `Põhivajadus ületab juba plaani. Proovi pensionit edasi lükata.`}</p>
-  <div class="tiles">${KORV.map((i) => `<button type="button" class="tile" data-act="korv" data-v="${i.id}" aria-pressed="${ui.lisa.has(i.id)}"><span class="ic" aria-hidden="true">${i.ic}</span><span class="nm">${esc(i.nimi)}</span><span class="pr">${i.hind} €</span></button>`).join("")}</div>
-  <div class="bk" aria-live="polite"><div class="between"><b>Korv: ${eur(lisa)}</b><span class="small">kokku ${eur(vaj)} / ${eur(L)}</span></div>
+  const L = p.lubatav, base = ui.s.vajadus, lisa = lisaSumma(), td = toitDelta(), over = vaj > L;
+  const pct = Math.min(100, (vaj / Math.max(1, L)) * 100), ruum = L - vaj;
+  const sg = (n) => (n > 0 ? "+" : n < 0 ? "−" : "±") + Math.abs(Math.round(n)) + " €";
+  const par = TOIT.filter((i) => tase(i.id) > 1).length, kok = TOIT.filter((i) => tase(i.id) < 1).length;
+  const rida = (i) => { const t = tase(i.id), d = i.t[t][1] - i.t[1][1];
+    return `<div class="gi"><div class="gi-h"><span class="ic" aria-hidden="true">${i.ic}</span><b>${i.nimi}</b><span class="dl ${d > 0 ? "up" : d < 0 ? "dn" : ""}">${sg(d)}</span></div>
+    <div class="g3" role="group" aria-label="${esc(i.nimi)}: vali tase">${i.t.map(([n, h], k) => `<button type="button" data-act="toit" data-id="${i.id}" data-v="${k}" aria-pressed="${t === k}"><span>${n}</span><b>${h} €</b></button>`).join("")}</div></div>`; };
+  return `<div class="gh"><p class="lead" style="margin:0"><b>Kui olen vana, ei peaks koonerdama.</b> Vali, mida paned oma toidukorvi. Põhivajaduses on toit tavalisel tasemel, muutused lähevad otse tulemusse.</p>
+  <div class="gk"><div class="gk-t"><span>Toit kuus</span><b>${eur(toitSumma())}</b></div>
+  <div class="gk-s">${par ? `${par} ${par === 1 ? "asi" : "asja"} paremaks` : ""}${par && kok ? " · " : ""}${kok ? `${kok} ${kok === 1 ? "asi" : "asja"} odavamaks` : ""}${!par && !kok ? "Kõik tavalisel tasemel" : ""}</div></div>
+  <div class="row"><button type="button" class="btn" data-act="parim">✨ Täida parim, mis mahub</button><button type="button" class="btn out" data-act="nulli">Nulli</button></div>
+  <div class="gl" aria-hidden="true"><span>Koonerdan</span><span>Tavaline</span><span>Lubasin endale</span></div></div>
+  <div class="gis">${TOIT.map(rida).join("")}</div>
+  <p class="small" style="margin:0">Hinnad on näited ühe inimese kohta kuus, mitte kellegi poe hinnad. Põhivajadus ${eur(base)}${td ? `, toidu muutus ${sg(td)}` : ""}${lisa ? `, muud lisad ${eur(lisa)}` : ""}.</p>
+  <details class="det"${lisa ? " open" : ""}><summary>Veel: reis, maakodu, teater jne${lisa ? ` · ${eur(lisa)}` : ""}</summary><div class="det-in"><div class="tiles">${KORV.map((i) => `<button type="button" class="tile" data-act="korv" data-v="${i.id}" aria-pressed="${ui.lisa.has(i.id)}"><span class="ic" aria-hidden="true">${i.ic}</span><span class="nm">${esc(i.nimi)}</span><span class="pr">${i.hind} €</span></button>`).join("")}</div></div></details>
+  <div class="bk" aria-live="polite"><div class="between"><b>Kokku vajadus ${eur(vaj)}</b><span class="small">plaan kannab ${eur(L)}</span></div>
   <div class="meter" role="img" aria-label="Kulutused on ${Math.round(pct)}% plaani kandevõimest"><div class="fill ${over ? "over" : ""}" style="width:${pct}%"></div></div>
-  <p class="${over ? "bad" : "ok"}">${over ? `Ei mahu: raha jääb puudu ${p.otsas}-aastaselt. Võta midagi välja või lükka pensioni edasi.` : `Mahub. Vaba ruumi on veel ${eur(L - vaj)} kuus.`}${!over && mahub.length ? ` Mahub veel: ${esc(mahub.slice(0, 3).join(", "))}.` : ""}</p></div>`;
+  <p class="${over ? "bad" : "ok"}">${over ? `Ei mahu: raha jääb puudu ${p.otsas}-aastaselt. Vali odavam tase või lükka pensioni edasi.` : `Mahub. Vaba ruumi on veel ${eur(ruum)} kuus.`}</p></div>`;
 }
 
 function eeldused() {
@@ -278,6 +303,21 @@ const H = {
   tagasi: () => { ui.ekraan = "algus"; ui.ava = false; render(); },
   tab: (v) => { if (v === ui.vaade) return; sisene(v); render(); say(TAB[v] + " avatud."); },
   kmuuda: (d) => { ui.k = Math.max(-5, Math.min(5, ui.k + Number(d))); render(); },
+  toit: (v, b) => { ui.toit[b.dataset.id] = Number(v); render(); const i = TOIT.find((x) => x.id === b.dataset.id); say(`${i.nimi}: ${i.t[Number(v)][0]}. ${plaan(inp()).katab ? "Plaan katab." : "Raha jääb puudu."}`); },
+  nulli: () => { ui.toit = {}; ui.lisa = new Set(); render(); say("Korv nullitud, kõik tavalisel tasemel."); },
+  parim: () => {
+    // alustame kõige odavamast korvist ja täidame odavaimad parandused, kuni plaan veel kannab
+    const p0 = plaan(inp()), L = p0.lubatav, fixed = ui.s.vajadus + lisaSumma();
+    const t = Object.fromEntries(TOIT.map((i) => [i.id, 0]));
+    const cost = () => fixed + TOIT.reduce((a, i) => a + i.t[t[i.id]][1], 0) - TOIT.reduce((a, i) => a + i.t[1][1], 0);
+    for (;;) {
+      const opts = TOIT.filter((i) => t[i.id] < 2).map((i) => ({ i, d: i.t[t[i.id] + 1][1] - i.t[t[i.id]][1] })).filter((o) => cost() + o.d <= L).sort((a, b) => a.d - b.d);
+      if (!opts.length) break; t[opts[0].i.id]++;
+    }
+    ui.toit = t; render();
+    const n = TOIT.filter((i) => t[i.id] > 0).length;
+    say(cost() > L ? "Ka odavaim korv ei mahu. Lükka pensioni edasi." : `Täitsin parima korvi, mis mahub: ${n} asja paremal tasemel.`);
+  },
   korv: (v) => { ui.lisa.has(v) ? ui.lisa.delete(v) : ui.lisa.add(v); render(); const p = plaan(inp()); say(`Korv ${eur(lisaSumma())}. ${p.katab ? "Plaan katab." : "Raha jääb puudu."}`); },
   katab: (v) => { ui.fb.katab = v; render(); },
   kindlus: (v) => { ui.fb.kindlus = Number(v); render(); },
