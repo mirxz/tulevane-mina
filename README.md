@@ -174,3 +174,10 @@ Teadaolevad lüngad v0.1-s:
 
 - „Säästumäära seadja“ eriõigus (Rõõmu asemel +1 Vara) pole digis rakendatud.
 - Tervisekontroll valib automaatselt (+1 Tervis või kõrge riski ohjamine).
+
+### Allikas ja jagamine (10.10)
+
+- Lingile lisatud `?k=fb` (või `reklaam`, `lkd`, `tuleva`…) jääb seadmes meelde ja salvestatakse koos vaate sündmustega ning vastustega (väli `allikas`, kuni 16 märki `a–z 0–9 _ -`). Esimene allikas jääb kehtima. `/tulemused` näitab kanalite kaupa, mitu alustas ja mitu vastas.
+- Aitäh-ekraanil on nupp „Jaga linki“ (telefonis süsteemne jagamine, mujal kopeerib lingi). Link on `/?k=jagatud`, sõnum ei sisalda sisestatud andmeid. Jagamine registreeritakse sündmusena `share`.
+- `/tulemused` ülaosas on loendur: lõpetanud, alustanud seadmeid, jaganud.
+- Olemasolevatele D1 tabelitele lisatakse veerg `allikas` automaatselt esimesel päringul.

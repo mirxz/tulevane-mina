@@ -20,9 +20,17 @@ const LOOS = (() => {
   if (!VAATED.includes(v)) { v = VAATED[Math.floor(Math.random() * 3)]; store.set("plaan-loos", v); }
   return { vaade: v, src: v };
 })();
+// allikas: ?k=reklaam|fb|lkd… (esimene kord jääb meelde), et teada, mis kanal inimesi tõi
+const ALK = (() => {
+  const q = (new URLSearchParams(location.search).get("k") || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 16);
+  const old = store.get("plaan-allikas");
+  if (old) return old;
+  if (q) { store.set("plaan-allikas", q); return q; }
+  return "";
+})();
 const SID = (() => { let s = store.get("plaan-sid"); if (!s) { s = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); store.set("plaan-sid", s); } return s; })();
 function track(ev, extra = {}) {
-  try { fetch("/api/p", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sid: SID, ev, loos: LOOS.src, vaade: ui.vaade, ...extra }), keepalive: true }); } catch {}
+  try { fetch("/api/p", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sid: SID, ev, loos: LOOS.src, vaade: ui.vaade, alk: ALK, ...extra }), keepalive: true }); } catch {}
 }
 
 const KORV = [
@@ -188,8 +196,10 @@ function tagasiside() {
 
 function aitah() {
   const muud = VAATED.filter((v) => !ui.nahtud.includes(v));
+  const jaga = `<section class="card"><h2>Tead kedagi, kes peaks oma plaani vaatama?</h2><p style="margin:0 0 12px">Saada see talle. Ei küsi nime ega e-posti ja ei salvesta sisestatud summasid.</p><button type="button" class="btn out block" data-act="jaga">Jaga linki</button><p class="small" id="jaga-teade" role="status" style="margin:8px 0 0"></p></section>`;
   return `<section class="hero"><h1>Aitäh!</h1><p>Sinu vastus aitab meil leida, milline vaade aitab pensioniotsust teha nii, et seda hiljem ei kahetse.</p></section>
-  ${muud.length ? `<section class="card"><h2>Vaata sama plaani teisiti</h2><div class="grid2">${muud.map((v) => `<button type="button" class="opt" data-act="vaata" data-v="${v}"><b>${NIMI[v]}</b></button>`).join("")}</div></section>` : `<section class="card"><p style="margin:0">Nägid kõiki kolme vaadet. Räägi meile häkatonil, mis jäi meelde!</p></section>`}`;
+  ${muud.length ? `<section class="card"><h2>Vaata sama plaani teisiti</h2><div class="grid2">${muud.map((v) => `<button type="button" class="opt" data-act="vaata" data-v="${v}"><b>${NIMI[v]}</b></button>`).join("")}</div></section>` : `<section class="card"><p style="margin:0">Nägid kõiki kolme vaadet. Räägi meile häkatonil, mis jäi meelde!</p></section>`}
+  ${jaga}`;
 }
 
 // ---------- sündmused ----------
@@ -212,6 +222,17 @@ const H = {
     const oige = f.katab === "eitea" ? 0 : (f.katab === "jah") === p.katab ? 1 : 0;
     track("feedback", { vastus: { katab: f.katab, oige, enne: ui.kindlusEnne || 0, kindlus: f.kindlus, hirm: f.hirm, eelistus: f.eelistus || "", nahtud: ui.nahtud.join(","), kommentaar: (f.kommentaar || "").slice(0, 280) } });
     ui.ekraan = "aitah"; render();
+  },
+  jaga: async () => {
+    const url = location.origin + "/?k=jagatud";
+    const text = "Kas sinu pensioniplaan katab vajaduse elu lõpuni? Proovi 2-minutilist häkatoni prototüüpi (ei küsi nime ega e-posti):";
+    const teade = (t) => { const el = document.getElementById("jaga-teade"); if (el) el.textContent = t; say(t); };
+    track("share");
+    try {
+      if (navigator.share) { await navigator.share({ title: "Tulevane Mina", text, url }); return; }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(text + " " + url); teade("Link kopeeritud. Kleebi see sõnumisse."); }
+    catch { teade("Kopeeri link käsitsi: " + url); }
   },
   vaata: (v) => { ui.vaade = v; if (!ui.nahtud.includes(v)) ui.nahtud.push(v); ui.ekraan = "vaade"; track("start", { enne: ui.kindlusEnne }); render(); },
 };
