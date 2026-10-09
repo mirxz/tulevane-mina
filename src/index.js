@@ -2,8 +2,8 @@
 // /api/tts  → eesti kõnesüntees (TartuNLP Neurokõne) tulevase mina kõne jaoks.
 // /api/s    → anonüümsed mängusündmused ja tagasiside (Cloudflare D1, binding DB). Otsus: otsuste logi 7.10.
 // /tulemused → variantide võrdlus (parooliga, Cloudflare secret TULEMUSED_VOTI); /tulemused.csv → vastused CSV-na.
-// Kogu sait on parooliga (Cloudflare secret PROTO_VOTI) kuni Heidi Reinsoni ülevaatuseni; ilma saladuseta on sait suletud
-// (v.a kohalik arendus ja CI aadressil localhost/127.0.0.1). /tulemused kasutab eraldi parooli TULEMUSED_VOTI.
+// Parool on valikuline: kui Cloudflare secret PROTO_VOTI on seatud, küsib sait parooli; ilma selleta on sait avatud.
+// Heidi Reinson andis 8.10 loa häkatonil avalikult testida (otsuste logi). /tulemused kasutab alati eraldi parooli TULEMUSED_VOTI.
 // /api/mang/tuba → lauamängu võrgutoad (sama D1, tabel mang_toad): olek JSON-ina, versiooniga, et samaaegsed käigud ei kirjutaks üksteist üle.
 // Kõik muu → staatilised failid kaustast public/.
 
@@ -27,13 +27,9 @@ export default {
 // ---------------------------------------------------------------------------
 // Prototüübi parool (HTTP Basic auth, kasutajanimi ükskõik mis). Tagastab vastuse, kui ligipääs pole lubatud.
 function protoGate(request, env, url) {
-  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-  if (!env.PROTO_VOTI) {
-    if (local) return null;
-    return new Response("Prototüüp on ülevaatuse ajaks suletud.", { status: 503, headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex" } });
-  }
+  if (!env.PROTO_VOTI) return null; // parool pole seatud: sait on avatud
   if (checkBasic(request, env.PROTO_VOTI)) return null;
-  return new Response("Tulevane Mina on ülevaatuse ajaks parooliga.", { status: 401, headers: { "content-type": "text/plain; charset=utf-8", "www-authenticate": 'Basic realm="Tulevane Mina", charset="UTF-8"', "x-robots-tag": "noindex" } });
+  return new Response("Tulevane Mina on parooliga.", { status: 401, headers: { "content-type": "text/plain; charset=utf-8", "www-authenticate": 'Basic realm="Tulevane Mina", charset="UTF-8"', "x-robots-tag": "noindex" } });
 }
 function checkBasic(request, secret) {
   const h = request.headers.get("authorization") || "";
