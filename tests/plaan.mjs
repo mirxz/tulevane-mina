@@ -61,7 +61,15 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']");
   // vahekaartide vahel liikumine
   await page.click("#tab-kaar");
-  check(await page.isVisible(".chart-wrap svg") && (await page.textContent("#panel")).includes("Otsustuspunktid"), "elukaar: graafik ja otsustuspunktid");
+  check(await page.isVisible(".story .chart-wrap svg") && (await page.textContent(".cap-k")).includes("1 / 7"), "elukaar algab loona, samm 1/7");
+  await a11y(page, "elukaare lugu");
+  await page.click("[data-act=lnext]"); await page.click("[data-act=lnext]");
+  check((await page.textContent(".cap-h")).includes("kaua sa elad") && (await page.locator(".lay.on").count()) === 3, "lugu lisab ühe elemendi korraga (3 kihti pärast 3. sammu)");
+  for (let i = 0; i < 4; i++) await page.click("[data-act=lnext]");
+  check((await page.textContent("[data-act=lnext]")).includes("Uuri ise") && (await page.textContent(".cap-h")).length > 5, "viimane samm annab tulemuse ja nupp viib uurimisvaatesse");
+  await page.click("[data-act=lnext]");
+  check(await page.isVisible(".chart-wrap svg") && (await page.textContent("#panel")).includes("Otsustuspunktid") && !(await page.isVisible(".story")), "elukaar: pärast lugu graafik ja otsustuspunktid");
+  await page.click("[data-act=lugu0]"); check(await page.isVisible(".story"), "lugu saab uuesti vaadata"); await page.click("[data-act=lskip]");
   await page.click("[data-act=kmuuda][data-v='1']"); await page.waitForTimeout(50);
   check((await page.textContent("#panel")).includes("67"), "edasilükkamine liigutab otsustuspunkti");
   await page.click("[data-act=kmuuda][data-v='-1']");
