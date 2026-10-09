@@ -47,7 +47,7 @@ const KORV = [
 const ui = {
   ekraan: "algus", vaade: LOOS.vaade, nahtud: [], kindlusEnne: null, k: 0, W: null, viis: "fondipension",
   s: { sunniaasta: 1968, sugu: "M", pension: 800, sammas: 40000, sast: 20000, sissemakse: 150, fond: "indeks", vajadus: 1200 },
-  lisa: new Set(), toit: {}, fb: {}, saadetud: false, viga: "", ava: false,
+  lisa: new Set(), toit: {}, fb: {}, saadetud: false, viga: "", ava: false, lugu: 0, mang: true,
 };
 const lisaSumma = () => KORV.filter((i) => ui.lisa.has(i.id)).reduce((a, i) => a + i.hind, 0);
 // Toidukorv (näitehinnad, € kuus ühe inimese kohta). Põhivajaduses on toit „tavalisel“ tasemel; valik lisab või vähendab vahet.
@@ -75,7 +75,9 @@ function render() {
   const focusKey = document.activeElement?.dataset?.k, focusIn = document.activeElement?.dataset?.in;
   app.innerHTML = (ui.viga ? `<p class="note" role="alert">${esc(ui.viga)}</p>` : "") + (ui.ekraan === "algus" ? algus() : plaanEkraan());
   app.querySelectorAll("[data-act]").forEach((el) => (el.dataset.k = [el.dataset.act, el.dataset.id || "", el.dataset.v || ""].join("|")));
-  if (ui.ekraan === "plaan" && ui.vaade === "kaar" && ui._ch) chartTip(Math.max(ui._ch.a0, Math.min(100, ui._chAge ?? ui._ch.turv)), true);
+  if (ui.ekraan === "plaan" && ui.vaade === "kaar" && ui.lugu >= LUGU_N && ui._ch) chartTip(Math.max(ui._ch.a0, Math.min(100, ui._chAge ?? ui._ch.turv)), true);
+  if (lugudE()) { ui._anim = false; ui._lt && requestAnimationFrame(() => requestAnimationFrame(() => luguMene(ui.lugu))); }
+  else if (!lugudE()) clearTimeout(ui._lp);
   const key = ui.ekraan;
   if (key !== prev) { const first = prev === undefined; ui._last = key; const h = app.querySelector("h1"); if (h && !first) { h.tabIndex = -1; h.focus({ preventScroll: true }); } if (!first) window.scrollTo(0, 0); }
   else if (focusIn) { const el = app.querySelector(`[data-in="${focusIn}"]`); if (el) { el.focus({ preventScroll: true }); try { const n = el.value.length; el.setSelectionRange?.(n, n); } catch {} } }
@@ -165,59 +167,129 @@ function kalk(p, vaj) {
   <p class="small">„Turvaliselt“ tähendab, et raha jätkub vanuseni ${p.turv}, milleni jõuab 10% sinuvanustest.</p>`;
 }
 
+// ---------- elukaar: lugu (üks element korraga) ja uurimisvaade ----------
+// Lugu (Segel & Heer: „martini klaas“): autor juhib seitsmes kaadris, siis avaneb vaba uurimine. Iga kaader lisab täpselt ühe elemendi.
+const SAMM = { axes: 0, need: 1, surv: 2, riik: 3, samba: 4, saast: 5, puudu: 6 };
+const LUGU_N = 7;
+const reduced = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; } };
+
+function luguTekst(p, vaj) {
+  const rows = p.read.filter((r) => r.vanus >= Math.min(p.RP, p.W) && r.vanus <= 100), a0 = Math.min(p.RP, p.W);
+  const pool = (rows.find((r) => r.elus <= 0.5) || rows.at(-1)).vanus, turv = Math.min(100, p.turv);
+  const sambaKokku = rows.reduce((a, r) => a + r.samba, 0), saastKokku = rows.reduce((a, r) => a + r.saastust, 0);
+  const lastS = rows.filter((r) => r.saastust > 0.5).at(-1)?.vanus, maxP = Math.max(0, ...rows.map((r) => r.puudu));
+  const b = (x) => `<b>${x}</b>`;
+  const t = [];
+  t.push(["See on sinu pensionipõlv", `Vasakult paremale jookseb sinu vanus: ${a0}-aastasest sajani. Vaatame, kas sinu raha jätkub kogu selle ajaks.`]);
+  t.push([`Selleks vajad ${eur(vaj)} kuus`, `See joon on sinu kuine vajadus tänases rahas. Iga kuu, kogu pensionipõlve.`]);
+  t.push(["Aga kui kaua sa elad?", `Seda ei tea keegi. Statistika järgi on ${pool}-aastaselt pooled sinuvanustest veel elus ja ${turv}-aastaselt veel iga kümnes. Planeerime ${turv}-aastaseks, et sul poleks vanana põhjust koonerdada.`]);
+  t.push(["Esimene allikas: riiklik pension", `Alates ${p.RP}. eluaastast maksab riik sulle ${b(eur(p.riikKuu))} kuus. See kestab elu lõpuni ja kasvab iga aastaga veidi.`]);
+  t.push(sambaKokku > 0.5
+    ? ["Teine allikas: pensionisambad", `Sambast tuleb ${p.W}-aastaselt ${b(eur(p.sambaKuu))} kuus. Kogutud raha jagatakse laiali kogu allesoleva elu peale.`]
+    : p.korraga
+      ? ["Sambad võtad korraga välja", `Sambaraha ei tule kuumaksena. Pärast 10% tulumaksu läheb see sinu säästude hulka, mida kulutad järgmises kaadris.`]
+      : ["Sambaid sul pole", `Siit raha ei tule. Kõik sõltub riiklikust pensionist ja säästudest.`]);
+  t.push(saastKokku > 0.5
+    ? ["Kolmas: sinu säästud", `Kui pensionist ja sambast ei piisa, katad vahe säästudest. ${lastS >= 100 ? "Neid jagub kogu eluks." : `Neid jagub ${b(lastS + "-aastaseks")}.`}`]
+    : maxP < 0.5
+      ? ["Sääste pole vaja kulutada", `Sinu sissetulek katab vajaduse ka ilma säästudeta.`]
+      : ["Sääste, mida kulutada, ei ole", `Vajaduse ja sissetuleku vahe tuleks katta säästudest, aga neid pole.`]);
+  t.push(p.katab
+    ? ["Jah, raha jätkub elu lõpuni", `Vajadus on kaetud vähemalt ${b(turv + "-aastaseks")}. Plaan kannab kuni ${b(eur(p.lubatav))} kuus, see on ${eur(p.lubatav - vaj)} rohkem, kui sa praegu vajad.`]
+    : ["Raha saab otsa " + p.otsas + "-aastaselt", `Edasi jääb kuus puudu kuni ${b(eur(maxP))}. Tõenäosus, et elad nii kaua, on ${b(Math.round(p.elusOtsas * 100) + "%")}. Proovi pensioni edasi lükata või vajadust vähendada.`]);
+  return t;
+}
+
 function kaar(p, vaj) {
-  // FT visual vocabulary: aegrida (pindgraafik) + sama telje väike graafik (ellujäämine); otse märgistus, hõre ruudustik.
+  // FT visual vocabulary: pindgraafik virnana + sama telje väike graafik (ellujäämine); otse märgistus, hõre ruudustik.
+  const story = ui.lugu < LUGU_N;
   const a0 = Math.min(p.RP, p.W), rows = p.read.filter((r) => r.vanus >= a0 && r.vanus <= 100);
   const W = 360, L = 40, Rr = 12, T = 60, H1 = 176, GAP = 30, H2 = 54, AX = 22, H = T + H1 + GAP + H2 + AX;
-  const own = (r) => r.riik + r.samba, mid = (r) => own(r) + r.saastust, top = (r) => mid(r) + r.puudu;
-  const max = Math.max(vaj, ...rows.map(top)) * 1.1;
+  const g1 = (r) => r.riik, g2 = (r) => r.riik + r.samba, g3 = (r) => g2(r) + r.saastust, g4 = (r) => g3(r) + r.puudu;
+  const max = Math.max(vaj, ...rows.map(g4)) * 1.1;
   const step = max > 3000 ? 1000 : max > 1500 ? 500 : 250, ticks = []; for (let t = step; t <= max; t += step) ticks.push(t);
   const X = (a) => L + ((a - a0) / (100 - a0)) * (W - L - Rr), Y = (v) => T + H1 * (1 - v / max), Y2 = (f) => T + H1 + GAP + H2 * (1 - f);
   const pool = (rows.find((r) => r.elus <= 0.5) || rows.at(-1)).vanus;
-  const INK = "#293036", MUTE = "#50565b", GRID = "#e3e8ee", BLUE = "#0072b2", BLUE1 = "#cfe4f3", BLUE2 = "#85bbdf";
-  // pensioni/samba algus on astmeline: suur hüpe aastate vahel joonistatakse püstjoonena, mitte kaldu
-  const pts = (f) => { const o = []; rows.forEach((r, i) => { const jump = i && [own, mid, top].some((g) => Math.abs(g(r) - g(rows[i - 1])) > 0.1 * max); if (jump) o.push([X(r.vanus), f(rows[i - 1])]); o.push([X(r.vanus), f(r)]); }); return o; };
+  const INK = "#293036", MUTE = "#50565b", GRID = "#e3e8ee", BLUE = "#0072b2", C = { riik: "#5aa6d6", samba: "#9ccbe8", saast: "#d3e6f4" };
+  const pts = (f) => { const o = []; rows.forEach((r, i) => { const jump = i && [g1, g2, g3, g4].some((g) => Math.abs(g(r) - g(rows[i - 1])) > 0.1 * max); if (jump) o.push([X(r.vanus), f(rows[i - 1])]); o.push([X(r.vanus), f(r)]); }); return o; };
   const fmt = (a) => a.map(([x, y]) => `${x.toFixed(1)},${Y(y).toFixed(1)}`);
-  const area = (hi, lo, fill) => `<polygon points="${fmt(pts(hi)).concat(fmt(pts(lo)).reverse()).join(" ")}" fill="${fill}" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>`;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="kaar-t kaar-d"><title id="kaar-t">Sinu kuine raha pensionil vanuse järgi</title><desc id="kaar-d">Pindgraafik: oma sissetulek (pension ja sambad), kate säästudest ja puudu jääv osa kuus vanuse järgi, võrdluses sinu vajadusega. All väike graafik: tõenäosus, et oled siis elus. Täpsed numbrid on andmetabelis.</desc>
+  const area = (hi, lo, fill) => rows.some((r) => hi(r) - lo(r) > 0.5) ? `<polygon points="${fmt(pts(hi)).concat(fmt(pts(lo)).reverse()).join(" ")}" fill="${fill}" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>` : "";
+  const lab = (hi, lo, txt) => { // otsene märgistus alal, kus see on kõige paksem
+    let best = null; for (const r of rows) { const px = ((hi(r) - lo(r)) / max) * H1; if (!best || px > best.px) best = { px, r }; }
+    if (!best || best.px < 17) return ""; const w = txt.length * 6.3, cx = Math.max(L + w / 2 + 4, Math.min(W - Rr - w / 2 - 4, X(best.r.vanus)));
+    return `<text x="${cx.toFixed(1)}" y="${(Y((hi(best.r) + lo(best.r)) / 2) + 4).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="600" fill="${INK}" paint-order="stroke" stroke="#fff" stroke-width="3" class="dl">${txt}</text>`;
+  };
+  const lay = (s, cls, inner) => `<g class="lay ${cls || ""} ${!story || ui.lugu > s ? "on" : ""}" data-s="${s}">${inner}</g>`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="kaar-t kaar-d"><title id="kaar-t">Sinu kuine raha pensionil vanuse järgi</title><desc id="kaar-d">Pindgraafik: riiklik pension, sambad, säästudest kaetav osa ja puudu jääv osa kuus vanuse järgi, võrdluses sinu vajadusega. All väike graafik: tõenäosus, et oled siis elus. Täpsed numbrid on andmetabelis.</desc>
   <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fdf1dc"/><rect width="2.5" height="6" fill="#e69f00"/></pattern></defs>`;
-  // ruudustik (hõre, hairline) + ühik
-  svg += `<text x="${L - 6}" y="${T - 10}" text-anchor="end" font-size="11" fill="${MUTE}">€ kuus</text>`;
-  for (const t of ticks) svg += `<line x1="${L}" x2="${W - Rr}" y1="${Y(t)}" y2="${Y(t)}" stroke="${GRID}" stroke-width="1"/><text x="${L - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">${t}</text>`;
-  // ribad: oma sissetulek, säästudest, puudu
-  svg += area(own, () => 0, BLUE1) + area(mid, own, BLUE2) + area(top, mid, "url(#hatch)");
-  svg += `<polyline points="${fmt(pts(own)).join(" ")}" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linejoin="round"/>`;
-  svg += `<line x1="${L}" x2="${W - Rr}" y1="${Y(0)}" y2="${Y(0)}" stroke="${MUTE}" stroke-width="1"/><text x="${L - 6}" y="${Y(0) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">0</text>`;
-  // vajaduse joon, otse märgistus
-  svg += `<line x1="${L}" x2="${W - Rr}" y1="${Y(vaj)}" y2="${Y(vaj)}" stroke="${INK}" stroke-width="2"/>`;
-  svg += `<text x="${W - Rr}" y="${Y(vaj) - 7}" text-anchor="end" font-size="12" font-weight="700" fill="${INK}" paint-order="stroke" stroke="#fff" stroke-width="4">Vajadus ${eur(vaj)}</text>`;
-  // vertikaalid läbi mõlema paneeli + sildid üleval (kaks rida, ei põrku)
-  const guide = (a, txt, row) => { const ly = T - 28 - row * 15; return `<line x1="${X(a)}" x2="${X(a)}" y1="${ly + 4}" y2="${T + H1 + GAP + H2}" stroke="${INK}" stroke-width="1" opacity=".55"/><text x="${X(a) - 4}" y="${ly}" text-anchor="end" font-size="11" font-weight="600" fill="${INK}">${txt}</text>`; };
-  svg += guide(pool, `Pooled elavad kauem kui ${pool}`, 0);
-  if (p.turv < 100) svg += guide(p.turv, `10% elab kauem kui ${p.turv}: „elu lõpuni“`, 1);
-  // raha otsas: ring ees vajaduse joonel
-  if (p.otsas && p.otsas <= 100) { const x = X(p.otsas), y = Y(vaj); svg += `<circle cx="${x}" cy="${y}" r="6" fill="#a64b00" stroke="#fff" stroke-width="2"/><text x="${Math.min(x + 9, W - Rr - 76)}" y="${y + 20}" font-size="11.5" font-weight="700" fill="#a64b00" paint-order="stroke" stroke="#fff" stroke-width="4">Raha otsas ${p.otsas}</text>`; }
-  // väike paneel: tõenäosus, et oled elus
+  // 0: teljed ja ruudustik
+  let ax = `<text x="${L - 6}" y="${T - 10}" text-anchor="end" font-size="11" fill="${MUTE}">€ kuus</text>`;
+  for (const t of ticks) ax += `<line x1="${L}" x2="${W - Rr}" y1="${Y(t)}" y2="${Y(t)}" stroke="${GRID}" stroke-width="1"/><text x="${L - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">${t}</text>`;
+  ax += `<line x1="${L}" x2="${W - Rr}" y1="${Y(0)}" y2="${Y(0)}" stroke="${MUTE}" stroke-width="1"/><text x="${L - 6}" y="${Y(0) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">0</text>`;
+  ax += `<text x="${L - 6}" y="${T + H1 + GAP - 8}" text-anchor="end" font-size="11" fill="${MUTE}">Elus</text>`;
+  for (const f of [1, 0.5, 0.1]) ax += `<line x1="${L}" x2="${W - Rr}" y1="${Y2(f)}" y2="${Y2(f)}" stroke="${GRID}" stroke-width="1"/><text x="${L - 6}" y="${Y2(f) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">${Math.round(f * 100)}%</text>`;
+  ax += `<line x1="${L}" x2="${W - Rr}" y1="${Y2(0)}" y2="${Y2(0)}" stroke="${MUTE}" stroke-width="1"/>`;
+  for (let a = Math.ceil(a0 / 5) * 5; a <= 100; a += 5) ax += `<text x="${X(a)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${MUTE}">${a}</text>`;
+  svg += lay(SAMM.axes, "", ax);
+  // 2: eluiga (väike paneel + vertikaalid)
   const pr = rows.map((r) => `${X(r.vanus).toFixed(1)},${Y2(r.elus).toFixed(1)}`);
-  svg += `<text x="${L - 6}" y="${T + H1 + GAP - 8}" text-anchor="end" font-size="11" fill="${MUTE}">Elus</text>`;
-  for (const f of [1, 0.5, 0.1]) svg += `<line x1="${L}" x2="${W - Rr}" y1="${Y2(f)}" y2="${Y2(f)}" stroke="${GRID}" stroke-width="1"/><text x="${L - 6}" y="${Y2(f) + 4}" text-anchor="end" font-size="11" fill="${MUTE}">${Math.round(f * 100)}%</text>`;
-  svg += `<polygon points="${pr.join(" ")} ${X(100)},${Y2(0)} ${X(a0)},${Y2(0)}" fill="#dfe5eb"/><polyline points="${pr.join(" ")}" fill="none" stroke="${MUTE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><line x1="${L}" x2="${W - Rr}" y1="${Y2(0)}" y2="${Y2(0)}" stroke="${MUTE}" stroke-width="1"/>`;
-  for (let a = Math.ceil(a0 / 5) * 5; a <= 100; a += 5) svg += `<text x="${X(a)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${MUTE}">${a}</text>`;
+  const guide = (a, txt, row) => { const ly = T - 28 - row * 15; return `<line x1="${X(a)}" x2="${X(a)}" y1="${ly + 4}" y2="${T + H1 + GAP + H2}" stroke="${INK}" stroke-width="1" opacity=".55"/><text x="${X(a) - 4}" y="${ly}" text-anchor="end" font-size="11" font-weight="600" fill="${INK}">${txt}</text>`; };
+  svg += lay(SAMM.surv, "", `<polygon class="wipe" points="${pr.join(" ")} ${X(100)},${Y2(0)} ${X(a0)},${Y2(0)}" fill="#dfe5eb"/><polyline class="draw" pathLength="1" points="${pr.join(" ")}" fill="none" stroke="${MUTE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><g class="dl">${guide(pool, `Pooled elavad kauem kui ${pool}`, 0)}${p.turv < 100 ? guide(p.turv, `10% elab kauem kui ${p.turv}: „elu lõpuni“`, 1) : ""}</g>`);
+  // 3–6: virn alt üles: riik, sambad, säästud, puudu
+  svg += lay(SAMM.riik, "", `<g class="wipe">${area(g1, () => 0, C.riik)}<polyline points="${fmt(pts(g1)).join(" ")}" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linejoin="round"/></g><g class="dl">${lab(g1, () => 0, "Riiklik pension")}</g>`);
+  svg += lay(SAMM.samba, "", `<g class="wipe">${area(g2, g1, C.samba)}</g><g class="dl">${lab(g2, g1, "Sambad")}</g>`);
+  svg += lay(SAMM.saast, "", `<g class="wipe">${area(g3, g2, C.saast)}</g><g class="dl">${lab(g3, g2, "Säästud")}</g>`);
+  let res = `<g class="wipe">${area(g4, g3, "url(#hatch)")}</g><g class="dl">${lab(g4, g3, "Puudu")}`;
+  if (p.otsas && p.otsas <= 100) { const x = X(p.otsas), y = Y(vaj); res += `<circle cx="${x}" cy="${y}" r="6" fill="#a64b00" stroke="#fff" stroke-width="2"/><text x="${Math.min(x + 9, W - Rr - 76)}" y="${y + 20}" font-size="11.5" font-weight="700" fill="#a64b00" paint-order="stroke" stroke="#fff" stroke-width="4">Raha otsas ${p.otsas}</text>`; }
+  else if (p.turv <= 100) { const x = X(p.turv), y = Y(vaj); res += `<circle cx="${x}" cy="${y}" r="6" fill="${BLUE}" stroke="#fff" stroke-width="2"/><text x="${Math.min(x, W - Rr - 4)}" y="${y + 20}" text-anchor="${x > W - 90 ? "end" : "middle"}" font-size="11.5" font-weight="700" fill="${BLUE}" paint-order="stroke" stroke="#fff" stroke-width="4">Jätkub ✓</text>`; }
+  svg += lay(SAMM.puudu, "", res + "</g>");
+  // 1: vajadus (joonistatud viimasena, et jääks alade peale)
+  const needSvg = lay(SAMM.need, "", `<line class="draw" pathLength="1" x1="${L}" x2="${W - Rr}" y1="${Y(vaj)}" y2="${Y(vaj)}" stroke="${INK}" stroke-width="2"/><text class="dl" x="${W - Rr}" y="${Y(vaj) - 7}" text-anchor="end" font-size="12" font-weight="700" fill="${INK}" paint-order="stroke" stroke="#fff" stroke-width="4">Vajadus ${eur(vaj)}</text>`);
+  svg += needSvg;
   svg += `<line id="ch-line" x1="0" x2="0" y1="${T - 4}" y2="${T + H1 + GAP + H2}" stroke="${INK}" stroke-width="1" visibility="hidden"/></svg>`;
   ui._ch = { a0, rows, W, L, Rr, vaj, turv: Math.min(100, p.turv) };
+  const legend = `<ul class="legend"><li><i style="background:${C.riik};box-shadow:inset 0 2px 0 ${BLUE}"></i>Riiklik pension</li>${rows.some((r) => r.samba > 0.5) ? `<li><i style="background:${C.samba}"></i>Sambad</li>` : ""}${rows.some((r) => r.saastust > 0.5) ? `<li><i style="background:${C.saast}"></i>Säästud</li>` : ""}${rows.some((r) => r.puudu > 0.5) ? `<li><i style="background:repeating-linear-gradient(45deg,#e69f00 0 2.5px,#fdf1dc 2.5px 6px)"></i>Puudu</li>` : ""}<li><i class="ln"></i>Vajadus</li></ul>`;
+  if (story) {
+    ui._lt = luguTekst(p, vaj);
+    const n = ui.lugu, [h, t] = ui._lt[n];
+    return `<div class="story"><div class="chart-wrap" id="chart">${svg}</div>
+    <div class="cap" aria-live="polite" aria-atomic="true"><p class="cap-k">Samm ${n + 1} / ${LUGU_N}</p><h3 class="cap-h">${h}</h3><p class="cap-t">${t}</p></div>
+    <div class="ctl"><button type="button" class="btn out" data-act="lback"${n === 0 ? " disabled" : ""} aria-label="Eelmine samm">←</button>
+    <ol class="dots" aria-hidden="true">${ui._lt.map((_, i) => `<li${i === n ? ' aria-current="step"' : i < n ? ' class="done"' : ""}></li>`).join("")}</ol>
+    <button type="button" class="btn" data-act="lnext">${n === LUGU_N - 1 ? "Uuri ise →" : "Edasi →"}</button></div>
+    <div class="ctl2"><button type="button" class="lnk" data-act="lplay" aria-pressed="${ui.mang}">${ui.mang ? "⏸ Peata esitus" : "▶ Esita automaatselt"}</button><button type="button" class="lnk" data-act="lskip">Jäta lugu vahele</button></div></div>`;
+  }
   const pt = [[p.W, p.W === p.RP ? "Pension ja sambad algavad" : (p.korraga ? "Sambad korraga" : "Sambad algavad"), p.W === p.RP ? `${eur(p.kuuSissetulek)} kuus` : eur(p.sambaKuu) + " kuus"]];
   if (p.W !== p.RP) pt.push([p.RP, "Riiklik pension algab", eur(p.riikKuu) + " kuus"]);
   pt.sort((a, b) => a[0] - b[0]);
   pt.push([pool, "Pooled sinuvanustest elavad kauem", "keskmine eluiga"], [p.turv, "10% elab kauem: „elu lõpuni“", "siia planeerime"]);
   if (p.otsas) pt.push([p.otsas, "Raha saab otsa", `tõenäosus elada nii kaua ${Math.round(p.elusOtsas * 100)}%`]);
-  const tr = rows.filter((r) => r.vanus % 5 === 0 || r.vanus === a0).map((r) => `<tr><th scope="row">${r.vanus}</th><td>${eur(own(r))}</td><td>${eur(r.saastust)}</td><td>${eur(r.puudu)}</td><td>${Math.round(r.elus * 100)}%</td></tr>`).join("");
+  const tr = rows.filter((r) => r.vanus % 5 === 0 || r.vanus === a0).map((r) => `<tr><th scope="row">${r.vanus}</th><td>${eur(r.riik)}</td><td>${eur(r.samba)}</td><td>${eur(r.saastust)}</td><td>${eur(r.puudu)}</td><td>${Math.round(r.elus * 100)}%</td></tr>`).join("");
   return `<div class="chart-fig"><p class="ch-t">Kui palju raha sul pensionil kuus on</p><p class="ch-s">Tänases rahas. Puudu jääb see osa vajadusest, mida ei kata ei pension, sambad ega säästud.</p>
   <div class="chart-wrap" id="chart" tabindex="0" role="group" aria-label="Graafik. Nooleklahvidega saad vaadata vanuseid.">${svg}</div>
   <div id="ch-tip" class="ch-tip" aria-live="off"><p class="ph">Puuduta graafikut või vali sellel nooleklahvidega vanus, et näha täpseid numbreid.</p></div>
-  <ul class="legend"><li><i style="background:${BLUE1};box-shadow:inset 0 2px 0 ${BLUE}"></i>Pension ja sambad</li><li><i style="background:${BLUE2}"></i>Katab säästudest</li>${rows.some((r) => r.puudu > 0.5) ? `<li><i style="background:repeating-linear-gradient(45deg,#e69f00 0 2.5px,#fdf1dc 2.5px 6px)"></i>Puudu</li>` : ""}<li><i class="ln"></i>Vajadus</li></ul></div>
-  <details class="det"><summary>Andmed tabelina</summary><div class="tw"><table class="tbl"><thead><tr><th scope="col">Vanus</th><th scope="col">Pension + sambad</th><th scope="col">Säästudest</th><th scope="col">Puudu</th><th scope="col">Elus</th></tr></thead><tbody>${tr}</tbody></table></div></details>
+  ${legend}<button type="button" class="lnk" data-act="lugu0">↺ Vaata lugu uuesti</button></div>
+  <details class="det"><summary>Andmed tabelina</summary><div class="tw"><table class="tbl"><thead><tr><th scope="col">Vanus</th><th scope="col">Pension</th><th scope="col">Sambad</th><th scope="col">Säästudest</th><th scope="col">Puudu</th><th scope="col">Elus</th></tr></thead><tbody>${tr}</tbody></table></div></details>
   <h3>Otsustuspunktid</h3><ol class="pts">${pt.map(([a, t, s]) => `<li><b>${a}</b><span>${t}<small>${s}</small></span></li>`).join("")}</ol>`;
 }
+
+// loo juhtimine: kihid lülitatakse DOM-is (ilma uuesti joonistamata), nii saab CSS üleminek neid animeerida
+function luguMene(n) {
+  clearTimeout(ui._lp);
+  if (n >= LUGU_N) { ui.lugu = LUGU_N; render(); say("Lugu läbi. Nüüd saad graafikut ise uurida."); return; }
+  ui.lugu = Math.max(0, n);
+  const root = app.querySelector(".story"); if (!root || !ui._lt) return;
+  root.querySelectorAll(".lay").forEach((g) => g.classList.toggle("on", Number(g.dataset.s) <= ui.lugu));
+  const [h, t] = ui._lt[ui.lugu];
+  root.querySelector(".cap-k").textContent = `Samm ${ui.lugu + 1} / ${LUGU_N}`;
+  root.querySelector(".cap-h").innerHTML = h; root.querySelector(".cap-t").innerHTML = t;
+  root.querySelectorAll(".dots li").forEach((li, i) => { li.className = i < ui.lugu ? "done" : ""; i === ui.lugu ? li.setAttribute("aria-current", "step") : li.removeAttribute("aria-current"); });
+  root.querySelector("[data-act=lback]").disabled = ui.lugu === 0;
+  root.querySelector("[data-act=lnext]").textContent = ui.lugu === LUGU_N - 1 ? "Uuri ise →" : "Edasi →";
+  if (ui.mang && ui.lugu < LUGU_N - 1) { const words = (t + h).replace(/<[^>]+>/g, "").split(/\s+/).length; ui._lp = setTimeout(() => { if (ui.mang && ui.vaade === "kaar" && ui.ekraan === "plaan" && document.querySelector(".story")) luguMene(ui.lugu + 1); }, 2600 + words * 330); }
+}
+function luguAlusta(n = 0) { ui.lugu = n; ui.mang = !reduced(); ui._anim = true; render(); }
+const lugudE = () => ui.ekraan === "plaan" && ui.vaade === "kaar" && ui.lugu < LUGU_N;
 
 // graafiku vihje: osuta või nooleklahvid → kõik numbrid selle vanuse kohta (tabel katab sama sisu ilma vihjeta)
 function chartTip(age, quiet) {
@@ -231,7 +303,7 @@ function chartTip(age, quiet) {
   const add = (k, v, cls = "") => { const d = document.createElement("div"); d.className = "tr " + cls; const a = document.createElement("span"); a.textContent = k; const b = document.createElement("b"); b.textContent = v; d.append(a, b); return d; };
   const h = document.createElement("div"); h.className = "th"; h.textContent = age + "-aastaselt, elus " + Math.round(r.elus * 100) + "%"; tip.append(h);
   const g = document.createElement("div"); g.className = "g";
-  g.append(add("Pension ja sambad", eur(r.riik + r.samba)), add("Katab säästudest", eur(r.saastust)), add("Puudu", eur(r.puudu), r.puudu > 0.5 ? "bad" : ""), add("Sinu vajadus", eur(c.vaj)));
+  g.append(add("Riiklik pension", eur(r.riik)), add("Sambad", eur(r.samba)), add("Katab säästudest", eur(r.saastust)), add("Puudu", eur(r.puudu), r.puudu > 0.5 ? "bad" : ""), add("Sinu vajadus", eur(c.vaj)));
   tip.append(g);
   if (!quiet) say(`${age}-aastaselt: ${eur(r.riik + r.samba)} pensioni ja sammastest, ${eur(r.saastust)} säästudest${r.puudu > 0.5 ? ", " + eur(r.puudu) + " puudu" : ""}.`);
 }
@@ -298,10 +370,15 @@ const H = {
   alusta: () => {
     ui.viga = ""; const a = ui.s.sunniaasta;
     if (!(a >= 1941 && a <= 1996)) { ui.viga = "Sünniaasta peab olema vahemikus 1941–1996."; render(); return; }
-    ui.ekraan = "plaan"; sisene(ui.vaade); render(); say("Plaan valmis. " + TAB[ui.vaade] + " avatud.");
+    ui.ekraan = "plaan"; ui.lugu = 0; ui.mang = !reduced(); ui._anim = true; sisene(ui.vaade); render(); say("Plaan valmis. " + TAB[ui.vaade] + " avatud.");
   },
+  lnext: () => { ui.mang = false; luguMene(ui.lugu + 1); },
+  lback: () => { ui.mang = false; luguMene(ui.lugu - 1); },
+  lplay: () => { ui.mang = !ui.mang; if (ui.mang && ui.lugu >= LUGU_N - 1) return luguAlusta(0); render(); },
+  lskip: () => { luguMene(LUGU_N); },
+  lugu0: () => luguAlusta(0),
   tagasi: () => { ui.ekraan = "algus"; ui.ava = false; render(); },
-  tab: (v) => { if (v === ui.vaade) return; sisene(v); render(); say(TAB[v] + " avatud."); },
+  tab: (v) => { if (v === ui.vaade) return; sisene(v); if (v === "kaar" && ui.lugu < LUGU_N) { ui._anim = true; ui.mang = !reduced(); } render(); say(TAB[v] + " avatud."); },
   kmuuda: (d) => { ui.k = Math.max(-5, Math.min(5, ui.k + Number(d))); render(); },
   toit: (v, b) => { ui.toit[b.dataset.id] = Number(v); render(); const i = TOIT.find((x) => x.id === b.dataset.id); say(`${i.nimi}: ${i.t[Number(v)][0]}. ${plaan(inp()).katab ? "Plaan katab." : "Raha jääb puudu."}`); },
   nulli: () => { ui.toit = {}; ui.lisa = new Set(); render(); say("Korv nullitud, kõik tavalisel tasemel."); },
