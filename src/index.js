@@ -257,30 +257,37 @@ async function room(request, env, url) {
 // Plaani prototüüp (9.10): kolm vaadet. Salvestame ainult vaate, sündmuse ja tagasiside, mitte kasutaja summasid ega vanust.
 const VAADE = new Set(["kalk", "kaar", "korv"]);
 const PLOOS = new Set(["kalk", "kaar", "korv", "link"]);
-const P_EV = new Set(["start", "feedback"]);
+const P_EV = new Set(["start", "feedback", "share"]);
 const P_ENUM = { katab: new Set(["jah", "ei", "eitea"]), hirm: new Set(["otsa", "elamata", "molemad", "kumbki"]) };
 const P_SCHEMA = [
-  "CREATE TABLE IF NOT EXISTS plaan_sundmused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, ev TEXT, loos TEXT, vaade TEXT, enne INTEGER)",
-  "CREATE TABLE IF NOT EXISTS plaan_vastused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, loos TEXT, vaade TEXT, katab TEXT, oige INTEGER, enne INTEGER, kindlus INTEGER, hirm TEXT, eelistus TEXT, nahtud TEXT, kommentaar TEXT)",
+  "CREATE TABLE IF NOT EXISTS plaan_sundmused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, ev TEXT, loos TEXT, vaade TEXT, enne INTEGER, allikas TEXT)",
+  "CREATE TABLE IF NOT EXISTS plaan_vastused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, loos TEXT, vaade TEXT, katab TEXT, oige INTEGER, enne INTEGER, kindlus INTEGER, hirm TEXT, eelistus TEXT, nahtud TEXT, kommentaar TEXT, allikas TEXT)",
 ];
 let pReady = false;
-async function ensurePlaan(db) { if (pReady) return; await db.batch(P_SCHEMA.map((q) => db.prepare(q))); pReady = true; }
+async function ensurePlaan(db) {
+  if (pReady) return;
+  await db.batch(P_SCHEMA.map((q) => db.prepare(q)));
+  // varem loodud tabelitele lisame allika veeru (kui see juba olemas, ignoreerime viga)
+  for (const t of ["plaan_sundmused", "plaan_vastused"]) { try { await db.prepare("ALTER TABLE " + t + " ADD COLUMN allikas TEXT").run(); } catch {} }
+  pReady = true;
+}
 async function collectPlaan(request, env, url) {
   if (request.method !== "POST") return json({ viga: "Kasuta POST-päringut" }, 405);
   if (!env.DB) return json({ viga: "Andmebaas pole seadistatud" }, 503);
   let b; try { b = await request.json(); } catch { return json({ viga: "Vigane JSON" }, 400); }
   const sid = clean(b.sid, 40), ev = clean(b.ev, 12), loos = clean(b.loos, 12), vaade = clean(b.vaade, 12);
+  const alk = String(b.alk || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 16);
   if (!/^[a-z0-9-]{8,40}$/i.test(sid) || !P_EV.has(ev) || !PLOOS.has(loos) || !VAADE.has(vaade)) return json({ viga: "Vigased väärtused" }, 400);
   const n15 = (v) => { const n = Number(v); return n >= 1 && n <= 5 ? Math.round(n) : null; };
   const ts = new Date().toISOString(), host = url.hostname;
   await ensurePlaan(env.DB);
-  const st = [env.DB.prepare("INSERT INTO plaan_sundmused (ts, host, sid, ev, loos, vaade, enne) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(ts, host, sid, ev, loos, vaade, n15(b.enne))];
+  const st = [env.DB.prepare("INSERT INTO plaan_sundmused (ts, host, sid, ev, loos, vaade, enne, allikas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").bind(ts, host, sid, ev, loos, vaade, n15(b.enne), alk)];
   if (ev === "feedback") {
     const f = b.vastus || {};
     if (!P_ENUM.katab.has(f.katab) || !P_ENUM.hirm.has(f.hirm) || !n15(f.kindlus)) return json({ viga: "Vigane vastus" }, 400);
     const nahtud = String(f.nahtud || "").split(",").filter((v) => VAADE.has(v)).join(",");
-    st.push(env.DB.prepare("INSERT INTO plaan_vastused (ts, host, sid, loos, vaade, katab, oige, enne, kindlus, hirm, eelistus, nahtud, kommentaar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(ts, host, sid, loos, vaade, f.katab, f.oige ? 1 : 0, n15(f.enne), n15(f.kindlus), f.hirm, VAADE.has(f.eelistus) ? f.eelistus : "", nahtud, clean(f.kommentaar, 280)));
+    st.push(env.DB.prepare("INSERT INTO plaan_vastused (ts, host, sid, loos, vaade, katab, oige, enne, kindlus, hirm, eelistus, nahtud, kommentaar, allikas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(ts, host, sid, loos, vaade, f.katab, f.oige ? 1 : 0, n15(f.enne), n15(f.kindlus), f.hirm, VAADE.has(f.eelistus) ? f.eelistus : "", nahtud, clean(f.kommentaar, 280), alk));
   }
   await env.DB.batch(st);
   return json({ ok: true }, 200);
@@ -293,6 +300,12 @@ async function plaanTulemused(env, url, all) {
   const starts = (await bind(env.DB.prepare("SELECT vaade, COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where + (all ? " WHERE" : " AND") + " ev = 'start' GROUP BY vaade")).all()).results;
   const sn = Object.fromEntries(starts.map((r) => [r.vaade, r.n]));
   const PN = { kalk: "Kalkulaator", kaar: "Elukaar", korv: "Ostukorv" };
+  const cnt = async (q) => (await bind(env.DB.prepare(q)).all()).results;
+  const sidn = (await cnt("SELECT COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where))[0]?.n || 0;
+  const jagas = (await cnt("SELECT COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where + (all ? " WHERE" : " AND") + " ev = 'share'"))[0]?.n || 0;
+  const kanalid = await cnt("SELECT COALESCE(NULLIF(allikas, ''), 'otse') AS k, COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where + (all ? " WHERE" : " AND") + " ev = 'start' GROUP BY 1 ORDER BY n DESC");
+  const lopet = {}; for (const a of ans) { const k = a.allikas || "otse"; lopet[k] = (lopet[k] || 0) + 1; }
+  const kt = "<table><tr><th>Kanal (?k=…)</th><th>Alustas</th><th>Vastas</th></tr>" + (kanalid.map((r) => "<tr><th>" + esc(r.k) + "</th><td>" + r.n + "</td><td>" + (lopet[r.k] || 0) + "</td></tr>").join("") || "<tr><td colspan=3>Veel pole.</td></tr>") + "</table>";
   const G = {}; for (const k of Object.keys(PN)) G[k] = ans.filter((a) => a.vaade === k);
   const avg = (A, f) => { const v = A.map(f).filter((x) => x); return v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1).replace(".", ",") : "–"; };
   const share = (A, f) => pc(A.filter(f).length, A.length);
@@ -309,7 +322,7 @@ async function plaanTulemused(env, url, all) {
   t += row("Eelistati võrdluses", (A, k) => pref[k] || 0);
   t += "</table>";
   const q = ans.filter((a) => a.kommentaar).slice(-60).reverse().map((a) => "<li><span>" + PN[a.vaade] + "</span> " + esc(a.kommentaar) + "</li>").join("");
-  return `<section><h2>Plaani vaated (9.10)</h2><p class="small">Peamine mõõdik: vastas küsimusele „Kas plaan katab vajaduse elu lõpuni?“ mudeliga sama vastuse. Vastuseid ${ans.length}.</p><div class="wrap">${t}</div></section><section><h2>Mis aitas või segas</h2><ul>${q || "<li>Veel pole.</li>"}</ul></section>`;
+  return `<section><h2>Seis praegu</h2><p style="font-size:28px;line-height:36px;margin:0"><b>${ans.length}</b> lõpetanud · ${sidn} seadet alustanud · ${jagas} jaganud</p></section><section><h2>Kanalid</h2><p class="small">Lisa linkidele <code>?k=fb</code>, <code>?k=reklaam</code>, <code>?k=lkd</code>, <code>?k=tuleva</code>. Jagamisnupu link lisab <code>jagatud</code>.</p><div class="wrap">${kt}</div></section><section><h2>Plaani vaated (9.10)</h2><p class="small">Peamine mõõdik: vastas küsimusele „Kas plaan katab vajaduse elu lõpuni?“ mudeliga sama vastuse. Vastuseid ${ans.length}.</p><div class="wrap">${t}</div></section><section><h2>Mis aitas või segas</h2><ul>${q || "<li>Veel pole.</li>"}</ul></section>`;
 }
 
 function gone() {

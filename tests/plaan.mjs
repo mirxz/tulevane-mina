@@ -83,6 +83,26 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   check(errors.length === 0, "vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
   await page.close();
 }
+// allikas (?k=) ja jagamisnupp
+{
+  console.log("\nallikas ja jagamine");
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await ctx.newPage();
+  const posts = [];
+  page.on("request", (r) => { if (r.url().endsWith("/api/p")) posts.push(JSON.parse(r.postData() || "{}")); });
+  await page.goto(url + "/?vaade=kalk&k=FB!");
+  await page.waitForSelector("[data-act=alusta]");
+  await page.click("[data-act=alusta]"); await page.waitForSelector("[data-act=valmis]"); await page.click("[data-act=valmis]");
+  await page.click("[data-act=katab][data-v=jah]"); await page.click("[data-act=kindlus][data-v='3']"); await page.click("[data-act=hirm][data-v=molemad]");
+  await page.click("[data-act=saada]"); await page.waitForSelector("[data-act=jaga]");
+  await a11y(page, "aitäh + jagamine");
+  await page.click("[data-act=jaga]"); await page.waitForTimeout(400);
+  check(posts.length >= 2 && posts.every((p) => p.alk === "fb"), "allikas „fb“ (puhastatud) läheb kaasa igale sündmusele");
+  check(posts.some((p) => p.ev === "share"), "jagamine registreeritakse");
+  const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ""));
+  check(clip.includes("/?k=jagatud") && !/\d{4,}/.test(clip.replace(/https?:\/\/\S+/, "")), "jagatav link kannab märget ja ei sisalda isikuandmeid");
+  await ctx.close();
+}
 // arhiiv ja lauamäng jäävad alles, aga avalehelt neile linki pole
 {
   const page = await browser.newPage();
