@@ -15,8 +15,15 @@ export default {
     const url = new URL(request.url);
     const isResults = url.pathname === "/tulemused" || url.pathname === "/tulemused.csv";
     if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
+    // Lauamäng kolis arhiivi (9.10). Vana aadress (ka prinditud QR-kood) annab teadlikult veateate, mitte ei suuna edasi.
+    if (url.pathname === "/mang" || url.pathname.startsWith("/mang/")) return gone();
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
+<<<<<<< Updated upstream
+=======
+    if (url.pathname === "/api/p") return collectPlaan(request, env, url);
+    if (url.pathname.startsWith("/api/mang/tuba")) return room(request, env, url);
+>>>>>>> Stashed changes
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
     return env.ASSETS.fetch(request);
   },
@@ -197,9 +204,126 @@ async function results(request, env, url) {
 .small{font-size:13px;color:#6b7074}ul{padding-left:18px;display:grid;gap:6px}li span{font-size:12px;color:#6b7074;margin-right:6px}a{color:#006ce6}</style></head><body><main>
 <h1>Tulevane Mina · tulemused</h1>
 <p class="small">${all ? "Kõik keskkonnad (ka eelvaated)." : "Ainult " + esc(url.hostname) + "."} Vastuseid kokku ${ans.length}. Väikese valimi juures on erinevused suunavad, mitte statistiliselt olulised. <a href="?${all ? "" : "koik=1"}">${all ? "Näita ainult seda keskkonda" : "Näita ka eelvaateid"}</a> · <a href="/tulemused.csv${all ? "?koik=1" : ""}">Laadi CSV</a></p>
-<section><h2>Variandid kõrvuti</h2><p class="small">Peamine mõõdik: osa vastajatest, kes vastas arusaamise küsimusele õigesti ja valis mõne tegevuse.</p><div class="wrap">${table}</div></section>
+${await plaanTulemused(env, url, all)}
+<section><h2>Varasemad mängud: variandid kõrvuti</h2><p class="small">Peamine mõõdik: osa vastajatest, kes vastas arusaamise küsimusele õigesti ja valis mõne tegevuse.</p><div class="wrap">${table}</div></section>
 <section><h2>Segmentide kaupa</h2><p class="small">Vastajaid · peamine mõõdik</p><div class="wrap">${seg}</div></section>
 <section><h2>Mis jäi meelde</h2><ul>${quotes || "<li>Veel pole.</li>"}</ul></section>
 </main></body></html>`;
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }
+<<<<<<< Updated upstream
+=======
+
+// ---------------------------------------------------------------------------
+// Lauamängu võrgutoad. Ainult mänguolek (nimed, mängu ressursid); isikuandmeid ega IP-sid ei salvestata. Toad kustuvad 3 päevaga.
+const ROOM_ABC = "ABCDEFGHJKMNPRSTUVXYZ";
+const ROOM_MAX = 200000;
+let roomReady = false;
+async function ensureRoom(db) {
+  if (roomReady) return;
+  await db.prepare("CREATE TABLE IF NOT EXISTS mang_toad (kood TEXT PRIMARY KEY, ver INTEGER NOT NULL, olek TEXT NOT NULL, ts TEXT NOT NULL)").run();
+  roomReady = true;
+}
+async function room(request, env, url) {
+  if (!env.DB) return json({ viga: "Andmebaas pole seadistatud" }, 503);
+  await ensureRoom(env.DB);
+  const code = (url.pathname.split("/")[4] || "").toUpperCase();
+  const now = new Date().toISOString();
+  const readBody = async () => { const t = await request.text(); if (t.length > ROOM_MAX) throw new Error("liiga suur"); return JSON.parse(t); };
+  if (!code && request.method === "POST") {
+    let b; try { b = await readBody(); } catch { return json({ viga: "Vigane olek" }, 400); }
+    await env.DB.prepare("DELETE FROM mang_toad WHERE ts < ?").bind(new Date(Date.now() - 3 * 864e5).toISOString()).run();
+    for (let i = 0; i < 8; i++) {
+      const k = Array.from(crypto.getRandomValues(new Uint8Array(5)), (x) => ROOM_ABC[x % ROOM_ABC.length]).join("");
+      const r = await env.DB.prepare("INSERT OR IGNORE INTO mang_toad (kood, ver, olek, ts) VALUES (?, 1, ?, ?)").bind(k, JSON.stringify(b.olek ?? null), now).run();
+      if (r.meta.changes) return json({ kood: k, ver: 1 }, 200);
+    }
+    return json({ viga: "Ei leidnud vaba koodi" }, 500);
+  }
+  if (!/^[A-Z]{5}$/.test(code)) return json({ viga: "Vigane toa kood" }, 400);
+  if (request.method === "GET") {
+    const r = await env.DB.prepare("SELECT ver, olek FROM mang_toad WHERE kood = ?").bind(code).first();
+    if (!r) return json({ viga: "Tuba ei leitud" }, 404);
+    const known = Number(url.searchParams.get("ver"));
+    if (known && known === r.ver) return json({ ver: r.ver, muutus: false }, 200);
+    return new Response('{"ver":' + r.ver + ',"muutus":true,"olek":' + r.olek + "}", { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  }
+  if (request.method === "PUT") {
+    let b; try { b = await readBody(); } catch { return json({ viga: "Vigane olek" }, 400); }
+    const ver = Number(b.ver);
+    const r = await env.DB.prepare("UPDATE mang_toad SET ver = ver + 1, olek = ?, ts = ? WHERE kood = ? AND ver = ?").bind(JSON.stringify(b.olek ?? null), now, code, ver).run();
+    if (!r.meta.changes) {
+      const cur = await env.DB.prepare("SELECT ver FROM mang_toad WHERE kood = ?").bind(code).first();
+      return json({ viga: cur ? "Keegi jõudis enne" : "Tuba ei leitud", ver: cur?.ver }, cur ? 409 : 404);
+    }
+    return json({ ver: ver + 1 }, 200);
+  }
+  return json({ viga: "Lubatud: POST, GET, PUT" }, 405);
+}
+
+// ---------------------------------------------------------------------------
+// Plaani prototüüp (9.10): kolm vaadet. Salvestame ainult vaate, sündmuse ja tagasiside, mitte kasutaja summasid ega vanust.
+const VAADE = new Set(["kalk", "kaar", "korv"]);
+const PLOOS = new Set(["kalk", "kaar", "korv", "link"]);
+const P_EV = new Set(["start", "feedback"]);
+const P_ENUM = { katab: new Set(["jah", "ei", "eitea"]), hirm: new Set(["otsa", "elamata", "molemad", "kumbki"]) };
+const P_SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS plaan_sundmused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, ev TEXT, loos TEXT, vaade TEXT, enne INTEGER)",
+  "CREATE TABLE IF NOT EXISTS plaan_vastused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, loos TEXT, vaade TEXT, katab TEXT, oige INTEGER, enne INTEGER, kindlus INTEGER, hirm TEXT, eelistus TEXT, nahtud TEXT, kommentaar TEXT)",
+];
+let pReady = false;
+async function ensurePlaan(db) { if (pReady) return; await db.batch(P_SCHEMA.map((q) => db.prepare(q))); pReady = true; }
+async function collectPlaan(request, env, url) {
+  if (request.method !== "POST") return json({ viga: "Kasuta POST-päringut" }, 405);
+  if (!env.DB) return json({ viga: "Andmebaas pole seadistatud" }, 503);
+  let b; try { b = await request.json(); } catch { return json({ viga: "Vigane JSON" }, 400); }
+  const sid = clean(b.sid, 40), ev = clean(b.ev, 12), loos = clean(b.loos, 12), vaade = clean(b.vaade, 12);
+  if (!/^[a-z0-9-]{8,40}$/i.test(sid) || !P_EV.has(ev) || !PLOOS.has(loos) || !VAADE.has(vaade)) return json({ viga: "Vigased väärtused" }, 400);
+  const n15 = (v) => { const n = Number(v); return n >= 1 && n <= 5 ? Math.round(n) : null; };
+  const ts = new Date().toISOString(), host = url.hostname;
+  await ensurePlaan(env.DB);
+  const st = [env.DB.prepare("INSERT INTO plaan_sundmused (ts, host, sid, ev, loos, vaade, enne) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(ts, host, sid, ev, loos, vaade, n15(b.enne))];
+  if (ev === "feedback") {
+    const f = b.vastus || {};
+    if (!P_ENUM.katab.has(f.katab) || !P_ENUM.hirm.has(f.hirm) || !n15(f.kindlus)) return json({ viga: "Vigane vastus" }, 400);
+    const nahtud = String(f.nahtud || "").split(",").filter((v) => VAADE.has(v)).join(",");
+    st.push(env.DB.prepare("INSERT INTO plaan_vastused (ts, host, sid, loos, vaade, katab, oige, enne, kindlus, hirm, eelistus, nahtud, kommentaar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(ts, host, sid, loos, vaade, f.katab, f.oige ? 1 : 0, n15(f.enne), n15(f.kindlus), f.hirm, VAADE.has(f.eelistus) ? f.eelistus : "", nahtud, clean(f.kommentaar, 280)));
+  }
+  await env.DB.batch(st);
+  return json({ ok: true }, 200);
+}
+async function plaanTulemused(env, url, all) {
+  await ensurePlaan(env.DB);
+  const where = all ? "" : " WHERE host = ?";
+  const bind = (q) => (all ? q : q.bind(url.hostname));
+  const ans = (await bind(env.DB.prepare("SELECT * FROM plaan_vastused" + where + " ORDER BY ts")).all()).results;
+  const starts = (await bind(env.DB.prepare("SELECT vaade, COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where + (all ? " WHERE" : " AND") + " ev = 'start' GROUP BY vaade")).all()).results;
+  const sn = Object.fromEntries(starts.map((r) => [r.vaade, r.n]));
+  const PN = { kalk: "Kalkulaator", kaar: "Elukaar", korv: "Ostukorv" };
+  const G = {}; for (const k of Object.keys(PN)) G[k] = ans.filter((a) => a.vaade === k);
+  const avg = (A, f) => { const v = A.map(f).filter((x) => x); return v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1).replace(".", ",") : "–"; };
+  const share = (A, f) => pc(A.filter(f).length, A.length);
+  const pref = {}; for (const a of ans) if (a.eelistus) pref[a.eelistus] = (pref[a.eelistus] || 0) + 1;
+  const row = (l, f) => "<tr><th>" + l + "</th>" + Object.keys(PN).map((k) => "<td>" + f(G[k], k) + "</td>").join("") + "</tr>";
+  let t = "<table><tr><th></th>" + Object.values(PN).map((n) => "<th>" + n + "</th>").join("") + "</tr>";
+  t += row("Avas vaate", (A, k) => sn[k] || 0);
+  t += row("Vastas", (A) => A.length);
+  t += row("<b>Vastas „katab?“ õigesti</b>", (A) => "<b>" + share(A, (a) => a.oige) + "</b>");
+  t += row("Ei teadnud", (A) => share(A, (a) => a.katab === "eitea"));
+  t += row("Kindlus enne → pärast (1–5)", (A) => avg(A, (a) => a.enne) + " → " + avg(A, (a) => a.kindlus));
+  t += row("Hirm: raha saab otsa", (A) => share(A, (a) => a.hirm === "otsa"));
+  t += row("Hirm: jään elamata", (A) => share(A, (a) => a.hirm === "elamata"));
+  t += row("Eelistati võrdluses", (A, k) => pref[k] || 0);
+  t += "</table>";
+  const q = ans.filter((a) => a.kommentaar).slice(-60).reverse().map((a) => "<li><span>" + PN[a.vaade] + "</span> " + esc(a.kommentaar) + "</li>").join("");
+  return `<section><h2>Plaani vaated (9.10)</h2><p class="small">Peamine mõõdik: vastas küsimusele „Kas plaan katab vajaduse elu lõpuni?“ mudeliga sama vastuse. Vastuseid ${ans.length}.</p><div class="wrap">${t}</div></section><section><h2>Mis aitas või segas</h2><ul>${q || "<li>Veel pole.</li>"}</ul></section>`;
+}
+
+function gone() {
+  const html = `<!doctype html><html lang="et"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Tulevane Mina · seda lehte enam pole</title>
+<style>body{margin:0;font-family:Roboto,Arial,sans-serif;color:#293036;background:#fff}main{max-width:520px;margin:0 auto;padding:48px 16px;display:grid;gap:16px}h1{font-family:Merriweather,Georgia,serif;color:#002f63;margin:0;font-size:26px;line-height:34px}p{margin:0;line-height:1.5}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 16px;border-radius:8px;background:#006ce6;color:#fff;text-decoration:none;font-weight:500}</style></head>
+<body><main><h1>Seda prototüüpi enam pole</h1><p>Lauamäng oli Tulevase Mina varasem katsetus ja see on nüüd suletud.</p><p><a href="/">Proovi uut prototüüpi</a></p></main></body></html>`;
+  return new Response(html, { status: 410, headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex", "cache-control": "no-store" } });
+}
+>>>>>>> Stashed changes
