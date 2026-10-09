@@ -165,3 +165,46 @@ h3 { margin-top: 4px; }
 .det summary { display: grid; gap: 0; align-content: center; }
 .vd-x { font-weight: 500; }
 .btn.out:hover { color: var(--navy); }
+
+/* graafik (FT visual vocabulary) */
+.chart-fig { display: grid; gap: 8px; }
+.ch-t { margin: 0; font: 700 17px/24px var(--serif); color: var(--navy); }
+.ch-s { margin: 0; font-size: 13px; line-height: 18px; color: var(--text-2); }
+.chart-wrap { position: relative; touch-action: pan-y; }
+.chart-wrap:focus-visible { outline-offset: 4px; border-radius: 4px; }
+.ch-tip { background: var(--bg-2); border-radius: var(--r-lg); padding: 8px 12px; font-size: 13px; line-height: 18px; min-height: 120px; }
+.ch-tip .ph { margin: 0; color: var(--text-2); }
+.ch-tip .th { font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.ch-tip .g { display: grid; gap: 2px; }
+.ch-tip .tr { display: flex; justify-content: space-between; gap: 8px; color: var(--text-2); }
+.ch-tip .tr b { color: var(--text); font-variant-numeric: tabular-nums; }
+.ch-tip .tr.bad b { color: var(--loss-text); }
+.legend .ln { height: 2px; width: 14px; background: #293036; border-radius: 0; vertical-align: 3px; }
+.tw { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th, .tbl td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: right; font-variant-numeric: tabular-nums; }
+.tbl th:first-child { text-align: left; }
+.tbl thead th { font-weight: 600; color: var(--text-2); }
+.chart-wrap svg { overflow: visible; }
+.ch-tip .tr b { white-space: nowrap; }
+
+/* toidukorv */
+.gh { display: grid; gap: 10px; }
+.gk { background: var(--hero); border-radius: var(--r-lg); padding: 12px 14px; display: grid; gap: 2px; }
+.gk-t { display: flex; justify-content: space-between; align-items: baseline; }
+.gk-t span { font-size: 14px; color: var(--text-2); } .gk-t b { font: 700 28px/36px var(--serif); color: var(--navy); }
+.gk-s { font-size: 14px; color: var(--text-2); }
+.gl { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; font-size: 12px; color: var(--text-2); text-align: center; border-top: 1px solid var(--border); padding-top: 8px; }
+.gl span:first-child { text-align: left; } .gl span:last-child { text-align: right; }
+.gis { display: grid; gap: 10px; }
+.gi { display: grid; gap: 6px; }
+.gi-h { display: flex; align-items: center; gap: 8px; }
+.gi-h .ic { font-size: 22px; } .gi-h b { flex: 1; font-weight: 600; }
+.gi-h .dl { font-size: 13px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.gi-h .dl.up { color: var(--gain-text); } .gi-h .dl.dn { color: var(--loss-text); }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.g3 button { display: grid; gap: 2px; align-content: center; justify-items: center; min-height: 56px; padding: 6px 4px; border: 1px solid var(--border-2); border-radius: var(--r-lg); background: var(--white); color: var(--text); font: inherit; font-size: 13px; line-height: 17px; text-align: center; cursor: pointer; transition: transform .12s, background .12s; }
+.g3 button b { font-size: 14px; color: var(--navy); font-variant-numeric: tabular-nums; }
+.g3 button[aria-pressed="true"] { border: 2px solid var(--blue); background: var(--gain-tint); padding: 5px 3px; transform: translateY(-1px); }
+.g3 button:active { transform: scale(.97); }
+.bk .between b { white-space: nowrap; }

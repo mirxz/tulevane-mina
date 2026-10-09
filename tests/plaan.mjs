@@ -67,10 +67,17 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   await page.click("[data-act=kmuuda][data-v='-1']");
   await a11y(page, "elukaar");
   await page.click("#tab-korv");
-  const enne = await page.textContent(".bk");
-  await page.click("[data-act=korv][data-v=auto]");
-  check((await page.textContent(".bk")) !== enne, "ostukorvi lisamine muudab summat");
-  for (const id of ["reis", "maakodu", "kultuur", "toit", "abi", "anne", "lapsed"]) await page.click(`[data-act=korv][data-v=${id}]`);
+  const enne = await page.textContent(".bk"), toit0 = await page.textContent(".gk-t b");
+  await page.click("[data-act=toit][data-id=piim][data-v='2']");
+  check((await page.textContent(".gk-t b")) !== toit0 && (await page.textContent(".bk")) !== enne, "toidukorv: piim → öko pakipiim muudab summat ja tulemust");
+  check((await page.locator("[data-act=toit][data-id=piim][data-v='2']").getAttribute("aria-pressed")) === "true", "valitud tase on märgitud");
+  await page.click("[data-act=parim]");
+  check((await page.textContent(".bk")).includes("Mahub"), "„Täida parim, mis mahub“ annab korvi, mis mahub");
+  await page.click("[data-act=nulli]");
+  check((await page.textContent(".gk-s")).includes("tavalisel"), "nulli viib kõik tavalisele tasemele");
+  for (const id of ["vorst", "liha", "kala", "aed", "juust", "kohv", "magus", "leib", "piim"]) await page.click(`[data-act=toit][data-id=${id}][data-v='2']`);
+  await page.click("summary:has-text('Veel: reis')");
+  for (const id of ["reis", "lapsed", "maakodu", "kultuur", "auto", "toit", "abi", "anne"]) await page.click(`[data-act=korv][data-v=${id}]`);
   check((await page.textContent(".vd")).includes("puudu") && (await page.textContent(".bk")).includes("Ei mahu"), "täis korv ei mahu ja tulemus muutub ülal");
   await a11y(page, "ostukorv");
   await page.keyboard.press("Tab"); // fookus liigub
