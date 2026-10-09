@@ -181,3 +181,5 @@ Teadaolevad lüngad v0.1-s:
 - Aitäh-ekraanil on nupp „Jaga linki“ (telefonis süsteemne jagamine, mujal kopeerib lingi). Link on `/?k=jagatud`, sõnum ei sisalda sisestatud andmeid. Jagamine registreeritakse sündmusena `share`.
 - `/tulemused` ülaosas on loendur: lõpetanud, alustanud seadmeid, jaganud.
 - Olemasolevatele D1 tabelitele lisatakse veerg `allikas` automaatselt esimesel päringul.
+
+
