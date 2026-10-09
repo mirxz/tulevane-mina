@@ -71,7 +71,7 @@ Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingi
 
 ## Ülevaatus ja õigused
 
-Kuni Heidi Reinsoni ülevaatuseni on kogu sait parooliga (`PROTO_VOTI`) ja prototüübis pole viiteid tema uurimistööle ega sealsetele leidudele. Mänguelemendid jäävad inspiratsiooniks; häkatonil kasutatavad mängureegli piirangud lepitakse kokku tema tagasiside põhjal (otsuste logi). Häkatoni tulemuste varalised õigused kuuluvad Tulevale.
+Heidi Reinson andis 8.10 loa prototüüpi häkatonil avalikult testida; eraldi mängureegli piiranguid ta ei sea. Prototüübis pole viiteid tema uurimistööle ega sealsetele leidudele. Detailsem tagasiside tuleb hiljem (otsuste logi). Häkatoni tulemuste varalised õigused kuuluvad Tulevale.
 
 ## Mõõtmine ja tagasiside
 
@@ -128,7 +128,7 @@ npm test                    # teises aknas
    - Deploy command: `npx wrangler deploy`.
    - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
 3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
-5. **Prototüübi parool (ülevaatuse ajaks):** samas kohas *Secret* nimega `PROTO_VOTI`. Ilma selleta on sait suletud (avatud ainult kohalikus arenduses ja CI-s). Eelvaated ei saa toodangu saladusi, seega on ka need suletud.
+5. **Prototüübi parool (valikuline):** samas kohas *Secret* nimega `PROTO_VOTI`. Kui see on seatud, küsib sait parooli; ilma selleta on sait avatud.
 4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
 
 ## Allikad
@@ -136,3 +136,25 @@ npm test                    # teises aknas
 - Pensioni kordajad: Sotsiaalkindlustusamet, paindlik vanaduspension.
 - Suremus: Gompertzi mudel, kalibreeritud Eurostati 2023 eeldatavale elueale 65-aastaselt (mehed 15,9, naised 21,1 a).
 - Pensioniiga: TulevaEE/onboarding-client `pensionCalculator/calculation.ts` (MIT).
+
+## Lauamäng (`/mang/`)
+
+Paberprototüübi v0.1 reeglid kolmel tasemel, et häki ajal testida, itereerida ja lihtsustada:
+
+- **L1 kaaslane** `/mang/kaaslane.html`: paberlaua kõrvale. Majandus-, sündmus- ja vestluskaardid, elukell (2 täringut + muutjad) ja tulevase mina kõne (TartuNLP hääl).
+- **L2 üksi** `/mang/`: kogu mäng telefonis. Stardikaart või „Minu enda elu“ (suurusjärgud, 1 münt ≈ 5 000 €).
+- **L3 paar ja seltskond** `/mang/`, kaks moodust:
+  - **Ühes telefonis**: kordamööda, iga käigu ees „Anna telefon“, sest tervisekaart on salajane.
+  - **Igaüks oma telefonis**: võrgutuba, 5-täheline kood ja link. Olek on D1 tabelis `mang_toad` versiooniga; samaaegsed käigud saavad vastuseks 409 ja proovivad uuesti. Toad kustuvad 3 päevaga. Salvestatakse ainult mänguolek.
+
+Reeglid elavad failis `public/mang/engine.js` (puhtad funktsioonid) ja kaardid failis `public/mang/kaardid.json`. Reeglit muutes muuda mootorit ja kaarte, mitte kasutajaliidest.
+
+Testid:
+
+- `node tests/engine.mjs`: 400 juhuslikku mängu.
+- `node tests/mang.mjs http://127.0.0.1:8787`: kaaslane, üksi, paar, kolm telefoni toas, axe.
+
+Teadaolevad lüngad v0.1-s:
+
+- „Säästumäära seadja“ eriõigus (Rõõmu asemel +1 Vara) pole digis rakendatud.
+- Tervisekontroll valib automaatselt (+1 Tervis või kõrge riski ohjamine).
