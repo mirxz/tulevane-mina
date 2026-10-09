@@ -28,8 +28,9 @@ async function a11y(page, label) {
   });
   check(r.length === 0, "ligipääsetavus: " + label + (r.length ? " → " + r.join(" | ") : ""));
 }
+// üks plaan, kolm vahekaarti
 for (const vaade of ["kalk", "kaar", "korv"]) {
-  console.log("\n" + vaade);
+  console.log("\nalgus vahekaardiga " + vaade);
   const page = await browser.newPage({ viewport: { width: 375, height: 812 }, reducedMotion: "reduce" });
   const errors = [], posts = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -38,48 +39,58 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   await page.goto(url + "/?vaade=" + vaade);
   await page.waitForSelector("[data-act=alusta]");
   check((await page.textContent("h1")).includes("elu lõpuni"), "avaleht: JTBD küsimus");
+  check(await page.locator("[data-in=vajadus]").count() === 1 && await page.locator("[data-in=sammas]").isHidden(), "avalehel vähe välju, sambad on kokku volditud");
   await a11y(page, "avaleht");
   await page.fill("[data-in=sunniaasta]", "1970"); await page.press("[data-in=sunniaasta]", "Tab"); await page.waitForTimeout(100);
-  check((await page.textContent("main")).includes("ligikaudu 66"), "pensioniiga uueneb sünniaastaga");
+  check((await page.textContent("main")).includes("66-aastaselt"), "pensioniiga uueneb sünniaastaga");
   await page.click("[data-act=enne][data-v='2']");
   await page.click("[data-act=alusta]");
-  await page.waitForSelector("[data-act=valmis]");
-  check(await page.isVisible(".verdict"), "vaade näitab, kas plaan katab");
-  if (vaade === "kalk") {
-    await page.fill("[data-in=vajadus]", "3000"); await page.press("[data-in=vajadus]", "Tab"); await page.waitForTimeout(450);
-    check((await page.textContent(".verdict")).includes("puudu"), "suur vajadus → puudu");
-    await page.fill("[data-in=vajadus]", "600"); await page.press("[data-in=vajadus]", "Tab"); await page.waitForTimeout(450);
-    check((await page.textContent("main")).includes("Ära koonerda"), "väike vajadus → ära koonerda");
-  }
-  if (vaade === "kaar") {
-    check(await page.isVisible(".chart-wrap svg"), "elukaare graafik");
-    check((await page.textContent(".chart-wrap")).includes("Pension ja sambad"), "otsustuspunktid graafikul");
-    await page.selectOption("[data-in=k]", "3"); await page.waitForTimeout(100);
-    check((await page.textContent(".chart-wrap")).includes("Riiklik pension 69"), "edasilükkamine liigutab otsustuspunkti");
-  }
-  if (vaade === "korv") {
-    const before = await page.textContent("#h-m");
-    await page.click("[data-act=korv][data-v=auto]");
-    check((await page.textContent("#h-m")) !== before, "korvi lisamine muudab summat");
-    for (const id of ["maakodu", "kultuur", "toit", "abi", "anne"]) await page.click(`[data-act=korv][data-v=${id}]`);
-    check((await page.textContent(".verdict")).includes("puudu"), "täis korv ei mahu");
-    await page.click("[data-act=viis][data-v=korraga]");
-    check(await page.isVisible(".meter"), "otsuste muutmine korvi vaates");
-  }
-  await a11y(page, vaade);
-  await page.click("[data-act=valmis]");
+  await page.waitForSelector("[role=tablist]");
+  check(await page.isVisible(".vd"), "ülal on alati tulemus: katab või ei");
+  check((await page.getAttribute("#tab-" + vaade, "aria-selected")) === "true", "avaneb õige vahekaart");
+  check(await page.locator("[role=tab]").count() === 3, "kolm vahekaarti ühes kohas");
+  await a11y(page, "plaan, " + vaade);
+  // vajadus muutub → tulemus muutub
+  await page.fill("[data-in=vajadus]", "3000"); await page.press("[data-in=vajadus]", "Tab"); await page.waitForTimeout(450);
+  check((await page.textContent(".vd")).includes("puudu"), "suur vajadus → puudu");
+  await page.fill("[data-in=vajadus]", "600"); await page.press("[data-in=vajadus]", "Tab"); await page.waitForTimeout(450);
+  check((await page.textContent(".vd")).includes("Ära koonerda"), "väike vajadus → ära koonerda");
+  // pensioni edasilükkamine
+  await page.click("[data-act=kmuuda][data-v='1']"); await page.click("[data-act=kmuuda][data-v='1']"); await page.click("[data-act=kmuuda][data-v='1']");
+  check((await page.textContent(".step")).includes("69-aastaselt") && (await page.textContent(".step")).includes("+18,4%"), "pensioni edasilükkamine: 69 a, +18,4%");
+  await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']");
+  // vahekaartide vahel liikumine
+  await page.click("#tab-kaar");
+  check(await page.isVisible(".chart-wrap svg") && (await page.textContent("#panel")).includes("Otsustuspunktid"), "elukaar: graafik ja otsustuspunktid");
+  await page.click("[data-act=kmuuda][data-v='1']"); await page.waitForTimeout(50);
+  check((await page.textContent("#panel")).includes("67"), "edasilükkamine liigutab otsustuspunkti");
+  await page.click("[data-act=kmuuda][data-v='-1']");
+  await a11y(page, "elukaar");
+  await page.click("#tab-korv");
+  const enne = await page.textContent(".bk");
+  await page.click("[data-act=korv][data-v=auto]");
+  check((await page.textContent(".bk")) !== enne, "ostukorvi lisamine muudab summat");
+  for (const id of ["reis", "maakodu", "kultuur", "toit", "abi", "anne", "lapsed"]) await page.click(`[data-act=korv][data-v=${id}]`);
+  check((await page.textContent(".vd")).includes("puudu") && (await page.textContent(".bk")).includes("Ei mahu"), "täis korv ei mahu ja tulemus muutub ülal");
+  await a11y(page, "ostukorv");
+  await page.keyboard.press("Tab"); // fookus liigub
+  await page.focus("#tab-korv"); await page.keyboard.press("ArrowLeft");
+  check((await page.getAttribute("#tab-kaar", "aria-selected")) === "true", "vahekaarte saab nooleklahvidega vahetada");
+  await page.click("#tab-kalk");
+  check((await page.textContent("#panel")).includes("Turvaliselt saad kulutada"), "arvud: turvaline kulutus");
+  // tagasiside samal lehel
   await page.click("[data-act=saada]");
   check(await page.isVisible("[role=alert]"), "tühja vastust ei saadeta");
   await page.click("[data-act=katab][data-v=jah]"); await page.click("[data-act=kindlus][data-v='4']"); await page.click("[data-act=hirm][data-v=elamata]");
   await page.fill("[data-in=kommentaar]", "Testi kommentaar");
-  await a11y(page, vaade + " tagasiside");
+  await a11y(page, "tagasiside");
   await page.click("[data-act=saada]");
-  await page.waitForSelector("text=Aitäh");
+  await page.waitForSelector("#h-ai");
   await page.waitForTimeout(300);
   const fb = posts.find((p) => p.ev === "feedback");
-  check(fb && fb.vaade === vaade && fb.vastus.kindlus === 4 && fb.vastus.enne === 2 && !("sunniaasta" in fb) && !JSON.stringify(fb).includes("40000"), "tagasiside saadetud, summasid ei saadeta");
-  await page.click("[data-act=vaata] >> nth=0");
-  check(await page.isVisible("[data-act=valmis]"), "saab vaadata teist vaadet");
+  check(fb && fb.vastus.kindlus === 4 && fb.vastus.enne === 2 && fb.vastus.nahtud.split(",").length === 3 && !("sunniaasta" in fb) && !JSON.stringify(fb).includes("40000"), "tagasiside saadetud, summasid ei saadeta, nähtud vaated kaasas");
+  check(posts.filter((p) => p.ev === "start").length >= 4, "vahekaardi vahetus registreeritakse");
+  check(await page.isVisible("[data-act=jaga]"), "aitäh ja jagamisnupp samal lehel");
   check(errors.length === 0, "vigu pole" + (errors.length ? ": " + errors.join(" | ") : ""));
   await page.close();
 }
@@ -92,7 +103,7 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   page.on("request", (r) => { if (r.url().endsWith("/api/p")) posts.push(JSON.parse(r.postData() || "{}")); });
   await page.goto(url + "/?vaade=kalk&k=FB!");
   await page.waitForSelector("[data-act=alusta]");
-  await page.click("[data-act=alusta]"); await page.waitForSelector("[data-act=valmis]"); await page.click("[data-act=valmis]");
+  await page.click("[data-act=alusta]"); await page.waitForSelector("[role=tablist]");
   await page.click("[data-act=katab][data-v=jah]"); await page.click("[data-act=kindlus][data-v='3']"); await page.click("[data-act=hirm][data-v=molemad]");
   await page.click("[data-act=saada]"); await page.waitForSelector("[data-act=jaga]");
   await a11y(page, "aitäh + jagamine");

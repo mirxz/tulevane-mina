@@ -111,3 +111,57 @@ table.score th:first-child, table.score td:first-child { text-align: left; }
 .sticky { position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -4px 16px rgba(0,0,0,.08); }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 details.ass summary { cursor: pointer; color: var(--blue); min-height: 44px; display: flex; align-items: center; }
+
+/* ---- 10.10 ümberdisain: üks plaan, kolm vahekaarti ---- */
+.hint { font-size: 13px; line-height: 18px; color: var(--text-2); font-weight: 400; }
+.lnk { border: 0; background: none; color: var(--blue); min-height: 44px; padding: 0 4px; cursor: pointer; font-weight: 500; }
+.det { border-top: 1px solid var(--border); padding-top: 4px; }
+.det.card { border-top: 0; padding: 4px 16px; }
+.det summary { cursor: pointer; color: var(--blue); min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-weight: 500; }
+.det-in { display: grid; gap: 12px; padding: 4px 0 12px; }
+textarea { font: inherit; padding: 8px 12px; border: 1px solid var(--border-2); border-radius: var(--r); width: 100%; }
+.fs { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+.fs legend, .fs .lg { font-weight: 600; margin: 0 0 6px; padding: 0; }
+/* verdikt */
+.vd { border-radius: var(--r-xl); padding: 16px; display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 4px 12px; align-items: start; }
+.vd.ok { background: var(--gain-tint); } .vd.no { background: var(--loss-tint); }
+.vd-i { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 700 24px/1 var(--sans); color: var(--white); }
+.vd.ok .vd-i { background: var(--gain); } .vd.no .vd-i { background: var(--loss-text); }
+.vd h1 { font-size: 22px; line-height: 30px; }
+.vd p { margin: 4px 0 0; }
+.vd-n { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0 0; }
+.vd-n div { background: rgba(255,255,255,.75); border-radius: var(--r-lg); padding: 8px 12px; }
+.vd-n dt { font-size: 12px; color: var(--text-2); } .vd-n dd { margin: 0; font: 700 20px/28px var(--serif); color: var(--navy); font-variant-numeric: tabular-nums; }
+/* stepper */
+.step { display: grid; grid-template-columns: 52px minmax(0,1fr) 52px; gap: 8px; align-items: stretch; }
+.step button { min-height: 52px; border: 1px solid var(--blue); border-radius: var(--r-lg); background: var(--white); color: var(--blue); font-size: 26px; cursor: pointer; }
+.step button:disabled { border-color: var(--border-2); color: var(--border-2); cursor: not-allowed; }
+.step output { display: grid; place-content: center; text-align: center; background: var(--bg-2); border-radius: var(--r-lg); padding: 4px 8px; }
+.step output b { font: 700 18px/24px var(--serif); color: var(--navy); } .step output span { font-size: 13px; color: var(--text-2); }
+/* vahekaardid */
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0; border-bottom: 2px solid var(--border); }
+.tabs [role=tab] { min-height: 48px; border: 0; background: none; font: 500 16px var(--sans); color: var(--text-2); cursor: pointer; border-bottom: 4px solid transparent; margin-bottom: -2px; }
+.tabs [role=tab][aria-selected="true"] { color: var(--navy); font-weight: 700; border-bottom-color: var(--blue); }
+.panel { background: var(--white); border-radius: 0 0 var(--r-xl) var(--r-xl); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 14px; }
+.lead { margin: 0; }
+/* ostukorv */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.tile { display: grid; gap: 4px; justify-items: start; align-content: start; min-height: 104px; padding: 12px; border: 1px solid var(--border-2); border-radius: var(--r-lg); background: var(--white); text-align: left; cursor: pointer; font: inherit; color: var(--text); position: relative; }
+.tile .ic { font-size: 28px; line-height: 32px; } .tile .nm { font-size: 14px; line-height: 20px; } .tile .pr { font-weight: 700; color: var(--navy); margin-top: auto; }
+.tile[aria-pressed="true"] { border: 2px solid var(--blue); background: var(--gain-tint); padding: 11px; }
+.tile[aria-pressed="true"]::after { content: "✓"; position: absolute; top: 8px; right: 10px; color: var(--blue); font-weight: 700; }
+.bk { display: grid; gap: 8px; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px; }
+.bk p { margin: 0; font-size: 15px; line-height: 22px; }
+/* otsustuspunktid */
+h3 { margin-top: 4px; }
+.pts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pts li { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 12px; align-items: center; }
+.pts b { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--navy); color: var(--white); font: 700 16px var(--sans); }
+.pts li:nth-last-child(1) b { background: var(--bg-2); color: var(--navy); }
+.pts span { display: grid; font-weight: 500; } .pts small { color: var(--text-2); font-weight: 400; font-size: 13px; }
+.chart-wrap { overflow: visible; }
+.legend { gap: 4px 14px; }
+.seg { display: flex; width: 100%; } .seg button { flex: 1; }
+.det summary { display: grid; gap: 0; align-content: center; }
+.vd-x { font-weight: 500; }
+.btn.out:hover { color: var(--navy); }
