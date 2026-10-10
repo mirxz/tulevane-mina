@@ -475,8 +475,20 @@ fieldset:disabled .choice { cursor: not-allowed; }
       <p class="text-secondary">Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks. Vahepealsed aastad elad samba rahast (sild).</p>
       <div id="deferLocked" class="note mb-3 d-none"><span id="deferLockedTxt"></span> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda väljamakse viisi</button></div>
       <fieldset id="deferSet">
-        <legend class="visually-hidden">Riikliku pensioni algus</legend>
+        <legend class="form-label">Millal hakkad riiklikku pensioni saama?</legend>
         <div class="choices choices-sm" id="deferChoices"></div>
+      </fieldset>
+      <fieldset id="payoutPaSet" class="mt-4 d-none">
+        <legend class="form-label">Kuidas hakkad samba raha kasutama?</legend>
+        <p class="small-muted mb-2">Jätkasid 60-aastaselt kasvatamist. Nüüd, pensionieas, otsustad.</p>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="payoutPa" value="grow" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi</strong><small>Raha jääb fondi. Võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
+          <label class="choice"><input type="radio" name="payoutPa" value="lump">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>Ühekordne väljamakse, 10% tulumaks. Raha on hoiusel.</small></span></label>
+          <label class="choice"><input type="radio" name="payoutPa" value="fund">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
+        </div>
       </fieldset>
     </section>
 
@@ -680,7 +692,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const pa = retirementYears(input);
     const currentAge = CURRENT_YEAR - input.birthYear;
     const startAge = Math.max(currentAge, 55);
-    const deferral = scenario.id === 'C' ? scenario.deferral : 0;
+    const deferral = scenario.deferral || 0; // C: sild fondipensioniga; teised stsenaariumid võivad samuti edasi lükata
     const p1Start = pa + deferral;
     const p1Year = input.p1Monthly * (1 + DEFERRAL_INCREASE[deferral]) * 12;
     const needYear = need * 12;
@@ -948,6 +960,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       realReturn: FUNDS[fundNow].r,
       child: child, childMonthly: childMonthly, child18: child18, childNow: childNow,
       payout: radio('payout'),
+      // Tegelik väljamakse viis: kui 60-aastaselt jätkad kasvatamist, otsustad pensionieas.
+      method: radio('payout') === 'grow' ? (radio('payoutPa') || 'grow') : radio('payout'),
       deferral: parseInt(radio('defer') || '0', 10),
       contract: radio('contract'),
       pkg: pkg,
@@ -964,9 +978,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   // Valikud → üks stsenaarium failist pension.js.
   function scenarioFor(input) {
     const S = (id) => P.SCENARIOS.find((s) => s.id === id);
-    if (input.payout === 'lump') return S('A');
-    if (input.payout === 'grow') return GROW;
-    if (input.deferral > 0) return Object.assign({}, S('C'), { deferral: input.deferral });
+    const d = { deferral: input.deferral };
+    if (input.method === 'lump') return Object.assign({}, S('A'), d);
+    if (input.method === 'grow') return Object.assign({}, GROW, d);
+    if (input.deferral > 0) return Object.assign({}, S('C'), d);
     return input.contract === 'yearly' ? S('D') : S('B');
   }
 
@@ -1169,13 +1184,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
           'Pensionieaks jääb III sambasse ' + eur(input.p3Rem) + '. ' + (input.p3Use === 'save' ? 'Väljamaksed paned hoiusele pensioniks.' : 'Väljamaksed kasutad kohe.');
 
     // Pensioniiga: edasilükkamine
-    const lump = input.payout === 'lump' || input.payout === 'grow'; // edasilükkamist arvestab ainult fondipensioni sild
-    $('deferLockedTxt').textContent = input.payout === 'grow'
-      ? 'Kui jätkad kasvatamist, arvestab see lugu riikliku pensioniga kohe pensionieas.'
-      : 'Kui võtad samba raha korraga välja, arvestab see lugu riikliku pensioniga kohe pensionieas.';
-    $('deferLocked').classList.toggle('d-none', !lump);
-    $('deferSet').disabled = lump;
-    const curDef = lump ? 0 : input.deferral;
+    // Edasilükkamine käib kõigi väljamakse viisidega: vahepeal elad samba või hoiuse rahast.
+    $('deferLocked').classList.add('d-none');
+    $('payoutPaSet').classList.toggle('d-none', input.payout !== 'grow');
+    const curDef = input.deferral;
     $('deferChoices').innerHTML = [0, 1, 2, 3, 4, 5].map((d) => {
       const inc = P.DEFERRAL_INCREASE[d];
       return '<label class="choice"><input type="radio" name="defer" value="' + d + '"' + (d === curDef ? ' checked' : '') + '>' +
@@ -1186,8 +1198,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
 
     // 66+
     let lockMsg = '';
-    if (input.payout === 'grow') lockMsg = 'Jätkad kasvatamist, nii et fondipensioni lepingut pole. Raha kasvab fondis edasi ja võtad välja ainult nii palju, kui kuus vaja (10% tulumaks).';
-    else if (lump) lockMsg = 'Võtsid samba raha korraga välja, nii et fondipensioni lepingut pole vaja. Raha on hoiusel ja kasutad seda vajaduse järgi.';
+    if (input.method === 'grow') lockMsg = 'Kasvatad edasi, nii et fondipensioni lepingut pole. Raha kasvab fondis ja võtad välja ainult nii palju, kui kuus vaja (10% tulumaks).';
+    else if (input.method === 'lump') lockMsg = 'Võtsid samba raha korraga välja, nii et fondipensioni lepingut pole vaja. Raha on hoiusel ja kasutad seda vajaduse järgi.';
     else if (input.deferral > 0) lockMsg = 'Lükkasid riikliku pensioni ' + input.deferral + ' aastat edasi. Seni elad samba rahast (sild) ja fondipensioni lepingu sõlmid siis, kui riiklik pension algab (' + (pa + input.deferral) + '-aastaselt).';
     $('contractLocked').textContent = lockMsg;
     $('contractLocked').classList.toggle('d-none', !lockMsg);
@@ -1196,7 +1208,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
 
   function renderPotBar(input) {
     const pa = P.retirementYears(input);
-    const p1 = input.payout !== 'fund' ? input.p1Monthly : input.p1Monthly * (1 + P.DEFERRAL_INCREASE[input.deferral]);
+    const p1 = input.p1Monthly * (1 + P.DEFERRAL_INCREASE[input.deferral]);
     const items = [
       ['🏦', eur(potAtPension(input, input.realReturn)), 'sammastes ' + pa + '-aastaselt'],
       ['🏛️', eur(p1) + ' /kuus', 'riiklik pension'],
@@ -1274,8 +1286,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const items = [
       [0, '🙂', 'Sündinud ' + input.birthYear + ', II sammas ' + eur(input.p2) + ', III sammas ' + eur(input.p3Base)],
       [4, '🔓', !input.p3Has ? 'III sammast ei ole' : input.p3Plan === 'keep' ? 'III sammas jääb kasvama' : (input.p3Plan === 'lump' ? 'Võtan III samba ' + input.p3Age + '-aastaselt korraga välja: ' + eur(input.p3Net) : 'Täiendav fondipension III sambast alates ' + input.p3Age + '-aastaselt: ' + eur(input.p3Net)) + (input.p3Plan === 'keep' ? '' : input.p3Use === 'save' ? ', hoiusele' : ', kasutan kohe')],
-      [5, '🧳', { grow: 'Jätkan kasvatamist, võtan välja vajaduse järgi', lump: 'Võtan samba raha korraga välja', fund: 'Võtan samba raha välja fondipensionina' }[input.payout]],
-      [6, '🏛️', input.payout !== 'fund' || !input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)'],
+      [5, '🧳', { grow: '60-aastaselt jätkan kasvatamist', lump: 'Võtan samba raha korraga välja', fund: 'Võtan samba raha välja fondipensionina' }[input.payout]],
+      [6, '🏛️', (input.payout === 'grow' ? { grow: 'Pensionieas kasvatan edasi, võtan välja vajaduse järgi', lump: 'Pensionieas võtan kõik korraga', fund: 'Pensionieas fondipension' }[input.method] + '. ' : '') + (!input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)')],
       [7, '🌳', scenario.id + '. ' + scenario.name],
       [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
