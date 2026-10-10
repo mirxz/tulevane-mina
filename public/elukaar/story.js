@@ -167,6 +167,7 @@
       if (a < p3OpenAge || (p3Plan === 'fund' && a < pa) || (p3Plan === 'lump' && a < p3Age)) c3Adj -= c3 / Math.pow(1 + rFinal, a - currentAge + 1);
     }
     let p3Gross = 0, p3Net = 0, p3Rem = 0, p3Tax = 0;
+    const p3Early = {};
     if (p3Plan !== 'keep') {
       let b = p3Base;
       for (let a = currentAge; a < p3Age; a++) b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3 : 0);
@@ -177,6 +178,7 @@
         for (let a = p3Age; a < pa; a++) {
           const pay = b / P.fundPensionTerm(T, sex, a);
           b -= pay; p3Gross += pay; p3Net += pay * (a >= p3Open ? 1 : 0.78);
+          p3Early[a] = (pay * (a >= p3Open ? 1 : 0.78)) / 12; // enne pensioniiga makstav III samba fondipension kuus (graafikule)
           b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3 : 0); // sissemakse läheb samasse lepingupotti
         }
         p3Rem = b; // pensionieas läheb ülejääk ühisesse samba rahasse
@@ -213,7 +215,7 @@
       p3Before2021: p3Before2021,
       p3Has: p3Has, p3Kind: p3Kind, p3OpenAge: p3OpenAge, p3Allowed: p3Allowed,
       p3Open: p3Open, p3Age: p3Age, p3Plan: p3Plan, p3Use: p3Use,
-      p3Gross: p3Gross, p3Net: p3Net, p3Tax: p3Tax, p3Rem: p3Rem,
+      p3Gross: p3Gross, p3Net: p3Net, p3Tax: p3Tax, p3Rem: p3Rem, p3Early: p3Early,
       extraDeposit: p3Plan !== 'keep' && p3Use === 'save' ? p3Net : 0,
       pensionAgeYears: parseInt($('pensionAgeYears').value, 10),
       paMonths: 0, // vanused näidatakse täisaastates (65 a), kuid ei kasutata
@@ -732,11 +734,12 @@
     return parts;
   }
   function chartTable(r, input) {
-    const rows = r.rows.filter((x) => x.age >= r.pensionStartAge);
+    const firstPre = r.rows.find((x) => x.pre);
+    const rows = r.rows.filter((x) => x.age >= (firstPre ? firstPre.age : r.pensionStartAge));
     return '<table class="table table-sm align-middle mb-0"><caption id="chartTableCaption">Sissetulek ja kulud kuus vanuse järgi (tänastes eurodes)</caption>' +
       '<thead><tr><th scope="col">Vanus</th><th scope="col">Aasta</th><th scope="col" class="text-end">I sammas</th><th scope="col" class="text-end">II sammas</th><th scope="col" class="text-end">III sammas</th><th scope="col" class="text-end">Hoiuselt</th><th scope="col" class="text-end">Kulud</th><th scope="col" class="text-end">Puudu</th><th scope="col" class="text-end">Elus</th></tr></thead><tbody>' +
       rows.map((x) => '<tr><th scope="row">' + x.age + '</th><td>' + x.year + '</td><td class="text-end">' + eur(x.i1) + '</td><td class="text-end">' + eur(x.i2) + '</td><td class="text-end">' + eur(x.i3) + '</td><td class="text-end">' + eur(x.dep) +
-        '</td><td class="text-end">' + eur(input.needMonthly) + '</td><td class="text-end">' + (x.shortfall > 0.5 ? eur(x.shortfall) : '–') + '</td><td class="text-end">' + Math.round(x.alive * 100) + '%</td></tr>').join('') +
+        '</td><td class="text-end">' + (x.pre ? '–' : eur(input.needMonthly)) + '</td><td class="text-end">' + (x.shortfall > 0.5 ? eur(x.shortfall) : '–') + '</td><td class="text-end">' + Math.round(x.alive * 100) + '%</td></tr>').join('') +
       '</tbody></table>';
   }
 
@@ -793,7 +796,13 @@
       : r.coversNeedUntil <= pa
         ? 'Lühidalt: sinu kulud on ' + eur(need) + ' kuus ja raha jääb puudu juba pensioni alguses.'
         : 'Lühidalt: sinu kulud on ' + eur(need) + ' kuus. Raha jätkub ' + ageOf(r.coversNeedUntil - 1).replace('-aastaselt', '. eluaastani') + ', siis jääb puudu.';
-    const items = phases.map((ph, n) => {
+    // Enne pensioniiga: III samba väljavõtt 55-aastaselt (fondipension või korraga).
+    const pre = r.rows.filter((x) => x.pre);
+    const preItems = [];
+    if (pre.length) preItems.push('<li><strong>' + pre[0].age + '–' + pre[pre.length - 1].age + ' a (enne pensioniiga):</strong> III samba fondipension keskmiselt ' +
+      eur(pre.reduce((s, x) => s + x.i3, 0) / pre.length) + ' kuus pärast maksu. See on lisaraha palgale. Ülejäänud III samba raha kasvab edasi.</li>');
+    else if (input.p3Has && input.p3Plan === 'lump') preItems.push('<li><strong>' + input.p3Age + ' a:</strong> võtad III samba korraga välja, ' + eur(input.p3Net) + ' pärast maksu. Pensioniks seda ei jää.</li>');
+    const items = preItems.concat(phases.map((ph, n) => {
       const ages = ph.from === ph.to ? ph.from + ' a' : ph.from + '–' + ph.to + ' a';
       const src = parts(ph);
       const short = avg(ph, 'shortfall');
@@ -804,7 +813,7 @@
         // Kui väljamakse on suurem kui vaja, läheb ülejääk hoiusele (seda kasutatakse hiljem).
         (surplus(ph) > 0.5 ? ' Üle jääb keskmiselt ' + eur(surplus(ph)) + ' kuus, see läheb hoiusele.' : '') +
         (endAlive !== null && ph.to < 100 ? ' ' + ageOf(ph.to).replace('-aastaselt', '-aastaseks') + ' elab umbes ' + endAlive + '% sinuvanustest.' : '') + '</li>';
-    });
+    }));
     const kind = mobile ? 'Kihid' : 'Tulbad';
     const look = '<ul class="mb-0">' +
       '<li>' + kind + ' näitavad iga vanuse kohta, millest kulud kaetakse: ' +
@@ -820,7 +829,7 @@
     const mobile = isMobile();
     $('chartExplain').innerHTML = chartExplain(r, input, mobile);
     // Mobiilis: kihiline pindgraafik pensioniea algusest (tulpade asemel), elus-% ilma eraldi teljeta.
-    const rows = mobile ? r.rows.filter((x) => x.age >= r.pensionStartAge) : r.rows;
+    const rows = mobile ? r.rows.filter((x) => x.age >= r.pensionStartAge || x.pre) : r.rows;
     $('chartSummary').innerHTML = chartSummary(r, input).map((s) => '<li>' + s + '</li>').join(''); // iga lause eraldi real
     $('chartTableWrap').innerHTML = chartTable(r, input);
     const font = { family: 'Roboto', size: 14 };
@@ -835,9 +844,9 @@
         Object.assign({ type: 'bar', label: 'III sammas', data: rows.map((x) => Math.round(x.i3)), backgroundColor: dots('#006ce6', '#ffffff'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
         Object.assign({ type: 'bar', label: 'Hoiuselt (välja võetud raha)', data: rows.map((x) => Math.round(x.dep)), backgroundColor: stripes('#9fd8f0', '#002f63'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
         // Joonte valge „halo“ (laiem valge joon all), et jooned paistaksid ka tumedate tulpade peal. Legendis ja vihjes ei näidata.
-        { type: 'line', label: '_halo', data: rows.map(() => input.needMonthly), borderColor: '#fff', borderWidth: 6, pointRadius: 0, stack: 'needHalo', yAxisID: 'y', order: 2, halo: true },
+        { type: 'line', label: '_halo', data: rows.map((x) => (x.age >= r.pensionStartAge ? input.needMonthly : null)), borderColor: '#fff', borderWidth: 6, pointRadius: 0, stack: 'needHalo', yAxisID: 'y', order: 2, halo: true },
         { type: 'line', label: '_halo', data: rows.map((x) => Math.round(x.alive * 100)), borderColor: '#fff', borderWidth: 6, pointRadius: 0, tension: 0.3, yAxisID: 'y1', order: 2, halo: true },
-        { type: 'line', label: 'Kulud', data: rows.map(() => input.needMonthly), borderColor: '#db2200', borderDash: [6, 4], borderWidth: 2.5, pointRadius: 0, stack: 'need', yAxisID: 'y', order: 1 },
+        { type: 'line', label: 'Kulud', data: rows.map((x) => (x.age >= r.pensionStartAge ? input.needMonthly : null)) /* kulud alates pensionieast */, borderColor: '#db2200', borderDash: [6, 4], borderWidth: 2.5, pointRadius: 0, stack: 'need', yAxisID: 'y', order: 1 },
         { type: 'line', label: mobile ? 'Elus (%)' : 'Elus (%, paremal teljel)', data: rows.map((x) => Math.round(x.alive * 100)), borderColor: '#8a8d91', backgroundColor: '#fff', borderWidth: 2.5, order: 1, tension: 0.3, yAxisID: 'y1',
           pointRadius: rows.map((x) => (!mobile && x.age % 5 === 0 ? 3.5 : 0)), pointBorderWidth: 2, pointStyle: 'circle' },
       ],
@@ -881,6 +890,8 @@
     const defs = SCEN.map((s) => (s.id === 'C' ? Object.assign({}, s, { deferral: input.deferral || 2 }) : s)).concat([GROW]);
     const results = defs.map((s) => Object.assign(P.simulate(input, T, s), { sustainable: P.sustainableNeed(input, T, s) }));
     const mine = Object.assign(P.simulate(input, T, scenario), { sustainable: P.sustainableNeed(input, T, scenario) });
+    // Mootor arvestab rahavoogu pensioniea algusest. Enne seda 55-aastaselt alanud III samba fondipension näidatakse graafikul eraldi.
+    mine.rows.forEach((x) => { if (x.age < mine.pensionStartAge && input.p3Early[x.age]) { x.i3 = input.p3Early[x.age]; x.pre = true; } });
     $('answer').innerHTML = answerText(mine, input);
     renderMetrics(mine);
     renderChart(mine, input);
