@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tulevane Mina · lugu</title>
-  <meta name="description" content="Sinu pensionilugu sünnist elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
+  <meta name="description" content="Sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -203,6 +203,22 @@ fieldset:disabled .choice { cursor: not-allowed; }
 .tips li { padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; background: #fff; border: 1px solid var(--blue-border-1); border-radius: 0.5rem; }
 .legacy-hint { color: var(--text-primary); font-weight: 500; }
 
+/* UX/a11y parandused (ui-ux-pro-max ülevaatus) */
+/* 1. Kontrast: väike hall tekst vähemalt 4.5:1 (#6b7074 valgel 4.9:1, kollasel 4.6:1) */
+.small-muted, .form-text, footer, .pkg-or { color: var(--text-secondary) !important; }
+/* 3. Kleepuv alumine riba ei tohi fookust ega sisu katta */
+html { scroll-padding-bottom: 8rem; }
+main.container { padding-bottom: 1rem; }
+@media (max-width: 575px) {
+  .pot-bar { padding: 0.5rem 0.75rem; gap: 0.25rem 0.75rem; bottom: 0.5rem; }
+  .pot-item small { font-size: 0.6875rem; }
+  .pot-emoji { font-size: 1rem; }
+  html { scroll-padding-bottom: 6rem; }
+}
+/* 2. Rada mobiilis: kerimine ühe sammu kaupa */
+.path { scroll-snap-type: x proximity; scrollbar-width: thin; }
+.path li { scroll-snap-align: center; }
+
 </style>
 </head>
 <body>
@@ -210,7 +226,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
     <header class="mb-3">
       <p class="small-muted mb-1">Tuleva häkaton 2026 · prototüüp · <a href="https://meelisb.github.io/tuleva-tulevik/">kalkulaatori vaade</a></p>
       <h1 class="mb-1">Tulevane Mina</h1>
-      <p class="lead text-secondary mb-0">Sinu pensionilugu sünnist elu lõpuni. Kas raha jätkub?</p>
+      <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
     </header>
 
     <!-- Eluteekond: navigeerimine etappide vahel -->
@@ -1506,6 +1522,12 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     $('nextBtn').textContent = step === shown[shown.length - 2] ? 'Näita tulemust →' : 'Edasi →';
     $('stepCount').textContent = 'Samm ' + (pos + 1) + ' / ' + shown.length;
     update();
+    // Mobiilis võib rada olla laiem kui ekraan: keri aktiivne samm nähtavale.
+    const cur = $('path').querySelector('[aria-current="step"]');
+    if (cur) {
+      const li = cur.parentElement, path = $('path');
+      path.scrollTo({ left: li.offsetLeft - (path.clientWidth - li.offsetWidth) / 2, behavior: focus === false ? 'auto' : 'smooth' });
+    }
     if (focus !== false) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       const h = chapters[step].querySelector('h2'); if (h) h.focus({ preventScroll: true });
