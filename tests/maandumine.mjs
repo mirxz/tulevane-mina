@@ -37,7 +37,7 @@ for (const [id, aasta] of Object.entries(PROFIILID)) {
   const errors = []; page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(url + "/elukaar/?p=" + id, { waitUntil: "domcontentloaded" });
   const v = await page.inputValue("#birthYear");
-  check(v === String(aasta) && (await page.isVisible("#profileNote")) && errors.length === 0, id + ": sünniaasta " + v + ", märge nähtav, vigu pole" + (errors.length ? " (" + errors[0] + ")" : ""));
+  check(v === String(aasta) && errors.length === 0, id + ": sünniaasta " + v + ", vigu pole" + (errors.length ? " (" + errors[0] + ")" : ""));
   await page.close();
 }
 {
@@ -51,8 +51,8 @@ for (const [id, aasta] of Object.entries(PROFIILID)) {
   check((await page.inputValue("#p2")) === "30414", "liige-steady: II sammas täidetud");
     await page.fill("#p2", "20000");
   check((await page.inputValue("#p2")) === "20000", "täidetud välja saab muuta");
-  await page.goto(url + "/elukaar/?p=ei-ole"); check(!(await page.isVisible("#profileNote")), "tundmatu profiil ei täida midagi");
-  await page.goto(url + "/elukaar/"); check(!(await page.isVisible("#profileNote")), "ilma profiilita vana käitumine");
+  await page.goto(url + "/elukaar/?p=ei-ole"); check((await page.inputValue("#birthYear")) !== "1968", "tundmatu profiil ei täida midagi");
+  await page.goto(url + "/elukaar/"); check((await page.inputValue("#birthYear")) !== "1984", "ilma profiilita vana käitumine");
   await page.close();
 }
 await browser.close();

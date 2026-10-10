@@ -309,8 +309,6 @@ main.container { padding-bottom: 1rem; }
 <body>
   <main class="container py-4">
     <header class="mb-3">
-      <p class="small-muted mb-1">Tuleva häkaton 2026 · prototüüp</p>
-      <p class="small mb-1" id="profileNote" hidden></p>
       <h1 class="mb-1">Tulevane Mina</h1>
       <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
     </header>
@@ -725,7 +723,7 @@ main.container { padding-bottom: 1rem; }
     <aside class="pot-bar mt-3" aria-label="Jooksev kokkuvõte" id="potBar"></aside>
 
     <footer class="mt-4">
-      <div class="note mb-3"><strong>See on prototüüp, mitte finants- ega maksunõu.</strong> Kõik arvutused tehakse sinu brauseris ja midagi ei salvestata.</div>
+      <div class="note mb-3"><strong>See on häkatoni prototüüp, mitte finants- ega maksunõu ega Tuleva ametlik kalkulaator.</strong> Kõik arvutused tehakse sinu brauseris ja sisestatud numbreid ei salvestata ega saadeta kuhugi.</div>
       <p class="small-muted"><a href="/tagasiside/" id="tagasisideLink2">Anna tagasisidet</a> · anonüümne, umbes kaks minutit.</p>
     </footer>
   </main>
@@ -1939,9 +1937,6 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     Object.entries(pr).forEach(([field, v]) => { if (field === 'nimi') return; const el = $(field); if (!el) return; el.value = String(v); el.classList.add('is-prefilled'); });
     paTouched = true;
     syncPensionAge();
-    const note = $('profileNote');
-    note.textContent = 'Alustad profiilist: ' + pr.nimi + '. Kõiki andmeid saad ise muuta.';
-    note.hidden = false;
     update();
     try {
       const p0 = sessionStorage.getItem('mina_p0');
