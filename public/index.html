@@ -15,13 +15,6 @@
   --text-primary: #293036; --text-secondary: #5a6066; --gray-bg-1: #fafbfc; --gray-bg-2: #f5f7f9; --gray-border-2: #d6dee6; --gray-border-3: #c8d0d8;
   --page-bg: #ffffff; --card-bg: #ffffff; --link: #006ce6;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --navy: #cfe0f5; --blue: #7db4ff; --note-bg: #3a331a; --note-border: #5a4f26;
-    --text-primary: #e8ecf0; --text-secondary: #b3bbc4; --gray-bg-1: #1b2026; --gray-bg-2: #232a31; --gray-border-2: #38424c; --gray-border-3: #4a5560;
-    --page-bg: #14181d; --card-bg: #1b2026; --link: #7db4ff;
-  }
-}
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--page-bg); color: var(--text-primary); font: 16px/1.5 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
 main { max-width: 880px; margin: 0 auto; padding: 24px 16px 56px; }
@@ -48,7 +41,7 @@ section { margin: 0 0 32px; }
 .c-go { margin-top: auto; padding-top: 8px; color: var(--link); font-weight: 500; }
 .level2 { margin-top: 20px; padding: 16px; border: 1px solid var(--gray-border-2); border-radius: 12px; background: var(--gray-bg-1); }
 .level2[hidden] { display: none; }
-.level2 p.hint { margin: 0 0 12px; color: var(--text-secondary); }
+p.hint { margin: 0 0 16px; color: var(--text-secondary); }
 .profile { cursor: pointer; }
 .p-name { font-weight: 700; color: var(--navy); }
 .p-text { color: var(--text-primary); }
@@ -59,7 +52,6 @@ section { margin: 0 0 32px; }
 .p-bar i { display: block; height: 100%; background: var(--blue); }
 .p-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: var(--note-bg); border: 1px solid var(--note-border); color: var(--text-primary); font-size: 0.75rem; font-weight: 500; vertical-align: middle; }
 .p-go { margin-top: auto; padding-top: 6px; color: var(--link); font-weight: 500; }
-.foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--gray-border-2); color: var(--text-secondary); font-size: 0.875rem; }
 .skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; background: var(--page-bg); padding: 8px; z-index: 5; }
   </style>
 </head>
@@ -83,54 +75,16 @@ section { margin: 0 0 32px; }
     </section>
 
     <section aria-labelledby="alusta-h" id="alusta">
-      <h2 id="alusta-h">1. Millega tahad alustada?</h2>
-      <ul class="grid two" id="level1">
-        <li><a class="card" href="/elukaar/?p=konto-naidis"><span class="c-name">Tuleva konto näide</span><span class="c-text">Väljamõeldud 58-aastane liige, nagu Tuleva sisselogitud kasutajale andmed eeltäidaks.</span><span class="c-go">Alusta näitega →</span></a></li>
-        <li><a class="card" href="/elukaar/?p=tuhi"><span class="c-name">Sisestan ise nullist</span><span class="c-text">Alguses on Eesti keskmised väärtused. Kirjuta oma numbrid.</span><span class="c-go">Alusta nullist →</span></a></li>
-        <li><button type="button" class="card" id="btn-liige" aria-expanded="false" aria-controls="lvl-liige"><span class="c-name">Tuleva liikmest koguja</span><span class="c-text">Vali tüüpiline koguja profiil Tuleva liikmete seast.</span><span class="c-go">Vali profiil ↓</span></button></li>
-        <li><button type="button" class="card" id="btn-mitte" aria-expanded="false" aria-controls="lvl-mitte"><span class="c-name">Tuleva mitteliikmest koguja</span><span class="c-text">Vali tüüpiline koguja profiil nende seast, kes pole Tuleva liikmed.</span><span class="c-go">Vali profiil ↓</span></button></li>
+      <h2 id="alusta-h">Millega tahad alustada?</h2>
+      <p class="hint">Vali algpunkt. Numbrid on alles algus – järgmises vaates saad kõiki muuta.</p>
+      <ul class="grid profiles" id="level1">
+        <li><a class="card profile" href="/elukaar/?p=konto-naidis"><span class="p-name">Tuleva konto näide</span><span class="p-text">Väljamõeldud 58-aastane liige, nagu Tuleva sisselogitud kasutajale andmed eeltäidaks.</span><span class="p-nums">58-aastane · brutopalk 2 900 €</span><span class="p-nums">Vara kokku <strong>60 100 €</strong> (II sammas 38 400 €, III sammas 21 700 €)</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=liige-steady"><span class="p-name">Tüüpiline Tuleva liige</span><span class="p-text">Kogud korrapäraselt: II sammas 6% palgast ja natuke III sammast.</span><span class="p-nums">42-aastane · brutopalk 2 838 €</span><span class="p-nums">Vara kokku <strong>44 514 €</strong> (II sammas 30 414 €, III sammas 14 100 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:39%"></i></span>39% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=mitte-single"><span class="p-name">Tüüpiline Tuleva mitteliige</span><span class="p-text">Sul on ainult III sammas, II sammast pole.</span><span class="p-nums">36-aastane · brutopalk 1 727 €</span><span class="p-nums">Vara kokku <strong>6 290 €</strong> (II sammas 0 €, III sammas 6 290 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:62%"></i></span>62% mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=valja"><span class="p-name">Võtsin II samba välja</span><span class="p-text">Võtsid II samba raha välja, kui riik selleks võimaluse andis. Sul on ees ainult riiklik pension.</span><span class="p-nums">40-aastane · brutopalk 2 000 €</span><span class="p-nums">Vara kokku <strong>0 €</strong> (II sammas 0 €, III sammas 0 €)</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
       </ul>
-
-      <div class="level2" id="lvl-liige" role="region" aria-labelledby="h-liige" hidden>
-        <h3 id="h-liige" tabindex="-1">2. Milline Tuleva liikmest koguja sa oled?</h3>
-        <p class="hint">Need on Tuleva andmetest tehtud tüüpilised kogujad. Protsent näitab, kui suur osa grupist on sellised. Numbrid on algpunkt – järgmises vaates saad kõiki muuta.</p>
-        <ul class="grid profiles">
-        <li><a class="card profile" href="/elukaar/?p=liige-power"><span class="p-name">Kogun palju</span><span class="p-text">Paned II sambasse 6% palgast ja lisaks maksad igakuiselt III sambasse.</span><span class="p-nums">42-aastane · brutopalk 4 301 €</span><span class="p-nums">Vara kokku <strong>83 626 €</strong> (II sammas 57 126 €, III sammas 26 500 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:26%"></i></span>26% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=liige-steady"><span class="p-name">Kogun korrapäraselt <span class="p-badge">Kõige tavalisem</span></span><span class="p-text">Paned II sambasse 6% palgast ja natuke ka III sambasse.</span><span class="p-nums">42-aastane · brutopalk 2 838 €</span><span class="p-nums">Vara kokku <strong>44 514 €</strong> (II sammas 30 414 €, III sammas 14 100 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:39%"></i></span>39% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=liige-coaster"><span class="p-name">Kogun vähe</span><span class="p-text">Paned II sambasse ainult 2% palgast, III sambasse ei maksa.</span><span class="p-nums">41-aastane · brutopalk 2 417 €</span><span class="p-nums">Vara kokku <strong>29 751 €</strong> (II sammas 20 351 €, III sammas 9 400 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:8%"></i></span>7,8% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=liige-single"><span class="p-name">Mul on ainult üks sammas</span><span class="p-text">II sammast sul pole, raha on ainult III sambas.</span><span class="p-nums">46-aastane · brutopalk 2 892 €</span><span class="p-nums">Vara kokku <strong>28 189 €</strong> (II sammas 0 €, III sammas 28 189 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:19%"></i></span>19% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=liige-gone"><span class="p-name">Olen raha välja võtnud</span><span class="p-text">Tuleva fondides raha enam pole. Alustad nullist ja II sambasse läheb 2% palgast.</span><span class="p-nums">48-aastane · brutopalk 2 038 €</span><span class="p-nums">Vara kokku <strong>0 €</strong> (II sammas 0 €, III sammas 0 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:9%"></i></span>8,8% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        </ul>
-      </div>
-
-      <div class="level2" id="lvl-mitte" role="region" aria-labelledby="h-mitte" hidden>
-        <h3 id="h-mitte" tabindex="-1">2. Milline Tuleva mitteliikmest koguja sa oled?</h3>
-        <p class="hint">Need on Tuleva andmetest tehtud tüüpilised kogujad. Protsent näitab, kui suur osa grupist on sellised. Numbrid on algpunkt – järgmises vaates saad kõiki muuta.</p>
-        <ul class="grid profiles">
-        <li><a class="card profile" href="/elukaar/?p=mitte-power"><span class="p-name">Kogun palju</span><span class="p-text">Paned II sambasse 6% palgast ja lisaks maksad igakuiselt III sambasse.</span><span class="p-nums">39-aastane · brutopalk 3 669 €</span><span class="p-nums">Vara kokku <strong>51 528 €</strong> (II sammas 33 528 €, III sammas 18 000 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:4%"></i></span>3,5% Tuleva mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=mitte-steady"><span class="p-name">Kogun korrapäraselt</span><span class="p-text">Paned II sambasse 6% palgast ja natuke ka III sambasse.</span><span class="p-nums">37-aastane · brutopalk 2 515 €</span><span class="p-nums">Vara kokku <strong>23 526 €</strong> (II sammas 15 326 €, III sammas 8 200 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:17%"></i></span>17% Tuleva mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=mitte-coaster"><span class="p-name">Kogun vähe</span><span class="p-text">Paned II sambasse ainult 2% palgast, III sambasse ei maksa.</span><span class="p-nums">36-aastane · brutopalk 2 275 €</span><span class="p-nums">Vara kokku <strong>17 028 €</strong> (II sammas 11 028 €, III sammas 6 000 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:5%"></i></span>4,6% Tuleva mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=mitte-single"><span class="p-name">Mul on ainult üks sammas <span class="p-badge">Kõige tavalisem</span></span><span class="p-text">II sammast sul pole, raha on ainult III sambas.</span><span class="p-nums">36-aastane · brutopalk 1 727 €</span><span class="p-nums">Vara kokku <strong>6 290 €</strong> (II sammas 0 €, III sammas 6 290 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:62%"></i></span>62% Tuleva mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=mitte-gone"><span class="p-name">Olen raha välja võtnud</span><span class="p-text">Tuleva fondides raha enam pole. Alustad nullist ja II sambasse läheb 2% palgast.</span><span class="p-nums">35-aastane · brutopalk 1 242 €</span><span class="p-nums">Vara kokku <strong>0 €</strong> (II sammas 0 €, III sammas 0 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:12%"></i></span>12% Tuleva mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        </ul>
-      </div>
     </section>
 
-    <p class="foot">Varasemad prototüübid: <a href="/arhiiv/">arhiiv</a>.</p>
   </main>
-  <script>
-    (function () {
-      var groups = [["btn-liige", "lvl-liige"], ["btn-mitte", "lvl-mitte"]];
-      function show(btnId) {
-        groups.forEach(function (g) {
-          var b = document.getElementById(g[0]), p = document.getElementById(g[1]), on = g[0] === btnId && b.getAttribute("aria-expanded") !== "true";
-          b.setAttribute("aria-expanded", on ? "true" : "false");
-          p.hidden = !on;
-          if (on) { var h = p.querySelector("h3"); h.focus({ preventScroll: true }); p.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); }
-        });
-      }
-      groups.forEach(function (g) { document.getElementById(g[0]).addEventListener("click", function () { show(g[0]); }); });
-    })();
-  </script>
 </body>
 </html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Tulevane Mina · tagasiside</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+/* Tuleva disainisüsteemi tokenid (samad mis elukaare lehel). */
+:root {
+  --navy: #002f63; --blue: #006ce6; --bright-blue: #00aeea; --note-bg: #fff6d9; --note-border: #faeed0;
+  --text-primary: #293036; --text-secondary: #5a6066; --gray-bg-1: #fafbfc; --gray-bg-2: #f5f7f9; --gray-border-2: #d6dee6; --gray-border-3: #c8d0d8;
+  --page-bg: #ffffff; --card-bg: #ffffff; --link: #006ce6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page-bg); color: var(--text-primary); font: 16px/1.5 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 880px; margin: 0 auto; padding: 24px 16px 56px; }
+a { color: var(--link); }
+h1 { margin: 0 0 8px; font-size: 2.25rem; line-height: 1.15; color: var(--navy); }
+h2 { margin: 0 0 12px; font-size: 1.375rem; line-height: 1.25; color: var(--navy); }
+h3 { margin: 0 0 8px; font-size: 1.125rem; color: var(--navy); }
+.eyebrow { margin: 0 0 4px; color: var(--text-secondary); font-size: 0.875rem; }
+.lead { margin: 0 0 24px; font-size: 1.1875rem; color: var(--text-secondary); max-width: 40rem; }
+section { margin: 0 0 32px; }
+.steps { display: grid; gap: 12px; padding: 0; margin: 0 0 16px; list-style: none; counter-reset: s; }
+.steps li { position: relative; padding: 12px 16px 12px 56px; background: var(--gray-bg-2); border-radius: 12px; counter-increment: s; }
+.steps li::before { content: counter(s); position: absolute; left: 16px; top: 12px; width: 28px; height: 28px; border-radius: 50%; background: var(--navy); color: var(--page-bg); font-weight: 700; display: grid; place-items: center; }
+.steps strong { display: block; }
+.note { padding: 12px 16px; background: var(--note-bg); border: 1px solid var(--note-border); border-radius: 12px; font-size: 0.9375rem; }
+.grid { display: grid; gap: 12px; grid-template-columns: 1fr; padding: 0; margin: 0; list-style: none; }
+@media (min-width: 640px) { .grid.two { grid-template-columns: 1fr 1fr; } .grid.profiles { grid-template-columns: 1fr 1fr; } }
+.card { display: flex; flex-direction: column; gap: 4px; width: 100%; height: 100%; padding: 16px; background: var(--card-bg); border: 2px solid var(--gray-border-2); border-radius: 12px; color: var(--text-primary); text-align: left; text-decoration: none; font: inherit; cursor: pointer; }
+.card:hover { border-color: var(--blue); }
+.card:focus-visible { outline: 3px solid var(--bright-blue); outline-offset: 2px; }
+.card[aria-expanded="true"] { border-color: var(--blue); background: var(--gray-bg-1); }
+.c-name { font-weight: 700; font-size: 1.125rem; color: var(--navy); }
+.c-text { color: var(--text-secondary); }
+.c-go { margin-top: auto; padding-top: 8px; color: var(--link); font-weight: 500; }
+.level2 { margin-top: 20px; padding: 16px; border: 1px solid var(--gray-border-2); border-radius: 12px; background: var(--gray-bg-1); }
+.level2[hidden] { display: none; }
+p.hint { margin: 0 0 16px; color: var(--text-secondary); }
+.profile { cursor: pointer; }
+.p-name { font-weight: 700; color: var(--navy); }
+.p-text { color: var(--text-primary); }
+.p-nums { color: var(--text-secondary); font-size: 0.875rem; }
+.p-nums strong { color: var(--text-primary); }
+.p-share { display: grid; gap: 4px; margin-top: 6px; font-size: 0.875rem; color: var(--text-secondary); }
+.p-bar { display: block; height: 6px; border-radius: 3px; background: var(--gray-border-2); overflow: hidden; }
+.p-bar i { display: block; height: 100%; background: var(--blue); }
+.p-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: var(--note-bg); border: 1px solid var(--note-border); color: var(--text-primary); font-size: 0.75rem; font-weight: 500; vertical-align: middle; }
+.p-go { margin-top: auto; padding-top: 6px; color: var(--link); font-weight: 500; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; background: var(--page-bg); padding: 8px; z-index: 5; }
+  
+fieldset { margin: 0 0 20px; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; margin: 0 0 4px; font-weight: 700; font-size: 1.0625rem; color: var(--navy); }
+.q-help { margin: 0 0 8px; color: var(--text-secondary); font-size: 0.9375rem; }
+.opts { display: grid; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border: 2px solid var(--gray-border-2); border-radius: 12px; background: var(--card-bg); cursor: pointer; }
+.opt:hover { border-color: var(--blue); }
+.opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--blue); flex: none; }
+.opt:has(input:checked) { border-color: var(--blue); background: var(--gray-bg-1); }
+.opt:has(input:focus-visible) { outline: 3px solid var(--bright-blue); outline-offset: 2px; }
+.more { margin-top: 10px; }
+.more[hidden] { display: none; }
+label.txt { display: block; margin: 0 0 4px; font-size: 0.9375rem; }
+textarea, input[type=number] { width: 100%; font: inherit; color: var(--text-primary); background: var(--card-bg); border: 2px solid var(--gray-border-3); border-radius: 8px; padding: 10px 12px; }
+input[type=number] { max-width: 9rem; }
+textarea { min-height: 5.5rem; resize: vertical; }
+textarea:focus-visible, input[type=number]:focus-visible, button:focus-visible { outline: 3px solid var(--bright-blue); outline-offset: 2px; }
+.main-q { padding: 16px; border: 2px solid var(--blue); border-radius: 12px; background: var(--gray-bg-1); }
+.main-q textarea { min-height: 9rem; }
+.counter { margin-top: 4px; font-size: 0.8125rem; color: var(--text-secondary); text-align: right; }
+.btn { display: inline-block; min-height: 44px; padding: 10px 22px; border: 0; border-radius: 8px; background: var(--blue); color: #fff; font: inherit; font-weight: 500; cursor: pointer; text-decoration: none; }
+.btn:hover { background: #005bc2; }
+.btn[disabled] { opacity: .6; cursor: default; }
+.err { margin: 0 0 16px; padding: 12px 16px; border: 2px solid #c0392b; border-radius: 12px; background: #fdecea; color: #7a1f14; }
+.err[hidden] { display: none; }
+.err a { color: #7a1f14; }
+.err ul { margin: 6px 0 0; padding-left: 20px; }
+.thanks[hidden], form[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Tuleva häkaton 2026 · prototüüp</p>
+      <h1>Aita meil seda paremaks teha</h1>
+      <p class="lead">Neli lühikest küsimust ja üks vaba kommentaar. Küsimused 1–4 on kohustuslikud, vaba kommentaar mitte. Võtab umbes kaks minutit. Vastused on anonüümsed: me ei küsi nime, e-posti ega sinu sisestatud numbreid.</p>
+    </header>
+
+    <div class="err" id="err" role="alert" tabindex="-1" hidden></div>
+
+    <form id="vorm" novalidate>
+      <fieldset id="f-taitmine">
+        <legend>1. Kas oskasid algandmeid täita?</legend>
+        <p class="q-help">Näiteks sünniaasta, palk, II ja III samba vara.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="taitmine" value="jah"> Jah, sain ise hakkama</label>
+          <label class="opt"><input type="radio" name="taitmine" value="osaliselt"> Osaliselt, mõni väli jäi arusaamatuks</label>
+          <label class="opt"><input type="radio" name="taitmine" value="ei"> Ei, ei saanud hakkama</label>
+        </div>
+        <div class="more" id="m-taitmine" hidden><label class="txt" for="taitmine_tekst">Mis segas või jäi arusaamatuks? (pole kohustuslik)</label><textarea id="taitmine_tekst" maxlength="400"></textarea></div>
+      </fieldset>
+
+      <fieldset id="f-vanus">
+        <legend>2. Kas oskad nüüd öelda, millise vanuseni sinu raha jätkub?</legend>
+        <p class="q-help">Vasta nii, nagu sa praegu aru said, ära arvuta uuesti.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="vanus_vastus" value="jah"> Jah, oskan öelda</label>
+          <label class="opt"><input type="radio" name="vanus_vastus" value="umbes"> Umbes oskan</label>
+          <label class="opt"><input type="radio" name="vanus_vastus" value="ei"> Ei oska öelda</label>
+        </div>
+        <div class="more" id="m-vanus" hidden><label class="txt" for="vanus">Millise vanuseni?</label><input type="number" id="vanus" min="18" max="130" inputmode="numeric"></div>
+      </fieldset>
+
+      <fieldset id="f-uus">
+        <legend>3. Kas nimetad vähemalt ühe asja või otsuse, mida sa enne ei teadnud?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="uus" value="jah"> Jah</label>
+          <label class="opt"><input type="radio" name="uus" value="ei"> Ei, kõik oli mulle varem teada</label>
+        </div>
+        <div class="more" id="m-uus" hidden><label class="txt" for="uus_tekst">Mis see oli?</label><textarea id="uus_tekst" maxlength="400"></textarea></div>
+      </fieldset>
+
+      <fieldset id="f-muudaks">
+        <legend>4. Kas muudaksid oma plaani või käitumist?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="muudaks" value="jah"> Jah</label>
+          <label class="opt"><input type="radio" name="muudaks" value="votiolla"> Võib-olla</label>
+          <label class="opt"><input type="radio" name="muudaks" value="ei"> Ei</label>
+        </div>
+        <div class="more" id="m-muudaks" hidden><label class="txt" for="muudaks_tekst">Mida muudaksid? (pole kohustuslik)</label><textarea id="muudaks_tekst" maxlength="400"></textarea></div>
+      </fieldset>
+
+      <div class="main-q">
+        <label for="kommentaar" style="display:block;font-weight:700;font-size:1.125rem;color:var(--navy);margin-bottom:4px">Kõige olulisem: mida sa tahad meile öelda?</label>
+        <p class="q-help" id="kommentaarVihje">Mis oli segane, mis jäi puudu, mis üllatas või mis meeldis? Kirjuta vabalt. Ära kirjuta nime ega isiklikke numbreid.</p>
+        <textarea id="kommentaar" maxlength="1500" aria-describedby="kommentaarVihje loendur"></textarea>
+        <div class="counter" id="loendur" aria-live="off">0 / 1500</div>
+      </div>
+
+      <p style="margin:20px 0 0"><button type="submit" class="btn" id="saada">Saada tagasiside</button></p>
+    </form>
+
+    <section class="thanks" id="aitah" hidden aria-labelledby="aitah-h">
+      <h2 id="aitah-h" tabindex="-1">Aitäh, see aitab väga!</h2>
+      <p>Sinu vastus on salvestatud anonüümselt.</p>
+      <p><a class="btn" href="/">Tagasi algusesse</a></p>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var qs = new URLSearchParams(location.search);
+      var alk = (qs.get("k") || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 16);
+      var algpunkt = (qs.get("p") || "").replace(/[^a-z-]/g, "").slice(0, 20);
+      var ss = function (k) { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } };
+      var algpunkt0 = ss("mina_p0").replace(/[^a-z-]/g, "").slice(0, 20), vahetusi = Number(ss("mina_vahetusi")) || 0, muutis = ss("mina_muutis") === "1";
+      if (!algpunkt) algpunkt = ss("mina_p").replace(/[^a-z-]/g, "").slice(0, 20);
+      var sid; try { sid = crypto.randomUUID(); } catch (e) { sid = "s" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+      var $ = function (id) { return document.getElementById(id); };
+      var val = function (n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ""; };
+      function sync() {
+        $("m-taitmine").hidden = !(val("taitmine") === "osaliselt" || val("taitmine") === "ei");
+        $("m-vanus").hidden = !(val("vanus_vastus") === "jah" || val("vanus_vastus") === "umbes");
+        $("m-uus").hidden = val("uus") !== "jah";
+        $("m-muudaks").hidden = !(val("muudaks") === "jah" || val("muudaks") === "votiolla");
+      }
+      $("vorm").addEventListener("change", sync);
+      $("kommentaar").addEventListener("input", function () { $("loendur").textContent = this.value.length + " / 1500"; });
+      $("vorm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var puudu = [];
+        [["taitmine", "f-taitmine", "küsimusele 1 (andmete täitmine)"], ["vanus_vastus", "f-vanus", "küsimusele 2 (vanus)"], ["uus", "f-uus", "küsimusele 3 (uus teadmine)"], ["muudaks", "f-muudaks", "küsimusele 4 (plaani muutmine)"]].forEach(function (q) { if (!val(q[0])) puudu.push(q); });
+        var vv = val("vanus_vastus"), vanus = $("vanus").value;
+        var vanusVale = (vv === "jah" || vv === "umbes") && vanus !== "" && !(Number(vanus) >= 18 && Number(vanus) <= 130);
+        var err = $("err");
+        if (puudu.length || vanusVale) {
+          err.innerHTML = "<strong>Palun vasta veel:</strong><ul>" + puudu.map(function (q) { return '<li><a href="#' + q[1] + '">' + q[2] + "</a></li>"; }).join("") + (vanusVale ? '<li><a href="#vanus">Vanus peab olema 18 ja 130 vahel</a></li>' : "") + "</ul>";
+          err.hidden = false; err.focus(); return;
+        }
+        err.hidden = true;
+        var nupp = $("saada"); nupp.disabled = true;
+        var keha = { sid: sid, alk: alk, algpunkt: algpunkt, algpunkt0: algpunkt0, vahetusi: vahetusi, muutis: muutis, vastus: { taitmine: val("taitmine"), taitmine_tekst: $("m-taitmine").hidden ? "" : $("taitmine_tekst").value, vanus_vastus: vv, vanus: $("m-vanus").hidden ? "" : vanus, uus: val("uus"), uus_tekst: $("m-uus").hidden ? "" : $("uus_tekst").value, muudaks: val("muudaks"), muudaks_tekst: $("m-muudaks").hidden ? "" : $("muudaks_tekst").value, kommentaar: $("kommentaar").value } };
+        fetch("/api/t", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(keha) }).then(function (r) {
+          if (!r.ok) throw new Error("viga");
+          $("vorm").hidden = true; $("aitah").hidden = false; $("aitah-h").focus(); window.scrollTo(0, 0);
+        }).catch(function () {
+          nupp.disabled = false; err.textContent = "Saatmine ei õnnestunud. Proovi mõne hetke pärast uuesti."; err.hidden = false; err.focus();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

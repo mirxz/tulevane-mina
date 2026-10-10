@@ -304,12 +304,27 @@ main.container { padding-bottom: 1rem; }
 }
 .result-actions { align-items: center; }
 
+.start-picker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; padding: 0; list-style: none; }
+.start-picker .lbl { font-size: 0.875rem; color: var(--text-secondary); margin-right: 4px; }
+.start-picker a { display: inline-block; padding: 6px 14px; border: 2px solid #c8d0d8; border-radius: 999px; background: #fff; color: var(--navy); font-weight: 500; text-decoration: none; }
+.start-picker a:hover { border-color: var(--blue); }
+.start-picker a[aria-current="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.start-picker a[aria-current="true"]::before { content: "✓ "; }
 </style>
 </head>
 <body>
   <main class="container py-4">
     <header class="mb-3">
       <p class="small-muted mb-1"><a href="/" id="backToStart">← Vali algpunkt</a> · Tuleva häkaton 2026 · prototüüp</p>
+      <nav aria-label="Algpunkt" class="mb-2">
+        <ul class="start-picker" id="startPicker">
+          <li class="lbl" id="startPickerLbl">Algpunkt:</li>
+          <li><a href="/elukaar/?p=konto-naidis" data-p="konto-naidis">Tuleva konto näide</a></li>
+          <li><a href="/elukaar/?p=liige-steady" data-p="liige-steady">Tüüpiline Tuleva liige</a></li>
+          <li><a href="/elukaar/?p=mitte-single" data-p="mitte-single">Tüüpiline mitteliige</a></li>
+          <li><a href="/elukaar/?p=valja" data-p="valja">Võtsin II samba välja</a></li>
+        </ul>
+      </nav>
       <p class="small mb-1" id="profileNote" hidden></p>
       <h1 class="mb-1">Tulevane Mina</h1>
       <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
@@ -714,6 +729,7 @@ main.container { padding-bottom: 1rem; }
         <button type="button" class="btn btn-outline-primary btn-sm" id="dlPdf" aria-describedby="dlPdfHint">Laadi alla (PDF)</button>
         <span class="small-muted align-self-center" id="dlPdfHint">PDF: vali printimisaknas „Salvesta PDF-ina“.</span>
       </div>
+      <div class="note mt-3" id="tagasisideKast"><strong>Kas see oli arusaadav?</strong> Anna anonüümselt tagasisidet, see võtab umbes kaks minutit. <a href="/tagasiside/" id="tagasisideLink" class="btn btn-primary btn-sm ms-1">Anna tagasisidet →</a></div>
     </section>
 
     <!-- Navigeerimine -->
@@ -728,6 +744,7 @@ main.container { padding-bottom: 1rem; }
 
     <footer class="mt-4">
       <div class="note mb-3"><strong>See on prototüüp, mitte finants- ega maksunõu.</strong> Kõik arvutused tehakse sinu brauseris ja midagi ei salvestata.</div>
+      <p class="small-muted"><a href="/tagasiside/" id="tagasisideLink2">Anna tagasisidet</a> · anonüümne, umbes kaks minutit.</p>
     </footer>
   </main>
 
@@ -1941,7 +1958,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   syncPensionAge();
   // ---------- Algandmed maandumislehelt (?p=<profiil>) ----------
   // Profiilid on tüüpilised koguja profiilid (vt maandumisleht); väljad on pärast täidetud sama moodi kui Tuleva konto näidis ja kõiki saab muuta.
-  const PROFILES = {"liige-power": {"birthYear": 1984, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1260, "p2": 57126, "p3": 26500, "p3Joined": "after", "grossMonthly": 4301, "p2Rate": "0.06", "p3Monthly": 435, "nimi": "Tuleva liikmest suurkoguja"}, "liige-steady": {"birthYear": 1984, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1017, "p2": 30414, "p3": 14100, "p3Joined": "after", "grossMonthly": 2838, "p2Rate": "0.06", "p3Monthly": 135, "nimi": "Tuleva liikmest stabiilne koguja"}, "liige-coaster": {"birthYear": 1985, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 946, "p2": 20351, "p3": 9400, "p3Joined": "after", "grossMonthly": 2417, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva liikmest libisev koguja"}, "liige-single": {"birthYear": 1980, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1035, "p2": 0, "p3": 28189, "p3Joined": "after", "grossMonthly": 2892, "p2Rate": "0", "p3Monthly": 255, "nimi": "Tuleva liikmest ühe sambaga koguja"}, "liige-gone": {"birthYear": 1978, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 884, "p2": 0, "p3": 0, "p3Joined": "after", "grossMonthly": 2038, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva liige, kes on raha välja võtnud"}, "mitte-power": {"birthYear": 1987, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 1142, "p2": 33528, "p3": 18000, "p3Joined": "after", "grossMonthly": 3669, "p2Rate": "0.06", "p3Monthly": 395, "nimi": "Tuleva mitteliikmest suurkoguja"}, "mitte-steady": {"birthYear": 1989, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 957, "p2": 15326, "p3": 8200, "p3Joined": "after", "grossMonthly": 2515, "p2Rate": "0.06", "p3Monthly": 100, "nimi": "Tuleva mitteliikmest stabiilne koguja"}, "mitte-coaster": {"birthYear": 1990, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 920, "p2": 11028, "p3": 6000, "p3Joined": "after", "grossMonthly": 2275, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva mitteliikmest libisev koguja"}, "mitte-single": {"birthYear": 1990, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 837, "p2": 0, "p3": 6290, "p3Joined": "after", "grossMonthly": 1727, "p2Rate": "0", "p3Monthly": 130, "nimi": "Tuleva mitteliikmest ühe sambaga koguja"}, "mitte-gone": {"birthYear": 1991, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 766, "p2": 0, "p3": 0, "p3Joined": "after", "grossMonthly": 1242, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva mitteliige, kes on raha välja võtnud"}, "konto-naidis": {"birthYear": 1968, "sex": "N", "pensionAgeYears": 66, "p1Monthly": 1022, "p2": 38400, "p3": 21700, "p3Joined": "before", "grossMonthly": 2900, "p2Rate": "0.04", "p3Monthly": 150, "nimi": "Tuleva konto näide (väljamõeldud liige)"}, "tuhi": {"birthYear": 1986, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 878, "p2": 8500, "p3": 0, "p3Joined": "after", "grossMonthly": 2000, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Nullist alustaja (Eesti keskmine)"}};
+  const PROFILES = {"liige-power": {"birthYear": 1984, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1260, "p2": 57126, "p3": 26500, "p3Joined": "after", "grossMonthly": 4301, "p2Rate": "0.06", "p3Monthly": 435, "nimi": "Tuleva liikmest suurkoguja"}, "liige-steady": {"birthYear": 1984, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1017, "p2": 30414, "p3": 14100, "p3Joined": "after", "grossMonthly": 2838, "p2Rate": "0.06", "p3Monthly": 135, "nimi": "Tüüpiline Tuleva liige"}, "liige-coaster": {"birthYear": 1985, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 946, "p2": 20351, "p3": 9400, "p3Joined": "after", "grossMonthly": 2417, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva liikmest libisev koguja"}, "liige-single": {"birthYear": 1980, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 1035, "p2": 0, "p3": 28189, "p3Joined": "after", "grossMonthly": 2892, "p2Rate": "0", "p3Monthly": 255, "nimi": "Tuleva liikmest ühe sambaga koguja"}, "liige-gone": {"birthYear": 1978, "sex": "M", "pensionAgeYears": 65, "p1Monthly": 884, "p2": 0, "p3": 0, "p3Joined": "after", "grossMonthly": 2038, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva liige, kes on raha välja võtnud"}, "mitte-power": {"birthYear": 1987, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 1142, "p2": 33528, "p3": 18000, "p3Joined": "after", "grossMonthly": 3669, "p2Rate": "0.06", "p3Monthly": 395, "nimi": "Tuleva mitteliikmest suurkoguja"}, "mitte-steady": {"birthYear": 1989, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 957, "p2": 15326, "p3": 8200, "p3Joined": "after", "grossMonthly": 2515, "p2Rate": "0.06", "p3Monthly": 100, "nimi": "Tuleva mitteliikmest stabiilne koguja"}, "mitte-coaster": {"birthYear": 1990, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 920, "p2": 11028, "p3": 6000, "p3Joined": "after", "grossMonthly": 2275, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva mitteliikmest libisev koguja"}, "mitte-single": {"birthYear": 1990, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 837, "p2": 0, "p3": 6290, "p3Joined": "after", "grossMonthly": 1727, "p2Rate": "0", "p3Monthly": 130, "nimi": "Tüüpiline mitteliige"}, "mitte-gone": {"birthYear": 1991, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 766, "p2": 0, "p3": 0, "p3Joined": "after", "grossMonthly": 1242, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Tuleva mitteliige, kes on raha välja võtnud"}, "konto-naidis": {"birthYear": 1968, "sex": "N", "pensionAgeYears": 66, "p1Monthly": 1022, "p2": 38400, "p3": 21700, "p3Joined": "before", "grossMonthly": 2900, "p2Rate": "0.04", "p3Monthly": 150, "nimi": "Tuleva konto näide (väljamõeldud liige)"}, "valja": {"birthYear": 1986, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 878, "p2": 0, "p3": 0, "p3Joined": "after", "grossMonthly": 2000, "p2Rate": "0", "p3Monthly": 0, "nimi": "Võtsin II samba välja (ainult riiklik pension)"}, "tuhi": {"birthYear": 1986, "sex": "N", "pensionAgeYears": 65, "p1Monthly": 878, "p2": 8500, "p3": 0, "p3Joined": "after", "grossMonthly": 2000, "p2Rate": "0.02", "p3Monthly": 0, "nimi": "Nullist alustaja (Eesti keskmine)"}};
   (function applyStartProfile() {
     const id = new URLSearchParams(location.search).get('p');
     const pr = id && Object.prototype.hasOwnProperty.call(PROFILES, id) ? PROFILES[id] : null;
@@ -1950,9 +1967,26 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     paTouched = true;
     syncPensionAge();
     const note = $('profileNote');
-    note.textContent = 'Alustad profiilist: ' + pr.nimi + '. Kõiki andmeid saad ise muuta.';
+    note.textContent = 'Alustad profiilist: ' + pr.nimi + '. Kõiki andmeid saad ise muuta. Teise algpunkti valimisel täidetakse andmed uuesti.';
     note.hidden = false;
+    document.querySelectorAll('#startPicker a[data-p]').forEach(a => { if (a.dataset.p === id) a.setAttribute('aria-current', 'true'); });
     update();
+    try {
+      const p0 = sessionStorage.getItem('mina_p0');
+      if (!p0) sessionStorage.setItem('mina_p0', id);
+      else if (p0 !== id) sessionStorage.setItem('mina_vahetusi', String((Number(sessionStorage.getItem('mina_vahetusi')) || 0) + 1));
+      sessionStorage.setItem('mina_p', id);
+      // ainult märge, et andmeid muudeti (väärtusi ei salvestata)
+      document.addEventListener('input', (e) => { if (e.isTrusted && e.target.closest('main')) { try { sessionStorage.setItem('mina_muutis', '1'); } catch (_) {} } });
+    } catch (_) {}
+  })();
+
+  (function tagasisideLink() {
+    const q = new URLSearchParams(location.search), out = new URLSearchParams();
+    if (q.get('p')) out.set('p', q.get('p'));
+    if (q.get('k')) out.set('k', q.get('k'));
+    const s = out.toString();
+    if (s) { $('tagasisideLink').href = '/tagasiside/?' + s; $('tagasisideLink2').href = '/tagasiside/?' + s; }
   })();
 
   go(0, false);

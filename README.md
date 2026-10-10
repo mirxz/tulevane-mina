@@ -215,3 +215,16 @@ Täielik pensionikalkulaator Tuleva pensionikalkulaatori välimuses: sama kaart,
 
 Kalkulaator arvutab riikliku pensioni seaduse valemiga (`public/kalkulaator/riiklik.js`): baasosa 399,24 € + 10,477 € × (staaž kuni 1998 + aastakoefitsientide summa), 1.4.2026 väärtustega. Tulemus on mootori sisend `p1Monthly` (tänased väärtused), mida mootor indekseerib `p1Growth` võrra. Vaikimisi reaalindekseerimine 1,5% on projekti eeldus, mitte seadus. Tead täpset summa SKA kalkulaatorist, vali „Sisesta ise“.
 >>>>>>> Stashed changes
+
+## Tagasiside leht (`/tagasiside/`, 10.10)
+
+Elukaare lõpus (tulemuse peatükis) on link lehele `/tagasiside/`. Leht on ratta eeskujul anonüümne: ei küsi nime ega e-posti ega saada sisestatud numbreid. Link kannab kaasa algpunkti (`?p=`) ja kanali (`?k=`).
+
+Mõõdame neli asja ja vaba kommentaari (kõige olulisem, seepärast suur kast lehe lõpus):
+
+1. Kas oskas algandmeid täita (jah / osaliselt / ei, osalise või eitava vastuse korral „mis segas“).
+2. Kas oskab 5–10 minuti pärast öelda, millise vanuseni tema raha jätkub (jah / umbes / ei, vanus numbrina).
+3. Kas nimetab vähemalt ühe asja, mida enne ei teadnud (jah / ei, „mis see oli“).
+4. Kas muudaks oma plaani või käitumist (jah / võib-olla / ei, „mida“).
+
+Vastused lähevad `/api/t` kaudu D1 tabelisse `tagasiside_vastused` (sama seanss asendab eelmise vastuse). E-posti-sarnased tekstid ja pikad numbrid maskitakse enne salvestamist. Tulemused: `/tulemused` (osa „Tagasiside“) ja `/tulemused-tagasiside.csv`. CSV-d on eraldi iga andmekogu kohta: `tulemused-tagasiside.csv`, `tulemused-ratas.csv`, `tulemused-plaan.csv`, `tulemused-meilid.csv`; `tulemused.csv` on ainult varasemate mängude vastused (arhiveeritud mängudel uusi vastuseid pole, seepärast võis see olla tühi). Test: `node tests/tagasiside.mjs <URL>`, valikuliselt `TULEMUSED_PAROOL=…` CSV-de kontrolliks.
