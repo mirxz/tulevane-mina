@@ -1116,8 +1116,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     if (idx === 3) a = Math.max(a, Math.min(input.currentAge, b)); // tööaastad: alates tänasest
     const tense = b < input.currentAge ? 'Sinu minevik' : a > input.currentAge ? 'Sinu tulevik' : 'Sinu praegune elu';
     const years = a === b ? String(input.birthYear + a) : (input.birthYear + a) + '–' + (b >= 100 ? '…' : input.birthYear + b);
-    const m = (idx === 5 || idx === 6) ? input.paMonths : 0;
-    const label = a === b ? (m ? ageTxt(a, m) : a + '-aastane') : a + '–' + (b >= 100 ? '' : b) + (b >= 100 ? '+' : '') + ' a';
+    const label = a === b ? a + '-aastane' : a + '–' + (b >= 100 ? '' : b) + (b >= 100 ? '+' : '') + ' a';
     return label + ' · ' + years + ' · ' + tense;
   }
 
@@ -1127,7 +1126,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     chapters[3].dataset.label = Math.min(input.currentAge, 55) + '–55';
     chapters[5].dataset.label = String(pa - 5); // rajal ainult aastad, kuud on etapi tekstis
     chapters[6].dataset.label = String(pa);
-    $('p60Txt').innerHTML = ageAt(pa - 5, input.paMonths) + ' (5 aastat enne pensioniiga, ' + (input.birthYear + pa - 5) + ') avaneb II sammas. Väljamakse algab selles loos pensionieas. Väljamaksete alustamisel lõpevad II samba sissemaksed igaveseks.';
+    $('p60Txt').innerHTML = (pa - 5) + '-aastaselt (5 aastat enne pensioniiga, ' + (input.birthYear + pa - 5) + ') avaneb II sammas. Väljamakse algab selles loos pensionieas. Väljamaksete alustamisel lõpevad II samba sissemaksed igaveseks.';
     chapters[7].dataset.label = (pa + 1) + '+';
 
     // 0–18
