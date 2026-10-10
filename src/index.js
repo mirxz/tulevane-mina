@@ -36,7 +36,6 @@ export default {
 // Vana aadress → uus aadress arhiivis (null, kui aadress pole kolinud).
 function arhiiviAadress(url) {
   const p = url.pathname;
-  if (p === "/elukaar" || p === "/elukaar/") return "/";
   for (const nimi of ["ratas", "kalkulaator", "plaan"]) {
     if (p === "/" + nimi || p.startsWith("/" + nimi + "/")) return "/arhiiv" + p;
   }

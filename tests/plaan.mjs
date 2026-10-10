@@ -137,12 +137,13 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   const page = await browser.newPage();
   const r0 = await page.goto(url + "/");
   const html = await page.content();
-  check(r0.status() === 200 && html.includes("Tulevane Mina") && !html.includes("/mang"), "avaleht (Kadi leht) avaneb ja ei viita lauamängule");
+  check(r0.status() === 200 && html.includes("Kuhu sa sattusid") && !html.includes("/mang"), "avaleht on maandumisleht ja ei viita lauamängule");
+  const re = await page.goto(url + "/elukaar/"); check(re.status() === 200 && (await page.content()).includes("Kes sa oled ja mis sul juba on"), "/elukaar/ on Kadi leht");
   const ra = await page.goto(url + "/arhiiv/"); check(ra.status() === 200 && (await page.content()).includes("Arhiiv"), "arhiivi sisukord avaneb");
   const rp = await page.goto(url + "/arhiiv/plaan/"); check(rp.status() === 200 && (await page.content()).includes("plaan.css"), "arhiiv: plaan alles");
   const rd = await fetch(url + "/ratas/?k=a5", { redirect: "manual" });
   check(rd.status === 302 && new URL(rd.headers.get("location")).pathname === "/arhiiv/ratas/" && rd.headers.get("location").endsWith("?k=a5"), "vana /ratas/?k=a5 (QR) suunab arhiivi, päring säilib");
-  for (const [vana, uus] of [["/kalkulaator/", "/arhiiv/kalkulaator/"], ["/plaan/", "/arhiiv/plaan/"], ["/elukaar/", "/"]]) {
+  for (const [vana, uus] of [["/kalkulaator/", "/arhiiv/kalkulaator/"], ["/plaan/", "/arhiiv/plaan/"]]) {
     const r = await fetch(url + vana, { redirect: "manual" });
     check(r.status === 302 && new URL(r.headers.get("location")).pathname === uus, "vana " + vana + " suunab → " + uus);
   }

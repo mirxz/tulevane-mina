@@ -105,6 +105,8 @@
     for (let a = currentAge; a < pa; a++) fund = fund * (1 + r) + contrib * Math.pow(1 + g, a - currentAge);
 
     let deposit = input.savings || 0; // LISA: muud säästud täna
+    // Hoius kasvab tänasest pensionini samamoodi kui sammas (varem kasvas ta alles vanusest max(vanus, 55)).
+    for (let a = currentAge; a < pa; a++) deposit *= 1 + sr;
     if (scenario.id === 'A') { deposit += fund * (1 - tax); fund = 0; }
     // Ühe lepingu fondipension: periood määratakse lepingu sõlmimisel.
     const contractStart = scenario.id === 'B' ? pa : scenario.id === 'C' ? p1Start : null;
@@ -136,8 +138,8 @@
           saved = -gap; deposit += saved;
         }
       }
-      fund *= 1 + r;
-      deposit *= 1 + sr;
+      // Kasv enne pensioniiga on kogumisfaasis juba arvestatud; siin kasvab vara ainult pensionieast alates (muidu kasvaks see kaks korda).
+      if (age >= pa) { fund *= 1 + r; deposit *= 1 + sr; }
       const income = i1 + sched + extraNet;
       const spend = income + fromDeposit - saved;
       rows.push({

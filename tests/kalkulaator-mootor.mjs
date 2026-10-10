@@ -73,7 +73,7 @@ for (const s of P.SCENARIOS) {
 const ref = P.simulate(base, table, B);
 const same = P.simulate({ ...base, fee: 0, wageGrowth: 0, savings: 0, savingsReturn: 0, tax: 0.10, horizon: 0.10 }, table, B);
 assert.deepStrictEqual(same.rows.map((x) => Math.round(x.spend)), ref.rows.map((x) => Math.round(x.spend)), "vaikeväärtused annavad Meelise tulemuse");
-assert.strictEqual(ref.coversNeedUntil, 84); assert.strictEqual(P.sustainableNeed(base, table, B), 1080);
+assert.strictEqual(ref.coversNeedUntil, 82); assert.strictEqual(P.sustainableNeed(base, table, B), 1070); // 84 ja 1080 olid topeltkasvu (vana viga) tulemus
 
 // Fondi tasu vähendab tulemust, madalam tasu on parem.
 const lowFee = P.sustainableNeed({ ...base, birthYear: 1985, grossMonthly: 2500, p2Rate: 0.06, fee: 0.0028 }, table, B);
@@ -123,3 +123,20 @@ assert.deepStrictEqual([varaKohtTurul(0).vahemalt, varaKohtTurul(100).vahemalt, 
   assert.ok(a.rows.find((x) => x.age === 80).i1 > b.rows.find((x) => x.age === 80).i1);
 }
 console.log("kalkulaatori mootor ja andmekihid: OK");
+
+// ---- Regressioon: pensionieelne vara kasvab täpselt üks kord (varem kasvas see vanusest max(vanus, 55) pensionini teist korda) ----
+{
+  const pa = 65;
+  for (const [birthYear, r, g, fee, sr] of [[1966, 0.02, 0, 0, 0], [1990, 0.02, 0, 0, 0], [1990, 0.04, 0.01, 0.0028, 0.01], [1976, 0.04, 0, 0.0074, 0], [1956 + 10, 0.03, 0.02, 0, 0.005]]) {
+    const n = pa - (P.CURRENT_YEAR - birthYear), rn = r - fee;
+    const inp = { ...base, birthYear, p3: 0, grossMonthly: 2500, p2Rate: 0.06, p3Monthly: 0, realReturn: r, fee, wageGrowth: g, savings: 5000, savingsReturn: sr, pensionAgeYears: pa };
+    const c = 2500 * 12 * (0.06 + 0.04);
+    let expected = inp.p2 * Math.pow(1 + rn, n); for (let k = 0; k < n; k++) expected += c * Math.pow(1 + g, k) * Math.pow(1 + rn, n - 1 - k);
+    const expectedDeposit = 5000 * Math.pow(1 + sr, n);
+    for (const s of [B, D]) {
+      const row = P.simulate(inp, table, s).rows.find((x) => x.age === pa);
+      assert.ok(Math.abs(row.moneyLeft / (expected + expectedDeposit) - 1) < 1e-9, 'vara ' + pa + '-aastaselt ' + s.id + ' sünd ' + birthYear + ' r=' + r + ': ' + Math.round(row.moneyLeft) + ' vs ' + Math.round(expected + expectedDeposit));
+    }
+  }
+}
+console.log('Pensionieelse vara regressioon: OK');
