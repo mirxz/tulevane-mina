@@ -351,6 +351,18 @@ details[open] > summary::before { transform: rotate(45deg); }
 @media (prefers-reduced-motion: reduce) { details > summary::before { transition: none; } }
 details > summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 0.25rem; }
 
+/* Akordionide ikoon: SVG chevron-down paremal, avamisel pöörab üles (asendab varasema noole) */
+details > summary::before { content: none; display: none; }
+details > summary { justify-content: space-between; }
+details > summary::after {
+  content: ''; flex: 0 0 auto; width: 1.25rem; height: 1.25rem; background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.15s;
+}
+details[open] > summary::after { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { details > summary::after { transition: none; } }
+
 </style>
 </head>
 <body>
