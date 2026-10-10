@@ -319,10 +319,6 @@ main.container { padding-bottom: 1rem; }
           <label class="form-label" for="p3">III sammas praegu, €</label>
           <input class="form-control" id="p3" type="number" min="0" step="1000" value="5000">
         </div>
-        <div class="col-12 col-md-6" id="p3JoinedWrap">
-          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
-          <select class="form-select" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
-        </div>
         <div class="col-6 col-md-3">
           <label class="form-label" for="grossMonthly">Brutopalk, €/kuus</label>
           <input class="form-control" id="grossMonthly" type="number" min="0" step="100" value="2200">
@@ -468,13 +464,18 @@ main.container { padding-bottom: 1rem; }
     </section>
 
     <!-- 4. 55 -->
-    <section class="chapter card card-calculator p-4" data-step="4" data-label="55" data-icon="🔓" aria-labelledby="h4">
+    <section class="chapter card card-calculator p-4" data-step="4" data-label="55 a" data-icon="🔓" aria-labelledby="h4">
       <div class="chapter-head">
         <div class="chapter-art" aria-hidden="true">🔓</div>
         <div>
           <p class="chapter-kicker" id="k4"></p>
           <h2 id="h4" tabindex="-1">55-aastaselt: esimene otsustuskoht</h2>
         </div>
+      </div>
+      <div class="mb-3" id="p3JoinedWrap">
+        <label class="form-label" for="p3Joined">III sambaga liitusin</label>
+        <select class="form-select w-auto" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
+        <div class="form-text">Sellest sõltub, mis vanusest kehtib soodsam maks.</div>
       </div>
       <div id="p3Info" class="mb-3"></div>
       <div id="p3Locked" class="note mb-3 d-none"></div>
@@ -1283,8 +1284,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const pa = P.retirementYears(input);
     for (let i = 1; i <= 7; i++) { const k = $('k' + i); if (k) k.textContent = kicker(input, i); }
     chapters[3].dataset.label = Math.min(input.currentAge, 55) + '–55';
-    chapters[5].dataset.label = String(pa - 5); // rajal ainult aastad, kuud on etapi tekstis
-    chapters[6].dataset.label = String(pa);
+    chapters[5].dataset.label = (pa - 5) + ' a'; // rajal vanus aastates („60 a“)
+    chapters[6].dataset.label = pa + ' a';
     // 60: III samba osa
     const p3Done = input.p3Has && input.p3Plan !== 'keep';
     $('p3At60Set').classList.toggle('d-none', !input.p3Has || p3Done);
@@ -1293,7 +1294,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       ? 'Sul ei ole III sammast. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda</button>'
       : p3Done ? 'III samba kohta tegid valiku juba ' + input.p3Age + '-aastaselt: <strong>' + (input.p3Plan === 'lump' ? 'võtsid selle korraga välja' : 'täiendav fondipension') + '</strong>. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda</button>' : '';
     $('p60Txt').innerHTML = (pa - 5) + '-aastaselt (5 aastat enne pensioniiga, ' + (input.birthYear + pa - 5) + ') avaneb II sammas. Väljamakse algab selles loos pensionieas. Väljamaksete alustamisel lõpevad II samba sissemaksed igaveseks.';
-    chapters[7].dataset.label = (pa + 1) + '+';
+    chapters[7].dataset.label = (pa + 1) + '+ a';
 
     // 0–18
     $('childMore').classList.toggle('d-none', input.child === 'none');
@@ -1360,6 +1361,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     $('p3Locked').innerHTML = lockTxt + (lockTxt ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda III sammast</button>' : '');
     $('p3Locked').classList.toggle('d-none', !lockTxt);
     $('p3PlanSet').disabled = !!lockTxt;
+    $('p3JoinedWrap').classList.toggle('d-none', !input.p3Has);
 
     // Pensioniiga: edasilükkamine
     // Edasilükkamine käib kõigi väljamakse viisidega: vahepeal elad samba või hoiuse rahast.
