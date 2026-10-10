@@ -163,7 +163,8 @@
     // või kui sissemakse läheb väljavõetavale III samba saldole (samaväärne tänane summa, sest mudel on lineaarne).
     let c3Adj = 0;
     for (let a = currentAge; a < pa; a++) {
-      if (a < p3OpenAge || (p3Plan !== 'keep' && a < p3Age)) c3Adj -= c3 / Math.pow(1 + rFinal, a - currentAge + 1);
+      // 'fund': sissemaksed kuni pensionini lähevad 55-aastasse fondipensioni potti (vt allpool), mitte pensionieas uude lepingusse.
+      if (a < p3OpenAge || (p3Plan === 'fund' && a < pa) || (p3Plan === 'lump' && a < p3Age)) c3Adj -= c3 / Math.pow(1 + rFinal, a - currentAge + 1);
     }
     let p3Gross = 0, p3Net = 0, p3Rem = 0, p3Tax = 0;
     if (p3Plan !== 'keep') {
@@ -176,7 +177,7 @@
         for (let a = p3Age; a < pa; a++) {
           const pay = b / P.fundPensionTerm(T, sex, a);
           b -= pay; p3Gross += pay; p3Net += pay * (a >= p3Open ? 1 : 0.78);
-          b *= 1 + rateAt(a);
+          b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3 : 0); // sissemakse läheb samasse lepingupotti
         }
         p3Rem = b; // pensionieas läheb ülejääk ühisesse samba rahasse
       }
