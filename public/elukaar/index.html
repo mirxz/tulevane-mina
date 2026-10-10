@@ -1712,7 +1712,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       interaction: { mode: 'index', intersect: false },
       plugins: {
         // Legendis: tulbad ruuduna, jooned joonena (kulud katkendjoonena), et legend vastaks graafikule.
-        legend: { position: 'bottom', labels: { font: font, usePointStyle: true, boxWidth: 28, boxHeight: 14,
+        legend: { position: 'top', align: 'start', labels: { font: font, usePointStyle: true, boxWidth: 28, boxHeight: 14,
           generateLabels: (ch) => Chart.defaults.plugins.legend.labels.generateLabels(ch).map((l) => {
             const ds = ch.data.datasets[l.datasetIndex];
             if (ds.type === 'line') Object.assign(l, { pointStyle: 'line', strokeStyle: ds.borderColor, lineWidth: 3, lineDash: ds.borderDash || [] });
