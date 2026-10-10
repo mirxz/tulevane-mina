@@ -61,14 +61,13 @@ console.log("\nAlgpunkti jälgimine (maandumisleht → elukaar → tagasiside)")
   await page.goto(url + "/");
   await page.click('#level1 a.profile >> nth=1'); await page.waitForURL("**/elukaar/?p=liige-steady");
   await page.fill("#p2", "31000");
-  await page.click('#startPicker a[data-p="valja"]'); await page.waitForURL("**/elukaar/?p=valja");
   for (let i = 0; i < 12 && !(await page.isVisible("#tagasisideLink")); i++) await page.$eval("#nextBtn", (e) => e.click()); // Bootstrapi CDN-i pole testkeskkonnas, paigutus võib katta nuppu, seepärast klõps DOM-ist
   check(await page.isVisible("#tagasisideLink"), "tulemuse peatükis on tagasiside link nähtav");
-  await page.$eval("#tagasisideLink", (e) => e.click()); await page.waitForURL("**/tagasiside/?p=valja");
+  await page.$eval("#tagasisideLink", (e) => e.click()); await page.waitForURL("**/tagasiside/?p=liige-steady");
   for (const [n, v] of [["taitmine", "jah"], ["vanus_vastus", "ei"], ["uus", "ei"], ["muudaks", "ei"]]) await page.check(`input[name="${n}"][value="${v}"]`);
   await page.click("#saada"); await page.waitForSelector("#aitah:not([hidden])");
   const b = posts[0] || {};
-  check(b.algpunkt0 === "liige-steady" && b.algpunkt === "valja" && b.vahetusi === 1 && b.muutis === true, "salvestub esimene valik (liige-steady), viimane (valja), 1 vahetus ja märge andmete muutmisest");
+  check(b.algpunkt0 === "liige-steady" && b.algpunkt === "liige-steady" && b.vahetusi === 0 && b.muutis === true, "salvestub esimene valik (liige-steady), viimane (sama), 0 vahetust ja märge andmete muutmisest");
   check(!JSON.stringify(b).includes("31000"), "muudetud väärtust ei saadeta");
   await page.close();
 }

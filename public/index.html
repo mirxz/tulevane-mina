@@ -42,7 +42,7 @@ section { margin: 0 0 32px; }
 .level2 { margin-top: 20px; padding: 16px; border: 1px solid var(--gray-border-2); border-radius: 12px; background: var(--gray-bg-1); }
 .level2[hidden] { display: none; }
 p.hint { margin: 0 0 16px; color: var(--text-secondary); }
-.profile { cursor: pointer; }
+.profile { cursor: pointer; justify-content: center; min-height: 88px; }
 .p-name { font-weight: 700; color: var(--navy); }
 .p-text { color: var(--text-primary); }
 .p-nums { color: var(--text-secondary); font-size: 0.875rem; }
@@ -76,12 +76,12 @@ p.hint { margin: 0 0 16px; color: var(--text-secondary); }
 
     <section aria-labelledby="alusta-h" id="alusta">
       <h2 id="alusta-h">Millega tahad alustada?</h2>
-      <p class="hint">Vali algpunkt. Numbrid on alles algus – järgmises vaates saad kõiki muuta.</p>
+      <p class="hint">Vali lähim. Järgmises vaates saad kõiki numbreid muuta.</p>
       <ul class="grid profiles" id="level1">
-        <li><a class="card profile" href="/elukaar/?p=konto-naidis"><span class="p-name">Tuleva konto näide</span><span class="p-text">Väljamõeldud 58-aastane liige, nagu Tuleva sisselogitud kasutajale andmed eeltäidaks.</span><span class="p-nums">58-aastane · brutopalk 2 900 €</span><span class="p-nums">Vara kokku <strong>60 100 €</strong> (II sammas 38 400 €, III sammas 21 700 €)</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=liige-steady"><span class="p-name">Tüüpiline Tuleva liige</span><span class="p-text">Kogud korrapäraselt: II sammas 6% palgast ja natuke III sammast.</span><span class="p-nums">42-aastane · brutopalk 2 838 €</span><span class="p-nums">Vara kokku <strong>44 514 €</strong> (II sammas 30 414 €, III sammas 14 100 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:39%"></i></span>39% Tuleva liikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=mitte-single"><span class="p-name">Tüüpiline Tuleva mitteliige</span><span class="p-text">Sul on ainult III sammas, II sammast pole.</span><span class="p-nums">36-aastane · brutopalk 1 727 €</span><span class="p-nums">Vara kokku <strong>6 290 €</strong> (II sammas 0 €, III sammas 6 290 €)</span><span class="p-share"><span class="p-bar" aria-hidden="true"><i style="width:62%"></i></span>62% mitteliikmetest on sellised</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
-        <li><a class="card profile" href="/elukaar/?p=valja"><span class="p-name">Võtsin II samba välja</span><span class="p-text">Võtsid II samba raha välja, kui riik selleks võimaluse andis. Sul on ees ainult riiklik pension.</span><span class="p-nums">40-aastane · brutopalk 2 000 €</span><span class="p-nums">Vara kokku <strong>0 €</strong> (II sammas 0 €, III sammas 0 €)</span><span class="p-go">Alusta selle profiiliga →</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=konto-naidis"><span class="p-name">Tuleva konto näide</span><span class="p-text">Väljamõeldud 58-aastane Tuleva liige.</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=liige-steady"><span class="p-name">Tüüpiline Tuleva liige</span><span class="p-text">42-aastane, kogub II ja III sambasse.</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=mitte-single"><span class="p-name">Tüüpiline mitteliige</span><span class="p-text">36-aastane, ainult III sammas.</span></a></li>
+        <li><a class="card profile" href="/elukaar/?p=valja"><span class="p-name">Võtsin II samba välja</span><span class="p-text">Ees on ainult riiklik pension.</span></a></li>
       </ul>
     </section>
 

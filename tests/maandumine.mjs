@@ -45,10 +45,7 @@ for (const [id, aasta] of Object.entries(PROFIILID)) {
   await page.goto(url + "/");
   await page.click('#level1 a.profile >> nth=2');
   await page.waitForURL("**/elukaar/?p=mitte-single");
-  check((await page.getAttribute('#startPicker a[data-p="mitte-single"]', "aria-current")) === "true" && (await page.locator('#startPicker a[aria-current="true"]').count()) === 1, "elukaare lehel on valitud algpunkt sisse lülitatud (ainult see)");
-  check((await page.locator("#startPicker a").count()) === 4, "elukaare lehel on 4 algpunkti valikut");
-  await page.click('#startPicker a[data-p="valja"]');
-  await page.waitForURL("**/elukaar/?p=valja");
+  await page.goto(url + "/elukaar/?p=valja");
   check((await page.inputValue("#p2")) === "0" && (await page.inputValue("#p3")) === "0" && (await page.inputValue("#p2Rate")) === "0", "II samba välja võtnud: II ja III sammas 0, sissemakseid pole");
   await page.goto(url + "/elukaar/?p=liige-steady");
   check((await page.inputValue("#p2")) === "30414", "liige-steady: II sammas täidetud");

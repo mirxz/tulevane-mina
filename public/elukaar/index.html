@@ -304,27 +304,12 @@ main.container { padding-bottom: 1rem; }
 }
 .result-actions { align-items: center; }
 
-.start-picker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; padding: 0; list-style: none; }
-.start-picker .lbl { font-size: 0.875rem; color: var(--text-secondary); margin-right: 4px; }
-.start-picker a { display: inline-block; padding: 6px 14px; border: 2px solid #c8d0d8; border-radius: 999px; background: #fff; color: var(--navy); font-weight: 500; text-decoration: none; }
-.start-picker a:hover { border-color: var(--blue); }
-.start-picker a[aria-current="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
-.start-picker a[aria-current="true"]::before { content: "✓ "; }
 </style>
 </head>
 <body>
   <main class="container py-4">
     <header class="mb-3">
-      <p class="small-muted mb-1"><a href="/" id="backToStart">← Vali algpunkt</a> · Tuleva häkaton 2026 · prototüüp</p>
-      <nav aria-label="Algpunkt" class="mb-2">
-        <ul class="start-picker" id="startPicker">
-          <li class="lbl" id="startPickerLbl">Algpunkt:</li>
-          <li><a href="/elukaar/?p=konto-naidis" data-p="konto-naidis">Tuleva konto näide</a></li>
-          <li><a href="/elukaar/?p=liige-steady" data-p="liige-steady">Tüüpiline Tuleva liige</a></li>
-          <li><a href="/elukaar/?p=mitte-single" data-p="mitte-single">Tüüpiline mitteliige</a></li>
-          <li><a href="/elukaar/?p=valja" data-p="valja">Võtsin II samba välja</a></li>
-        </ul>
-      </nav>
+      <p class="small-muted mb-1">Tuleva häkaton 2026 · prototüüp</p>
       <p class="small mb-1" id="profileNote" hidden></p>
       <h1 class="mb-1">Tulevane Mina</h1>
       <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
@@ -1967,9 +1952,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     paTouched = true;
     syncPensionAge();
     const note = $('profileNote');
-    note.textContent = 'Alustad profiilist: ' + pr.nimi + '. Kõiki andmeid saad ise muuta. Teise algpunkti valimisel täidetakse andmed uuesti.';
+    note.textContent = 'Alustad profiilist: ' + pr.nimi + '. Kõiki andmeid saad ise muuta.';
     note.hidden = false;
-    document.querySelectorAll('#startPicker a[data-p]').forEach(a => { if (a.dataset.p === id) a.setAttribute('aria-current', 'true'); });
     update();
     try {
       const p0 = sessionStorage.getItem('mina_p0');
