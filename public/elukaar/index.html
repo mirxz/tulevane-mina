@@ -614,7 +614,7 @@ main.container { padding-bottom: 1rem; }
         <p class="chart-summary" id="chartSummary"></p>
         <div class="chart-wrap mb-2" id="chartWrap"><canvas id="chart" role="img" aria-labelledby="chartTitle" aria-describedby="chartSummary"></canvas></div>
         <div class="table-responsive chart-table d-none" id="chartTableWrap" tabindex="0" aria-labelledby="chartTableCaption"></div>
-        <figcaption class="small-muted">Tulbad: millest kulud kaetakse kuus (tänastes eurodes): I sammas tumesinine, II ja III sammas sinine, hoiuselt triibuline. Punane katkendjoon: sinu kulud. Hall joon ringidega: tõenäosus olla selles vanuses elus (Statistikaamet).</figcaption>
+        <figcaption class="small-muted">Tulbad: millest kulud kaetakse kuus (tänastes eurodes): I sammas tumesinine, II ja III sammas sinine, hoiuselt triibuline (varem sambast välja võetud raha, mis ootab hoiusel). Punane katkendjoon: sinu kulud. Hall joon ringidega (parem telg): mitu protsenti sinuvanustest on selles vanuses veel elus (Statistikaamet).</figcaption>
       </figure>
 
       <div id="legacy" class="mt-4"></div>
@@ -1536,9 +1536,9 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
         // Värvid samad. Lisaks: heledamatel tulpadel tumesinine äär (eristub valgest taustast), hoiusel triibud.
         { type: 'bar', label: 'I sammas', data: rows.map((x) => Math.round(x.i1)), backgroundColor: '#002f63', stack: 'income', yAxisID: 'y' },
         { type: 'bar', label: 'II ja III sammas', data: rows.map((x) => Math.round(x.i23)), backgroundColor: '#00aeea', borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y' },
-        { type: 'bar', label: 'Hoiuselt', data: rows.map((x) => Math.round(x.dep)), backgroundColor: stripes('#9fd8f0', '#002f63'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y' },
+        { type: 'bar', label: 'Hoiuselt (välja võetud raha)', data: rows.map((x) => Math.round(x.dep)), backgroundColor: stripes('#9fd8f0', '#002f63'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y' },
         { type: 'line', label: 'Kulud', data: rows.map(() => input.needMonthly), borderColor: '#db2200', borderDash: [6, 4], borderWidth: 2, pointRadius: 0, stack: 'need', yAxisID: 'y' },
-        { type: 'line', label: 'Elus (%)', data: rows.map((x) => Math.round(x.alive * 100)), borderColor: '#8a8d91', backgroundColor: '#fff', borderWidth: 2, tension: 0.3, yAxisID: 'y1',
+        { type: 'line', label: 'Elus (%, paremal teljel)', data: rows.map((x) => Math.round(x.alive * 100)), borderColor: '#8a8d91', backgroundColor: '#fff', borderWidth: 2, tension: 0.3, yAxisID: 'y1',
           pointRadius: rows.map((x) => (x.age % 5 === 0 ? 3.5 : 0)), pointBorderWidth: 2, pointStyle: 'circle' },
       ],
     };
@@ -1546,7 +1546,14 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 14, boxHeight: 14, font: font, usePointStyle: false } },
+        // Legendis: tulbad ruuduna, jooned joonena (kulud katkendjoonena), et legend vastaks graafikule.
+        legend: { position: 'bottom', labels: { font: font, usePointStyle: true, boxWidth: 28, boxHeight: 14,
+          generateLabels: (ch) => Chart.defaults.plugins.legend.labels.generateLabels(ch).map((l) => {
+            const ds = ch.data.datasets[l.datasetIndex];
+            if (ds.type === 'line') Object.assign(l, { pointStyle: 'line', strokeStyle: ds.borderColor, lineWidth: 3, lineDash: ds.borderDash || [] });
+            else Object.assign(l, { pointStyle: 'rect' });
+            return l;
+          }) } },
         tooltip: { callbacks: {
           title: (items) => items[0].label + '-aastaselt (' + rows[items[0].dataIndex].year + ')',
           label: (c) => c.dataset.label + ': ' + (c.dataset.yAxisID === 'y1' ? c.raw + '%' : eur(c.raw)),
