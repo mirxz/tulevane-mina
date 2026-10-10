@@ -13,6 +13,12 @@ const TTS_URL = "https://api.tartunlp.ai/text-to-speech/v2";
 const SPEAKERS = new Set(["albert", "indrek", "kalev", "kylli", "lee", "liivika", "luukas", "mari", "meelis", "peeter", "tambet", "vesta"]);
 const MAX_CHARS = 400; // üks kõne, mitte terve raamat
 
+// Toodangu aadressid (10.10): sama Worker vastab nii workers.dev kui ka oma domeeni alt.
+// Tulemuste leht koondab kõigi toodangu aadresside vastused; eelvaated jäävad eraldi.
+const TOODANG = ["mina.tulevane.workers.dev", "tulevanemina.ee", "www.tulevanemina.ee"];
+const hostid = (url) => (TOODANG.includes(url.hostname) ? TOODANG : [url.hostname]);
+const hostIn = (url, col = "host") => col + " IN (" + hostid(url).map(() => "?").join(", ") + ")";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -170,8 +176,8 @@ async function results(request, env, url) {
   if (!env.DB) return new Response("Andmebaas pole seadistatud.", { status: 503 });
   await ensureSchema(env.DB);
   const all = url.searchParams.get("koik") === "1";
-  const where = all ? "" : " WHERE host = ?";
-  const bindHost = (st) => (all ? st : st.bind(url.hostname));
+  const where = all ? "" : " WHERE " + hostIn(url);
+  const bindHost = (st) => (all ? st : st.bind(...hostid(url)));
   const ans = (await bindHost(env.DB.prepare("SELECT * FROM vastused" + where + " ORDER BY ts")).all()).results;
   if (url.pathname.endsWith(".csv")) {
     const cols = ["ts", "host", "loos", "mang", "moistis", "vastus", "moju", "tegevus", "tunne", "segment", "eelistus", "mangitud", "meelde"];
@@ -217,7 +223,7 @@ async function results(request, env, url) {
 .wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:6px 8px;border-bottom:1px solid #e0e6ec;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th:first-child{text-align:left;font-weight:400;white-space:normal}tr:first-child th{font-weight:600;color:#002f63}
 .small{font-size:13px;color:#6b7074}ul{padding-left:18px;display:grid;gap:6px}li span{font-size:12px;color:#6b7074;margin-right:6px}a{color:#006ce6}</style></head><body><main>
 <h1>Tulevane Mina · tulemused</h1>
-<p class="small">${all ? "Kõik keskkonnad (ka eelvaated)." : "Ainult " + esc(url.hostname) + "."} Vastuseid kokku ${ans.length}. Väikese valimi juures on erinevused suunavad, mitte statistiliselt olulised. <a href="?${all ? "" : "koik=1"}">${all ? "Näita ainult seda keskkonda" : "Näita ka eelvaateid"}</a> · CSV: <a href="/tulemused-tagasiside.csv">tagasiside</a> · <a href="/tulemused-ratas.csv">ratas</a> · <a href="/tulemused-plaan.csv">plaan</a> · <a href="/tulemused-meilid.csv">e-postid</a> · <a href="/tulemused.csv${all ? "?koik=1" : ""}">varasemad mängud</a></p>
+<p class="small">${all ? "Kõik keskkonnad (ka eelvaated)." : "Ainult " + esc(hostid(url).join(", ")) + "."} Vastuseid kokku ${ans.length}. Väikese valimi juures on erinevused suunavad, mitte statistiliselt olulised. <a href="?${all ? "" : "koik=1"}">${all ? "Näita ainult seda keskkonda" : "Näita ka eelvaateid"}</a> · CSV: <a href="/tulemused-tagasiside.csv">tagasiside</a> · <a href="/tulemused-ratas.csv">ratas</a> · <a href="/tulemused-plaan.csv">plaan</a> · <a href="/tulemused-meilid.csv">e-postid</a> · <a href="/tulemused.csv${all ? "?koik=1" : ""}">varasemad mängud</a></p>
 ${await tagasisideTulemused(env, url, all)}
 ${await ratasTulemused(env, url, all)}
 ${await plaanTulemused(env, url, all)}
@@ -316,8 +322,8 @@ async function collectPlaan(request, env, url) {
 }
 async function plaanTulemused(env, url, all) {
   await ensurePlaan(env.DB);
-  const where = all ? "" : " WHERE host = ?";
-  const bind = (q) => (all ? q : q.bind(url.hostname));
+  const where = all ? "" : " WHERE " + hostIn(url);
+  const bind = (q) => (all ? q : q.bind(...hostid(url)));
   const ans = (await bind(env.DB.prepare("SELECT * FROM plaan_vastused" + where + " ORDER BY ts")).all()).results;
   const starts = (await bind(env.DB.prepare("SELECT vaade, COUNT(DISTINCT sid) AS n FROM plaan_sundmused" + where + (all ? " WHERE" : " AND") + " ev = 'start' GROUP BY vaade")).all()).results;
   const sn = Object.fromEntries(starts.map((r) => [r.vaade, r.n]));
@@ -402,16 +408,16 @@ async function meilidCsv(request, env) {
 }
 async function ratasTulemused(env, url, all) {
   await ensureRatas(env.DB);
-  const where = all ? "" : " WHERE host = ?";
+  const where = all ? "" : " WHERE " + hostIn(url);
   const and = all ? " WHERE" : " AND";
-  const bind = (q) => (all ? q : q.bind(url.hostname));
+  const bind = (q) => (all ? q : q.bind(...hostid(url)));
   const q = async (sql) => (await bind(env.DB.prepare(sql)).all()).results;
   const num = async (sql) => (await q(sql))[0]?.n || 0;
   const alustas = await num("SELECT COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'spin'");
   const lopetas = await num("SELECT COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'done'");
-  const meile = (await (all ? env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid") : env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid WHERE host = ?").bind(url.hostname)).all()).results[0]?.n || 0;
+  const meile = (await (all ? env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid") : env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid WHERE " + hostIn(url)).bind(...hostid(url))).all()).results[0]?.n || 0;
   // iga (sid, sektor) viimane vastus
-  const vast = await q("SELECT a.sektor, a.pos, a.valik, a.tekst, a.allikas FROM ratas_sundmused a JOIN (SELECT MAX(id) AS id FROM ratas_sundmused WHERE ev = 'answer' GROUP BY sid, sektor) m ON m.id = a.id" + (all ? "" : " WHERE a.host = ?"));
+  const vast = await q("SELECT a.sektor, a.pos, a.valik, a.tekst, a.allikas FROM ratas_sundmused a JOIN (SELECT MAX(id) AS id FROM ratas_sundmused WHERE ev = 'answer' GROUP BY sid, sektor) m ON m.id = a.id" + (all ? "" : " WHERE " + hostIn(url, "a.host")));
   const pc = (a, b) => (b ? Math.round((100 * a) / b) + "%" : "–");
   const S = R_NIMED.map((nimi, i) => { const A = vast.filter((v) => v.sektor === i); const c = (k) => A.filter((v) => v.valik === k).length; return { nimi, n: A.length, t: c("tean"), u: c("umbes"), e: c("eitea"), tekstid: A.filter((v) => v.tekst) }; });
   let t = "<table><tr><th>Sektor</th><th>Vastuseid</th><th>Tean</th><th>Umbes</th><th>Ei tea</th><th>Ei tea %</th></tr>" + S.map((s) => "<tr><th>" + s.nimi + "</th><td>" + s.n + "</td><td>" + s.t + "</td><td>" + s.u + "</td><td>" + s.e + "</td><td><b>" + pc(s.e, s.n) + "</b></td></tr>").join("") + "</table>";
@@ -481,8 +487,8 @@ async function tagasisideCsv(request, env) {
 }
 async function tagasisideTulemused(env, url, all) {
   await ensureTagasiside(env.DB);
-  const st = env.DB.prepare("SELECT * FROM tagasiside_vastused" + (all ? "" : " WHERE host = ?") + " ORDER BY ts");
-  const A = (await (all ? st : st.bind(url.hostname)).all()).results;
+  const st = env.DB.prepare("SELECT * FROM tagasiside_vastused" + (all ? "" : " WHERE " + hostIn(url)) + " ORDER BY ts");
+  const A = (await (all ? st : st.bind(...hostid(url))).all()).results;
   const n = A.length;
   const sh = (f) => pc(A.filter(f).length, n);
   const row = (l, f) => "<tr><th>" + l + "</th><td>" + A.filter(f).length + "</td><td><b>" + sh(f) + "</b></td></tr>";

@@ -7,6 +7,11 @@
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "preview_urls": true,
+  // Oma domeen (10.10). workers.dev jääb samuti tööle (demo QR-koodid ja vanad lingid).
+  "routes": [
+    { "pattern": "tulevanemina.ee", "custom_domain": true },
+    { "pattern": "www.tulevanemina.ee", "custom_domain": true }
+  ],
   // Eelvaated (iga haru peale main): Cloudflare'i build käivitab `wrangler preview`, mis nõuab seda plokki.
   "previews": {
     // Eelvaated kirjutavad samasse andmebaasi; tulemuste leht näitab vaikimisi ainult toodangu aadressi vastuseid.
