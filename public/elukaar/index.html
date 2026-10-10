@@ -343,6 +343,14 @@ main.container { padding-bottom: 1rem; }
 @media (max-width: 575px) { .chart-wrap { height: 300px; } }
 .chart-summary li { margin-bottom: 0.2rem; }
 
+/* Akordionide nool (summary display:flex peidab brauseri vaikimisi kolmnurga) */
+details > summary { list-style: none; cursor: pointer; gap: 0.5rem; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: ''; flex: 0 0 auto; width: 0.55rem; height: 0.55rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; margin-right: 0.15rem; }
+details[open] > summary::before { transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) { details > summary::before { transition: none; } }
+details > summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 0.25rem; }
+
 </style>
 </head>
 <body>
@@ -1611,7 +1619,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
         (input.p3Has && input.p3Plan === 'keep' ? '. III sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan pensionieas korraga välja', fund: 'täiendav fondipension' }[input.p3At60] : '')],
       [6, '🏛️', (input.payout === 'grow' ? 'Pensionieas II sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'fondipension' }[input.method] + '. ' : '') +
         (input.p3Has && input.p3Plan === 'keep' && input.p3At60 === 'grow' ? 'III sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'täiendav fondipension' }[input.p3pa] + '. ' : '') + (!input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)')],
-      [7, '🌳', scenario.id + '. ' + scenario.name],
+      [7, '🌳', 'Väljamakse viis: ' + scenario.name.toLowerCase()],
       [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
     // Iga „Muuda“ nupu ekraanilugeja nimi ütleb, mida see muudab (WCAG 2.4.4).
@@ -1667,7 +1675,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       ['Kannab elu lõpuni, kuus', (r) => r.sustainable, eur, 'max'],
       ['Oodatav kogukulutus', (r) => r.expectedLifetime, eur, 'max'],
     ];
-    const head = '<thead><tr><th></th>' + defs.map((s) => '<th' + (s.id === activeId ? ' class="mine"' : '') + '>' + s.id + '. ' + s.name + (s.id === activeId ? '<br><small>sinu valik</small>' : '') + '</th>').join('') + '</tr></thead>';
+    const head = '<thead><tr><th></th>' + defs.map((s) => '<th' + (s.id === activeId ? ' class="mine"' : '') + '>' + s.name + (s.id === activeId ? '<br><small>sinu valik</small>' : '') + '</th>').join('') + '</tr></thead>';
     const body = rows.map(([label, get, fmt, best]) => {
       const vals = results.map(get);
       const top = best ? Math.max.apply(null, vals) : null;
@@ -1816,7 +1824,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     if (br.sustainable > mine.sustainable && best.id !== scenario.id) {
       // Ei muuda valikuid ise: ütleb, mida valida, ja viib sammu juurde, kus see valik tehakse.
       const how = howTo(best, readInput());
-      html += '<br>Parem oleks <strong>' + best.id + '. ' + best.name + '</strong>: see kannab elu lõpuni ' + eur(br.sustainable) + ' kuus (sinu valik ' + eur(mine.sustainable) + ').' +
+      html += '<br>Parem oleks <strong>' + best.name + '</strong>: see kannab elu lõpuni ' + eur(br.sustainable) + ' kuus (sinu valik ' + eur(mine.sustainable) + ').' +
         '<br>Selleks ' + how.text + ' <button type="button" class="btn btn-sm btn-primary ms-1" data-goto="' + how.step + '">' + how.btn +
         '<span class="visually-hidden">: vali ' + best.name + '</span></button>';
     } else {
