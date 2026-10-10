@@ -1,0 +1,211 @@
+/* Tulevane Mina kalkulaator. Välimus järgib Tuleva pensionikalkulaatorit (tuleva.ee/pensionikalkulaator):
+   Merriweather pealkiri, Roboto tekst, valge kaart 16px nurgaga, helesinine sisendite paneel, segmentnupud, ümar liugur.
+   Värvitokenid: TulevaEE/onboarding-client (_variables.scss). Tuleva logo ei ole kasutusel. */
+:root {
+  --navy: #002f63;
+  --blue: #006ce6;
+  --blue-dark: #005bc2;
+  --bright-blue: #00aeea;
+  --red: #db2200;
+  --green: #008300;
+  --text: #293036;
+  --text-2: #6b7074;
+  --text-navy-2: #4a5f78;
+  --gray-1: #fafbfc;
+  --gray-2: #f5f7f9;
+  --border-2: #d6dee6;
+  --border-3: #c8d0d8;
+  --blue-bg-1: #f2fafe;
+  --blue-bg-2: #edf7fd;
+  --blue-border-1: #d3e8f5;
+  --note-bg: #fff6d9;
+  --note-border: #faeed0;
+  --shadow: 0 0 0 1px rgba(0,0,0,.02), 0 1px 3px 0 rgba(0,0,0,.04), 0 3px 9px 0 rgba(0,0,0,.04), 0 6px 18px 0 rgba(0,0,0,.04);
+}
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; min-width: 320px; }
+body { margin: 0; font-family: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.5; color: var(--text); background: var(--gray-2); }
+h1, h2, h3 { color: var(--navy); margin: 0; }
+h1 { font-family: Merriweather, Georgia, "Times New Roman", serif; font-weight: 700; font-size: 40px; line-height: 1.2; text-align: center; }
+h2 { font-size: 1.25rem; font-weight: 500; }
+h3 { font-size: 1rem; font-weight: 500; }
+a { color: var(--blue); }
+button, input, select { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Päis (Tuleva helesinine taust) */
+.hero { background: linear-gradient(180deg, #cfe6f2 0%, #e4f1f8 70%, var(--gray-2) 100%); padding: 40px 16px 72px; }
+.hero .in { max-width: 720px; margin: 0 auto; text-align: center; }
+.hero .proto { display: inline-block; font-size: .875rem; font-weight: 500; color: var(--navy); background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 12px; margin-bottom: 16px; }
+.hero p { font-size: 1.25rem; color: var(--navy); margin: 16px 0 0; }
+.hero p.sub { font-size: 1rem; color: var(--text-navy-2); }
+
+.layout { max-width: 1120px; margin: -48px auto 0; padding: 0 16px 48px; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 992px) { .layout { grid-template-columns: 540px minmax(0, 1fr); } }
+
+.card { background: #fff; border-radius: 16px; box-shadow: var(--shadow); padding: 8px; max-width: 100%; }
+.card + .card { margin-top: 24px; }
+.panel { background: var(--blue-bg-2); border-radius: 8px; padding: 16px; }
+.panel + .panel, .panel + .grp, .grp + .grp { margin-top: 8px; }
+.pad { padding: 8px 8px 8px; }
+
+/* Alguspunkt */
+.start label.l { display: block; font-weight: 500; color: var(--navy); margin-bottom: 4px; }
+select, .ig input, .seg label { height: 38px; }
+select { width: 100%; border: 1px solid var(--border-3); border-radius: 6px; background: var(--gray-1); color: var(--navy); font-weight: 500; padding: 0 32px 0 12px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23293036' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+select.sm { font-weight: 400; background-color: #fff; color: var(--text); }
+.hint { font-size: .875rem; color: var(--text-2); margin: 6px 0 0; }
+
+/* Kihi grupp (kokkuvolditav) */
+.grp { border-radius: 8px; }
+.grp > button.h { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; background: #fff; border: 1px solid var(--border-2); border-radius: 8px; padding: 10px 12px; cursor: pointer; color: var(--navy); font-weight: 500; }
+.grp > button.h:hover { background: var(--gray-1); }
+.grp > button.h .t { flex: 1; }
+.grp > button.h .cnt { font-weight: 400; font-size: .875rem; color: var(--text-2); }
+.grp > button.h .chev { width: 12px; height: 8px; transition: transform .15s; flex: none; }
+.grp > button.h[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.grp > .body { padding: 16px 4px 4px; }
+.grp > .body[hidden] { display: none; }
+
+/* Sisendi rida: silt vasakul, sisend paremal (nagu Tuleva) */
+.f { display: grid; grid-template-columns: 1fr minmax(0, 210px); gap: 4px 16px; align-items: center; margin-bottom: 12px; }
+.f:last-child { margin-bottom: 0; }
+.f > .lab { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+.f > .src { grid-column: 1 / -1; font-size: .8125rem; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: -2px; }
+.f > .src:empty { display: none; }
+@media (max-width: 520px) { .f { grid-template-columns: 1fr; } }
+.q { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--blue); color: var(--blue); background: transparent; font-size: .75rem; line-height: 1; padding: 0; cursor: help; }
+.ig { display: flex; }
+.ig input { flex: 1; min-width: 0; width: 100%; border: 1px solid var(--border-3); border-right: 0; border-radius: 6px 0 0 6px; padding: 0 12px; text-align: right; background: #fff; }
+.ig .ad { display: flex; align-items: center; padding: 0 12px; background: var(--gray-2); border: 1px solid var(--border-3); border-radius: 0 6px 6px 0; white-space: nowrap; font-size: .9375rem; }
+.ig input:focus-visible, select:focus-visible, .seg input:focus-visible + label, button:focus-visible, .range input:focus-visible { outline: 3px solid var(--bright-blue); outline-offset: 1px; }
+.seg { display: flex; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid var(--blue); color: var(--blue); padding: 0 12px; cursor: pointer; background: transparent; font-weight: 450; white-space: nowrap; }
+.seg label:not(:first-of-type) { margin-left: -1px; }
+.seg label:first-of-type { border-radius: 6px 0 0 6px; }
+.seg label:last-of-type { border-radius: 0 6px 6px 0; }
+.seg input:checked + label { background: var(--blue); color: #fff; }
+
+/* Liugur (Tuleva stiil: valge rada, sinine ümar käepide koos väärtusega) */
+.range { position: relative; padding: 4px 0 18px; }
+.range input[type=range] { width: 100%; height: 32px; margin: 0; appearance: none; background: transparent; }
+.range input[type=range]::-webkit-slider-runnable-track { height: 22px; border-radius: 999px; background: #fff; border: 1px solid var(--border-3); }
+.range input[type=range]::-moz-range-track { height: 22px; border-radius: 999px; background: #fff; border: 1px solid var(--border-3); }
+.range input[type=range]::-webkit-slider-thumb { appearance: none; width: 44px; height: 32px; margin-top: -6px; border-radius: 999px; background: var(--blue); border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.range input[type=range]::-moz-range-thumb { width: 44px; height: 32px; border-radius: 999px; background: var(--blue); border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.range output { position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; color: #fff; background: var(--blue); border-radius: 999px; min-width: 44px; height: 32px; line-height: 32px; text-align: center; font-weight: 500; font-size: .875rem; }
+.range .mark { position: absolute; bottom: -2px; right: 0; font-size: .75rem; color: var(--text-2); }
+
+/* Allikamärgid (andmekihid) */
+.chip { display: inline-block; padding: 0 8px; border-radius: 4px; font-size: .75rem; font-weight: 500; line-height: 20px; border: 1px solid transparent; white-space: nowrap; }
+.chip.tuleva, .chip.konto { background: var(--blue-bg-1); color: var(--blue-dark); border-color: var(--blue-border-1); }
+.chip.statistika { background: #eef7ee; color: #006b00; border-color: #cfe6cf; }
+.chip.seadus { background: var(--gray-2); color: var(--text-navy-2); border-color: var(--border-2); }
+.chip.eeldus { background: var(--note-bg); color: #6f5400; border-color: var(--note-border); }
+.chip.sina { background: var(--navy); color: #fff; }
+.reset { background: none; border: 0; color: var(--blue); text-decoration: underline; padding: 0; cursor: pointer; font-size: .8125rem; }
+
+/* Vajadus */
+.cats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; }
+.cats label { font-size: .875rem; display: block; margin-bottom: 2px; }
+.cats .ig input { height: 34px; }
+@media (max-width: 420px) { .cats { grid-template-columns: 1fr; } }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--blue); text-decoration: underline; cursor: pointer; font-size: .9375rem; }
+
+/* Tulemused */
+.res h2 { padding: 8px 8px 0; }
+.answer { background: var(--blue-bg-1); border: 1px solid var(--blue-border-1); border-radius: 8px; padding: 16px; color: var(--navy); font-size: 1.0625rem; margin: 8px; }
+.answer strong { font-weight: 700; }
+.answer.warn { background: #fff4f1; border-color: #f5cfc7; }
+.metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 8px; }
+@media (min-width: 640px) { .metrics { grid-template-columns: repeat(4, 1fr); } }
+.metric { border: 1px solid var(--border-2); border-radius: 8px; padding: 12px; }
+.metric .v { font-size: 1.375rem; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.metric .v.red { color: var(--red); }
+.metric .k { font-size: .8125rem; color: var(--text-2); margin-top: 2px; }
+.tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; padding: 12px 8px 0; }
+@media (min-width: 640px) { .tabs { grid-template-columns: repeat(4, 1fr); } }
+.tabs button { border: 1px solid var(--blue); background: transparent; color: var(--blue); padding: 8px 10px; text-align: left; cursor: pointer; margin: 0 -1px -1px 0; }
+.tabs button b { display: block; font-weight: 500; }
+.tabs button span { display: block; font-size: .75rem; color: var(--text-2); line-height: 1.3; margin-top: 2px; }
+.tabs button[aria-pressed="true"] span { color: #fff; }
+.tabs button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.tabs button:first-child { border-radius: 6px 0 0 0; }
+.tabs button:last-child { border-radius: 0 0 6px 0; }
+.defer { padding: 12px 8px 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.defer select { width: auto; min-width: 200px; }
+
+.chart { padding: 12px 8px 4px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .readout { min-height: 3em; font-size: .875rem; color: var(--navy); background: var(--gray-2); border-radius: 6px; padding: 8px 12px; margin-top: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 4px 8px 8px; font-size: .8125rem; color: var(--text-2); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+table.cmp { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+table.cmp th, table.cmp td { text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--border-2); }
+table.cmp th:first-child, table.cmp td:first-child { text-align: left; }
+table.cmp thead th { font-size: .8125rem; color: var(--text-navy-2); font-weight: 500; vertical-align: bottom; }
+table.cmp td.best { color: var(--green); font-weight: 700; }
+.tw { overflow-x: auto; padding: 8px; }
+
+.tl { list-style: none; margin: 0; padding: 8px; }
+.tl li { position: relative; padding: 0 0 14px 24px; border-left: 2px solid var(--border-2); margin-left: 8px; }
+.tl li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.tl li::before { content: ""; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bright-blue); }
+.tl .when { font-weight: 700; color: var(--navy); }
+.tl .past { font-size: .75rem; background: var(--gray-2); border-radius: 4px; padding: 0 6px; color: var(--text-2); margin-left: 6px; font-weight: 400; }
+.tl p { margin: 0; font-size: .9375rem; color: var(--text-2); }
+
+.kihid { list-style: none; margin: 0; padding: 8px; display: grid; gap: 8px; }
+.kihid li { border: 1px solid var(--border-2); border-radius: 8px; padding: 12px; }
+.kihid .hd { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-weight: 500; color: var(--navy); }
+.kihid .n { font-size: .875rem; color: var(--text-2); font-weight: 400; }
+.kihid p { margin: 4px 0 0; font-size: .875rem; color: var(--text-2); }
+.kihid ul { margin: 6px 0 0; padding-left: 18px; font-size: .875rem; }
+.kihid .used { margin-top: 6px; font-size: .875rem; color: var(--navy); }
+
+.rank { padding: 8px 16px 12px; font-size: .9375rem; }
+.bar { position: relative; height: 12px; border-radius: 6px; background: var(--border-2); margin: 8px 0 4px; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bright-blue); }
+.bar b { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--navy); }
+
+.note { background: var(--note-bg); border: 1px solid var(--note-border); border-radius: 8px; padding: 12px 16px; margin: 8px; font-size: .9375rem; }
+footer { max-width: 1120px; margin: 0 auto; padding: 0 16px 48px; font-size: .875rem; color: var(--text-2); }
+footer ul { padding-left: 18px; }
+footer li { margin-bottom: 4px; }
+.back { max-width: 1120px; margin: 0 auto; padding: 12px 16px 0; font-size: .9375rem; }
+
+@media (max-width: 640px) { h1 { font-size: 28px; } .hero { padding-top: 24px; } .hero p { font-size: 1.0625rem; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Persoonade valik */
+.start .l { display: block; font-weight: 500; color: var(--navy); margin: 0 0 4px; }
+.start .gh { font-size: .875rem; font-weight: 500; color: var(--text-navy-2); margin: 12px 0 6px; }
+.pk { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 420px) { .pk { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pc { text-align: left; background: #fff; border: 1px solid var(--blue-border-1); border-radius: 8px; padding: 8px 10px; cursor: pointer; color: var(--text); display: block; line-height: 1.3; }
+.pc:hover { border-color: var(--blue); }
+.pc b { display: block; color: var(--navy); font-weight: 500; font-size: .9375rem; }
+.pc .e { display: block; font-size: .8125rem; color: var(--text-2); }
+.pc .f { display: block; font-size: .8125rem; margin-top: 4px; }
+.pc .o { display: block; font-size: .75rem; color: var(--text-2); margin-top: 2px; }
+.pc[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.pc[aria-pressed="true"] b, .pc[aria-pressed="true"] .e, .pc[aria-pressed="true"] .o { color: #fff; }
+.pd { background: #fff; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: .9375rem; }
+.pd p { margin: 0 0 8px; }
+.pd dl { margin: 0; display: grid; gap: 4px; }
+.pd dl div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border-2); padding: 3px 0; }
+.pd dt { color: var(--text-2); font-size: .875rem; }
+.pd dd { margin: 0; font-weight: 500; color: var(--navy); text-align: right; }
+.pd .hint { margin: 8px 0 0; }
+
+.pb { margin-top:16px; padding:12px; background:#fff; border-radius:8px; font-size:14px; line-height:1.5 }
+.pb h4 { margin:0 0 8px; font-size:14px; color:#002f63 }
+.pb table { width:100%; border-collapse:collapse; margin-bottom:8px }
+.pb th, .pb td { padding:4px 6px; text-align:left; border-bottom:1px solid #dde5ec; font-weight:400 }
+.pb thead th { font-weight:500; color:#4b5563; font-size:12px }
+.pb td:last-child { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap }
+.pb tfoot th, .pb tfoot td { font-weight:700; border-bottom:0 }
+.pb p { margin:0; color:#374151 }
