@@ -238,6 +238,12 @@ main.container { padding-bottom: 1rem; }
 /* Tumedal taustal alati valged ikoonid (ka möödunud aktiivne samm) */
 .path li.current .path-dot, .path li.current.past .path-dot { color: #fff; }
 .pot-emoji { color: #fff; }
+/* Raja sammud on nupud: hover annab heledalt halli tausta (aktiivne jääb siniseks) */
+.path button { cursor: pointer; }
+.path-dot { transition: transform 0.15s, background-color 0.15s, border-color 0.15s; }
+.path li:not(.current) button:hover .path-dot { background: #eef1f4; border-color: var(--blue); }
+.path li:not(.current) button:hover .path-label { color: var(--navy); }
+@media (prefers-reduced-motion: reduce) { .path-dot { transition: none; } }
 
 </style>
 </head>
