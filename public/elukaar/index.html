@@ -1243,7 +1243,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const items = [
       ['🏦', eur(potAtPension(input, input.realReturn)), 'sammastes ' + pa + '-aastaselt'],
       ['🏛️', eur(p1) + ' /kuus', 'riiklik pension'],
-    ].concat(input.extraDeposit > 0 ? [['🐷', eur(input.extraDeposit), 'III sambast hoiusel']] : []).concat([
+    ].concat(input.extraDeposit > 0 ? [['🐷', eur(input.extraDeposit), 'tavalisel hoiusel (III sambast välja võetud)']] : []).concat([
       ['🛒', visited.has(8) ? eur(input.needMonthly) + ' /kuus' : 'valimata', 'kulud' + (visited.has(8) ? ' (' + input.pkg.name + (input.edited ? ', muudetud' : '') + ')' : '')],
     ]);
     $('potBar').innerHTML = items.map((x) => '<div class="pot-item"><span class="pot-emoji" aria-hidden="true">' + x[0] + '</span><span><strong>' + x[1] + '</strong><small>' + x[2] + '</small></span></div>').join('');
