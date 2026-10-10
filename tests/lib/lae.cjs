@@ -1,5 +1,5 @@
 // Laeb brauserikoodi (IIFE, mis määrab module.exports või window.Pension) CommonJS-testidele.
-// lae(tee, { incomeTax: false }) → mootor, mille simulate ja sustainableNeed arvutavad ilma tulumaksuta (Kadi testid on kirjutatud
+// lae(tee, { incomeTax: false }) → mootor, mille simulate ja sustainableNeed arvutavad ilma tulumaksuta (Meelis Burgeti tuleva-tuleviku testid on kirjutatud
 // maksuta mootori jaoks; tulumaksu kontrollivad eraldi testid).
 const fs = require('fs');
 const path = require('path');
