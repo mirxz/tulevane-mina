@@ -49,6 +49,13 @@
     return Math.max(1, Math.round(table.elada_jaanud[sex][Math.min(age, MAX_AGE)]));
   }
 
+  // Annuiteeditegur: n võrdset makset aasta alguses, saldo kasvab tootlusega r. Tootlusel 0 on see n.
+  function annuityDue(n, r) {
+    if (!(n > 0)) return 0;
+    if (Math.abs(r) < 1e-12) return n;
+    return (1 - Math.pow(1 + r, -n)) / (1 - 1 / (1 + r));
+  }
+
   // Pensioniiga aastates: kasutaja (või Tuleva konto) antud väärtus või ligikaudne reegel.
   function retirementYears(input) {
     return input.pensionAgeYears || pensionAge(input.birthYear).years;
@@ -124,7 +131,8 @@
           sched = fund / fundPensionTerm(table, input.sex, age); // uus leping igal aastal lühima maksuvaba perioodiga
         } else if (contractStart !== null && age >= contractStart) {
           const left = contractTerm - (age - contractStart);
-          sched = left > 0 ? fund / left : 0;
+          // Tasane reaalne makse: saldo jagatud annuiteeditegur (makse aasta alguses, saldo kasvab edasi), mitte lihtsalt 1/left.
+          sched = left > 0 ? fund / annuityDue(left, r) : 0;
         }
         fund -= sched;
         // Eraldi III sammas fondipensionina: uus leping igal aastal (maksuvaba).
@@ -218,7 +226,7 @@
     { id: 'D', name: 'Leping igal aastal uuesti', short: 'Maksuvaba fondipension, mille lepingu sõlmid igal aastal uuesti. Ei saa otsa, aga väheneb vanas eas.' },
   ];
 
-  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, retirementYears, yearlyContribution, survival, horizonAge, fundPensionTerm, decisionMap, simulate, sustainableNeed };
+  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, retirementYears, yearlyContribution, survival, horizonAge, fundPensionTerm, annuityDue, decisionMap, simulate, sustainableNeed };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Pension = api;
 })(typeof window !== 'undefined' ? window : globalThis);
