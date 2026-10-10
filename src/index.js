@@ -334,7 +334,7 @@ async function plaanTulemused(env, url, all) {
 // E-post läheb eraldi tabelisse ilma sid-ita, et seda ei saaks vastustega siduda.
 const R_EV = new Set(["spin", "answer", "done", "email"]);
 const R_VALIK = new Set(["tean", "umbes", "eitea"]);
-const R_NIMED = ["Vajadus", "Riiklik pension", "Sambad", "Kõrvalraha", "Eluiga", "Auto ja kodu", "Ära koonerda"];
+const R_NIMED = ["Kuu kulud", "Riiklik pension", "II ja III sammas", "Säästud", "Kui kaua elad", "Auto ja kodu", "Unistused"];
 const R_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS ratas_sundmused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, ev TEXT, allikas TEXT, jarjekord TEXT, sektor INTEGER, pos INTEGER, valik TEXT, tekst TEXT)",
   "CREATE TABLE IF NOT EXISTS ratas_meilid (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, email TEXT NOT NULL UNIQUE, allikas TEXT)",
