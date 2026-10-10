@@ -133,8 +133,8 @@ npm test                    # teises aknas
 
 ## Allikad
 
-- Pensioni kordajad: Sotsiaalkindlustusamet, paindlik vanaduspension.
-- Suremus: Gompertzi mudel, kalibreeritud Eurostati 2023 eeldatavale elueale 65-aastaselt (mehed 15,9, naised 21,1 a).
+- Pensioni kordajad: Sotsiaalkindlustusamet, paindlik vanaduspension, 2026 keskmised (plaanis `public/plaan/mudel.js`; arhiivimängudes vanad väärtused).
+- Suremus (plaan): Statistikaameti elutabel RV045 ja RV046, fail `public/plaan/elutabel.js`, uuendus `python3 scripts/elutabel.py`. Arhiivimängudes Gompertzi mudel (Eurostat 2023).
 - Pensioniiga: TulevaEE/onboarding-client `pensionCalculator/calculation.ts` (MIT).
 
 ## Plaani prototüüp (avaleht, 9.10)
@@ -147,7 +147,7 @@ Avalehel on samale plaanile kolm vaadet; vaade loositakse (`?vaade=kalk|kaar|kor
 - **Elukaar** (`kaar`): sissetulek aastate kaupa tulpadena, vajaduse joon ja otsustuspunktid (sammaste väljamakse, riiklik pension, pooled / 10% elavad kauem).
 - **Ostukorv** (`korv`): millist elu saan endale lubada; korvi summa ja plaani kandevõime.
 
-Mudel on failis `public/plaan/mudel.js`: Eurostati eluiga (ainult vanus ja sugu, terviseandmeid ei küsita), paindliku pensioni kordajad, fondipension (vara jagatud allesjäänud elueaga), tänases rahas. „Elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest. Eeldused on lehel avatavad.
+Mudel on failis `public/plaan/mudel.js`: Statistikaameti elutabel (ainult vanus ja sugu, terviseandmeid ei küsita), paindliku pensioni kordajad, fondipension (vara jagatud allesjäänud elueaga), tänases rahas. „Elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest. Eeldused on lehel avatavad.
 
 Mõõtmine: `/api/p` salvestab D1 tabelitesse `plaan_sundmused` ja `plaan_vastused` ainult vaate, kindluse enne/pärast (1–5), vastuse „kas plaan katab?“ (ja kas see klapib mudeliga), suurema hirmu (otsa / elamata), eelistuse ja vabateksti. Summasid ega vanust ei salvestata. Tulemused on `/tulemused` lehe ülaosas.
 
@@ -182,9 +182,6 @@ Teadaolevad lüngad v0.1-s:
 - `/tulemused` ülaosas on loendur: lõpetanud, alustanud seadmeid, jaganud.
 - Olemasolevatele D1 tabelitele lisatakse veerg `allikas` automaatselt esimesel päringul.
 
-<<<<<<< Updated upstream
-
-=======
 ## Õnneratta maandumisleht (`/ratas/`, 10.10)
 
 Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsimuse järjekorra (esimene = ratta valitud sektor, ülejäänud segamini), üks küsimus korraga, seitsmesegmendiline edenemisriba, lõpus tänuleht (sisend-/resoneerimistest) ja valikuline e-post pühapäevase testlingi jaoks.
@@ -193,4 +190,3 @@ Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsim
 - Andmed: `/api/r`, tabelid `ratas_sundmused` (anonüümne seansi tunnus, vastused, vabatekst; e-posti- ja pika numbri-sarnane tekst maskitakse) ja `ratas_meilid` (e-post ilma seansi tunnuseta, eraldi, et ei saaks vastustega siduda). Tulemused: `/tulemused` (osa „Õnneratas“), e-postid: `/tulemused-meilid.csv` (sama parool).
 - FB/sotsiaalmeedia pilt: `public/ratas/og.png` (1200×630), `og:` märgendid on `index.html`-is.
 - Test: `node tests/ratas.mjs <URL>`.
->>>>>>> Stashed changes
