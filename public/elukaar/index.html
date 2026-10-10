@@ -353,7 +353,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
           </div>
           <div class="col-6 col-md-3">
             <label class="form-label" for="switchAge">Vanus</label>
-            <input class="form-control" id="switchAge" type="number" min="18" max="64" step="1">
+            <input class="form-control" id="switchAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="switchYear">
             <div class="form-text" id="switchYear"></div>
           </div>
         </div>
@@ -1044,9 +1044,6 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     $('fundNewMore').classList.toggle('d-none', radio('fundChange') !== 'switch');
     const pot = potAtPension(input, input.realReturn);
     const potIndex = potAtPension(input, FUNDS.index.r, true);
-    const sw = $('switchAge');
-    sw.max = pa - 1;
-    if (!sw.value) sw.value = String(Math.min(pa - 1, Math.max(18, input.currentAge)));
     $('switchYear').textContent = 'aastal ' + (input.birthYear + input.switchAge);
     $('switchNote').textContent = input.switchAge <= input.currentAge
       ? 'Vahetasid ' + input.switchAge + '-aastaselt. Varasem tootlus on juba sinu tänases sambasummas, edasi arvestame uue fondiga.'
@@ -1343,6 +1340,12 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     el.addEventListener('change', update);
     el.addEventListener('input', () => el.classList.remove('is-prefilled'));
   });
+
+  // Fondivahetuse vanus: trükkimise ajal ei sega, väljast lahkudes viime lubatud vahemikku (18 kuni pensioniiga − 1).
+  const switchEl = $('switchAge');
+  switchEl.value = String(Math.max(18, P.CURRENT_YEAR - (parseInt($('birthYear').value, 10) || 1980)));
+  switchEl.addEventListener('input', () => { switchEl.value = switchEl.value.replace(/\D/g, ''); });
+  switchEl.addEventListener('change', () => { switchEl.value = String(readInput().switchAge); update(); });
 
   $('kuludMeta').textContent = 'uuring ' + K.uuringuaasta + ', hinnad ' + K.hinnad;
   $('lifeYear').textContent = T.aasta;
