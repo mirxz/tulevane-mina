@@ -1179,5 +1179,8 @@
     if (s) { $('tagasisideLink').href = '/tagasiside/?' + s; $('tagasisideLink2').href = '/tagasiside/?' + s; }
   })();
 
+  // Testikonks: ainult kui test seab window.__ELUKAAR_TEST enne lehe laadimist (tavakasutajale midagi ei avaldata).
+  if (window.__ELUKAAR_TEST) window.__elukaar = { readInput: readInput };
+
   go(0, false);
 })();
