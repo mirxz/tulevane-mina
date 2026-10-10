@@ -1,0 +1,48 @@
+/* Õnneratta maandumisleht. Kasutab plaan.css tokeneid. Mobiil esmalt, üks asi korraga. */
+:root { --s0:#ff7a70; --s1:#ffa352; --s2:#ffd54a; --s3:#8fd45a; --s4:#4fd1c5; --s5:#6aaef0; --s6:#a58bf0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+main { padding-bottom: 96px; }
+.intro { display: grid; gap: 12px; text-align: center; }
+.intro h1 { font-size: 32px; line-height: 40px; }
+.intro p { margin: 0; }
+.wheelbox { position: relative; width: min(88vw, 380px); aspect-ratio: 1; margin: 4px auto 0; }
+.wheelbox > svg:first-child { width: 100%; height: 100%; display: block; overflow: visible; }
+#kettaGrp { transform-origin: 200px 200px; transform-box: view-box; transition: transform 4.8s cubic-bezier(.1,.72,.12,1); }
+.wheelbox .pointer { position: absolute; left: 50%; top: -14px; width: 34px; height: 40px; transform: translateX(-50%); z-index: 2; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+.spinbtn { font-size: 18px; min-height: 56px; }
+.hint { color: var(--text-2); font-size: 14px; line-height: 20px; }
+.landed { border-radius: var(--r-xl); padding: 16px; display: grid; gap: 8px; text-align: center; color: var(--navy); }
+.landed b { font-family: var(--serif); font-size: 24px; line-height: 32px; display: block; }
+/* edenemisriba: seitse segmenti, igaüks oma sektori värvi */
+.prog { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.prog i { height: 8px; border-radius: 99px; background: var(--bg-2); border: 1px solid var(--border); }
+.prog i.done { border-color: transparent; }
+.prog i.now { height: 8px; border-color: var(--navy); background: var(--white); }
+.proglab { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-2); }
+.chipS { display: inline-block; border-radius: 99px; padding: 3px 12px; font-size: 13px; font-weight: 700; color: var(--navy); width: fit-content; }
+.qh { font-size: 24px; line-height: 32px; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+legend { padding: 0; }
+.ch { position: relative; }
+.ch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; width: 100%; height: 100%; }
+.ch span { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 14px; border: 2px solid var(--border-2); border-radius: var(--r-lg); font-weight: 500; background: var(--white); }
+.ch span::before { content: ""; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-2); flex: none; }
+.ch input:checked + span { border-color: var(--navy); background: var(--hero); }
+.ch input:checked + span::before { border-color: var(--navy); background: radial-gradient(var(--navy) 0 45%, transparent 50%); }
+.ch input:focus-visible + span { outline: 3px solid rgba(0,108,230,.45); outline-offset: 2px; }
+textarea { width: 100%; min-height: 84px; padding: 10px 12px; border: 1px solid var(--border-2); border-radius: var(--r); font: inherit; resize: vertical; }
+.sticky { position: sticky; bottom: 0; background: var(--white); padding: 10px 0 max(10px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 2fr; gap: 8px; box-shadow: 0 -8px 12px -8px rgba(0,0,0,.12); }
+.sticky .btn { min-height: 52px; }
+.sticky.solo { grid-template-columns: 1fr; }
+.thanks h1 { font-size: 28px; }
+.sumrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.sumrow div { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px 4px; }
+.sumrow b { display: block; font-size: 26px; color: var(--navy); }
+.sumrow span { font-size: 13px; color: var(--text-2); }
+label.chk { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 20px; }
+label.chk input { width: 22px; height: 22px; margin: 1px 0 0; }
+input[type=email] { min-height: 48px; padding: 8px 12px; border: 1px solid var(--border-2); border-radius: var(--r); font: inherit; width: 100%; }
+.err { color: var(--red); font-size: 14px; margin: 0; }
+.ok { background: #e6f3ea; border-radius: var(--r-lg); padding: 12px; color: #14532d; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { #kettaGrp { transition-duration: .01s !important; } }

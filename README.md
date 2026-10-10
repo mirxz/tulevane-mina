@@ -182,4 +182,15 @@ Teadaolevad lüngad v0.1-s:
 - `/tulemused` ülaosas on loendur: lõpetanud, alustanud seadmeid, jaganud.
 - Olemasolevatele D1 tabelitele lisatakse veerg `allikas` automaatselt esimesel päringul.
 
+<<<<<<< Updated upstream
 
+=======
+## Õnneratta maandumisleht (`/ratas/`, 10.10)
+
+Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsimuse järjekorra (esimene = ratta valitud sektor, ülejäänud segamini), üks küsimus korraga, seitsmesegmendiline edenemisriba, lõpus tänuleht (sisend-/resoneerimistest) ja valikuline e-post pühapäevase testlingi jaoks.
+
+- Aadress ja allikas: `/ratas/?k=<allikas>` (nt `?k=a5` paber-QR, `?k=fb`, `?k=tanav`). Jagamisnupp lisab `?k=jagatud`.
+- Andmed: `/api/r`, tabelid `ratas_sundmused` (anonüümne seansi tunnus, vastused, vabatekst; e-posti- ja pika numbri-sarnane tekst maskitakse) ja `ratas_meilid` (e-post ilma seansi tunnuseta, eraldi, et ei saaks vastustega siduda). Tulemused: `/tulemused` (osa „Õnneratas“), e-postid: `/tulemused-meilid.csv` (sama parool).
+- FB/sotsiaalmeedia pilt: `public/ratas/og.png` (1200×630), `og:` märgendid on `index.html`-is.
+- Test: `node tests/ratas.mjs <URL>`.
+>>>>>>> Stashed changes

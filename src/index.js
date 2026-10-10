@@ -5,6 +5,7 @@
 // Parool on valikuline: kui Cloudflare secret PROTO_VOTI on seatud, küsib sait parooli; ilma selleta on sait avatud.
 // Heidi Reinson andis 8.10 loa häkatonil avalikult testida (otsuste logi). /tulemused kasutab alati eraldi parooli TULEMUSED_VOTI.
 // /api/mang/tuba → lauamängu võrgutoad (sama D1, tabel mang_toad): olek JSON-ina, versiooniga, et samaaegsed käigud ei kirjutaks üksteist üle.
+// /api/r    → õnneratta maandumisleht /ratas/: anonüümsed vastused ja eraldi e-posti tabel (ei seo sid-iga).
 // Kõik muu → staatilised failid kaustast public/.
 
 const TTS_URL = "https://api.tartunlp.ai/text-to-speech/v2";
@@ -14,14 +15,16 @@ const MAX_CHARS = 400; // üks kõne, mitte terve raamat
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const isResults = url.pathname === "/tulemused" || url.pathname === "/tulemused.csv";
+    const isResults = url.pathname === "/tulemused" || url.pathname === "/tulemused.csv" || url.pathname === "/tulemused-meilid.csv";
     if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
     // Lauamäng kolis arhiivi (9.10). Vana aadress (ka prinditud QR-kood) annab teadlikult veateate, mitte ei suuna edasi.
     if (url.pathname === "/mang" || url.pathname.startsWith("/mang/")) return gone();
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
     if (url.pathname === "/api/p") return collectPlaan(request, env, url);
+    if (url.pathname === "/api/r") return collectRatas(request, env, url);
     if (url.pathname.startsWith("/api/mang/tuba")) return room(request, env, url);
+    if (url.pathname === "/tulemused-meilid.csv") return meilidCsv(request, env);
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
     return env.ASSETS.fetch(request);
   },
@@ -198,6 +201,7 @@ async function results(request, env, url) {
 .small{font-size:13px;color:#6b7074}ul{padding-left:18px;display:grid;gap:6px}li span{font-size:12px;color:#6b7074;margin-right:6px}a{color:#006ce6}</style></head><body><main>
 <h1>Tulevane Mina · tulemused</h1>
 <p class="small">${all ? "Kõik keskkonnad (ka eelvaated)." : "Ainult " + esc(url.hostname) + "."} Vastuseid kokku ${ans.length}. Väikese valimi juures on erinevused suunavad, mitte statistiliselt olulised. <a href="?${all ? "" : "koik=1"}">${all ? "Näita ainult seda keskkonda" : "Näita ka eelvaateid"}</a> · <a href="/tulemused.csv${all ? "?koik=1" : ""}">Laadi CSV</a></p>
+${await ratasTulemused(env, url, all)}
 ${await plaanTulemused(env, url, all)}
 <section><h2>Varasemad mängud: variandid kõrvuti</h2><p class="small">Peamine mõõdik: osa vastajatest, kes vastas arusaamise küsimusele õigesti ja valis mõne tegevuse.</p><div class="wrap">${table}</div></section>
 <section><h2>Segmentide kaupa</h2><p class="small">Vastajaid · peamine mõõdik</p><div class="wrap">${seg}</div></section>
@@ -323,6 +327,87 @@ async function plaanTulemused(env, url, all) {
   t += "</table>";
   const q = ans.filter((a) => a.kommentaar).slice(-60).reverse().map((a) => "<li><span>" + PN[a.vaade] + "</span> " + esc(a.kommentaar) + "</li>").join("");
   return `<section><h2>Seis praegu</h2><p style="font-size:28px;line-height:36px;margin:0"><b>${ans.length}</b> lõpetanud · ${sidn} seadet alustanud · ${jagas} jaganud</p></section><section><h2>Kanalid</h2><p class="small">Lisa linkidele <code>?k=fb</code>, <code>?k=reklaam</code>, <code>?k=lkd</code>, <code>?k=tuleva</code>. Jagamisnupu link lisab <code>jagatud</code>.</p><div class="wrap">${kt}</div></section><section><h2>Plaani vaated (9.10)</h2><p class="small">Peamine mõõdik: vastas küsimusele „Kas plaan katab vajaduse elu lõpuni?“ mudeliga sama vastuse. Vastuseid ${ans.length}.</p><div class="wrap">${t}</div></section><section><h2>Mis aitas või segas</h2><ul>${q || "<li>Veel pole.</li>"}</ul></section>`;
+}
+
+// ---------------------------------------------------------------------------
+// Õnneratas (/ratas/): seitse küsimust, esimene keerutus määrab järjekorra. Vastused anonüümsed (sid on ainult seansi juhuslik tunnus).
+// E-post läheb eraldi tabelisse ilma sid-ita, et seda ei saaks vastustega siduda.
+const R_EV = new Set(["spin", "answer", "done", "email"]);
+const R_VALIK = new Set(["tean", "umbes", "eitea"]);
+const R_NIMED = ["Vajadus", "Riiklik pension", "Sambad", "Kõrvalraha", "Eluiga", "Auto ja kodu", "Ära koonerda"];
+const R_SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS ratas_sundmused (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, sid TEXT, ev TEXT, allikas TEXT, jarjekord TEXT, sektor INTEGER, pos INTEGER, valik TEXT, tekst TEXT)",
+  "CREATE TABLE IF NOT EXISTS ratas_meilid (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, email TEXT NOT NULL UNIQUE, allikas TEXT)",
+];
+let rReady = false;
+async function ensureRatas(db) { if (rReady) return; await db.batch(R_SCHEMA.map((q) => db.prepare(q))); rReady = true; }
+const maskTekst = (t) => clean(t, 280).replace(/\S+@\S+/g, "[e-post]").replace(/\d[\d\s-]{5,}\d/g, "[number]");
+async function collectRatas(request, env, url) {
+  if (request.method !== "POST") return json({ viga: "Kasuta POST-päringut" }, 405);
+  if (!env.DB) return json({ viga: "Andmebaas pole seadistatud" }, 503);
+  let b; try { b = await request.json(); } catch { return json({ viga: "Vigane JSON" }, 400); }
+  const ev = clean(b.ev, 8);
+  const alk = String(b.alk || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 16);
+  const ts = new Date().toISOString(), host = url.hostname;
+  if (!R_EV.has(ev)) return json({ viga: "Vigased väärtused" }, 400);
+  await ensureRatas(env.DB);
+  if (ev === "email") {
+    const email = clean(b.email, 120).toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({ viga: "Vigane e-post" }, 400);
+    await env.DB.prepare("INSERT OR IGNORE INTO ratas_meilid (ts, host, email, allikas) VALUES (?, ?, ?, ?)").bind(ts, host, email, alk).run();
+    return json({ ok: true }, 200);
+  }
+  const sid = clean(b.sid, 60);
+  if (!/^[a-z0-9-]{8,60}$/i.test(sid)) return json({ viga: "Vigased väärtused" }, 400);
+  let jarjekord = "", sektor = null, pos = null, valik = "", tekst = "";
+  if (ev === "spin") {
+    const j = String(b.jarjekord || "").split(",").map(Number);
+    if (j.length !== 7 || new Set(j).size !== 7 || j.some((x) => !(x >= 0 && x <= 6))) return json({ viga: "Vigane järjekord" }, 400);
+    jarjekord = j.join(",");
+  }
+  if (ev === "answer") {
+    sektor = Number(b.sektor); pos = Number(b.pos); valik = clean(b.valik, 8);
+    if (!(sektor >= 0 && sektor <= 6) || !(pos >= 1 && pos <= 7) || !R_VALIK.has(valik)) return json({ viga: "Vigane vastus" }, 400);
+    tekst = maskTekst(b.tekst);
+  }
+  await env.DB.prepare("INSERT INTO ratas_sundmused (ts, host, sid, ev, allikas, jarjekord, sektor, pos, valik, tekst) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(ts, host, sid, ev, alk, jarjekord, sektor, pos, valik, tekst).run();
+  return json({ ok: true }, 200);
+}
+async function meilidCsv(request, env) {
+  if (!env.TULEMUSED_VOTI) return new Response("Tulemuste parool (secret TULEMUSED_VOTI) pole seadistatud.", { status: 503 });
+  if (!authorized(request, env)) return new Response("Sisesta parool", { status: 401, headers: { "www-authenticate": 'Basic realm="Tulevane Mina tulemused", charset="UTF-8"' } });
+  if (!env.DB) return new Response("Andmebaas pole seadistatud.", { status: 503 });
+  await ensureRatas(env.DB);
+  const rows = (await env.DB.prepare("SELECT ts, email, allikas FROM ratas_meilid ORDER BY ts").all()).results;
+  const csv = ["ts,email,allikas"].concat(rows.map((r) => ['"' + r.ts + '"', '"' + String(r.email).replace(/"/g, '""') + '"', '"' + (r.allikas || "") + '"'].join(","))).join("\n");
+  return new Response("﻿" + csv, { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": 'attachment; filename="ratas-meilid.csv"', "cache-control": "no-store" } });
+}
+async function ratasTulemused(env, url, all) {
+  await ensureRatas(env.DB);
+  const where = all ? "" : " WHERE host = ?";
+  const and = all ? " WHERE" : " AND";
+  const bind = (q) => (all ? q : q.bind(url.hostname));
+  const q = async (sql) => (await bind(env.DB.prepare(sql)).all()).results;
+  const num = async (sql) => (await q(sql))[0]?.n || 0;
+  const alustas = await num("SELECT COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'spin'");
+  const lopetas = await num("SELECT COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'done'");
+  const meile = (await (all ? env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid") : env.DB.prepare("SELECT COUNT(*) AS n FROM ratas_meilid WHERE host = ?").bind(url.hostname)).all()).results[0]?.n || 0;
+  // iga (sid, sektor) viimane vastus
+  const vast = await q("SELECT a.sektor, a.pos, a.valik, a.tekst, a.allikas FROM ratas_sundmused a JOIN (SELECT MAX(id) AS id FROM ratas_sundmused WHERE ev = 'answer' GROUP BY sid, sektor) m ON m.id = a.id" + (all ? "" : " WHERE a.host = ?"));
+  const pc = (a, b) => (b ? Math.round((100 * a) / b) + "%" : "–");
+  const S = R_NIMED.map((nimi, i) => { const A = vast.filter((v) => v.sektor === i); const c = (k) => A.filter((v) => v.valik === k).length; return { nimi, n: A.length, t: c("tean"), u: c("umbes"), e: c("eitea"), tekstid: A.filter((v) => v.tekst) }; });
+  let t = "<table><tr><th>Sektor</th><th>Vastuseid</th><th>Tean</th><th>Umbes</th><th>Ei tea</th><th>Ei tea %</th></tr>" + S.map((s) => "<tr><th>" + s.nimi + "</th><td>" + s.n + "</td><td>" + s.t + "</td><td>" + s.u + "</td><td>" + s.e + "</td><td><b>" + pc(s.e, s.n) + "</b></td></tr>").join("") + "</table>";
+  const pos = await q("SELECT pos, COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'answer' GROUP BY pos ORDER BY pos");
+  const posN = Object.fromEntries(pos.map((r) => [r.pos, r.n]));
+  let t2 = "<table><tr><th>Küsimus järjekorras</th>" + [1, 2, 3, 4, 5, 6, 7].map((p) => "<th>" + p + "</th>").join("") + "</tr><tr><th>Vastajaid</th>" + [1, 2, 3, 4, 5, 6, 7].map((p) => "<td>" + (posN[p] || 0) + "</td>").join("") + "</tr></table>";
+  const esimene = await q("SELECT CAST(substr(jarjekord, 1, 1) AS INTEGER) AS s, COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'spin' GROUP BY 1");
+  const esN = Object.fromEntries(esimene.map((r) => [r.s, r.n]));
+  const kanalid = await q("SELECT COALESCE(NULLIF(allikas, ''), 'otse') AS k, COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'spin' GROUP BY 1 ORDER BY n DESC");
+  const kl = await q("SELECT COALESCE(NULLIF(allikas, ''), 'otse') AS k, COUNT(DISTINCT sid) AS n FROM ratas_sundmused" + where + and + " ev = 'done' GROUP BY 1");
+  const klN = Object.fromEntries(kl.map((r) => [r.k, r.n]));
+  const kt = "<table><tr><th>Kanal (?k=…)</th><th>Keeras</th><th>Lõpetas</th></tr>" + (kanalid.map((r) => "<tr><th>" + esc(r.k) + "</th><td>" + r.n + "</td><td>" + (klN[r.k] || 0) + "</td></tr>").join("") || "<tr><td colspan=3>Veel pole.</td></tr>") + "</table>";
+  const tx = S.flatMap((s) => s.tekstid.slice(-15).map((v) => "<li><span>" + s.nimi + " · " + ({ tean: "tean", umbes: "umbes", eitea: "ei tea" }[v.valik]) + "</span> " + esc(v.tekst) + "</li>")).join("");
+  return `<section><h2>Õnneratas (/ratas/)</h2><p style="font-size:28px;line-height:36px;margin:0"><b>${lopetas}</b> lõpetanud · ${alustas} keerutanud · ${meile} e-posti</p><p class="small">E-postid: <a href="/tulemused-meilid.csv">laadi CSV</a> (ei ole vastustega seotud). Väike valim, loe hüpoteesina.</p></section><section><h2>Ratas: kus „ei tea“</h2><div class="wrap">${t}</div></section><section><h2>Ratas: kui kaugele jõuti</h2><p class="small">Kui palju vastajaid vastas küsimusele nr N (järjekord on igaühel erinev).</p><div class="wrap">${t2}</div></section><section><h2>Ratas: kanalid</h2><p class="small">Esimese küsimuse jaotus: ${R_NIMED.map((n, i) => n + " " + (esN[i] || 0)).join(", ")}.</p><div class="wrap">${kt}</div></section><section><h2>Ratas: vabatekst (mis jäi katmata)</h2><ul>${tx || "<li>Veel pole.</li>"}</ul></section>`;
 }
 
 function gone() {

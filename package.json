@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "test": "node tests/engine.mjs && node tests/plaan.mjs && node tests/smoke.mjs"
+    "test": "node tests/engine.mjs && node tests/plaan.mjs && node tests/ratas.mjs && node tests/smoke.mjs"
   },
   "devDependencies": {
     "axe-core": "^4.14.0",
