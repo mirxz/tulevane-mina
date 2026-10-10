@@ -304,6 +304,32 @@ main.container { padding-bottom: 1rem; }
 }
 .result-actions { align-items: center; }
 
+/* Väikseim tekst 14px (0.875rem) kõikjal, ka mobiilis */
+.path button, .path-label, .chapter-kicker, .pot-item small, .pkg-or, .src-chip, .table-compare small, .path-now { font-size: 0.875rem !important; }
+.src-chip { line-height: 1.4rem; }
+.path-now { line-height: 1.3; }
+@media (max-width: 575px) {
+  .path-label, .pot-item small, .path-now { font-size: 0.875rem !important; }
+  .path-label { white-space: nowrap; }
+}
+
+/* WCAG 2.5.5 (AAA): klikitavad alad vähemalt 44 × 44 px. Tekstisisesed lingid on erand. */
+.btn, .btn-sm, .form-control, .form-select { min-height: 44px; }
+.btn-sm { display: inline-flex; align-items: center; gap: 0.35rem; }
+.recap .btn-link { min-height: 44px; min-width: 44px; padding: 0 0.5rem !important; display: inline-flex; align-items: center; justify-content: center; }
+.path button { min-height: 44px; min-width: 44px; }
+.choice input { width: 1.25rem; height: 1.25rem; } /* raadionupp on terve kaardi sees, kaart on sihtmärk */
+#pkgDetails summary, details > summary { min-height: 44px; display: flex; align-items: center; }
+.cost-input { min-height: 44px; }
+/* Mobiilis: esimese ja viimase sammu silt ei tohi rajast välja ulatuda */
+@media (max-width: 575px) {
+  .path li:first-child .path-label { align-self: flex-start; }
+  .path li:last-child .path-label { align-self: flex-end; }
+}
+/* Graafik ei tohi olla laiem kui konteiner (mobiil, akna suuruse muutmine) */
+.chart-wrap { width: 100%; min-width: 0; }
+.chart-wrap canvas { max-width: 100%; }
+
 </style>
 </head>
 <body>
@@ -1665,7 +1691,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const rows = r.rows;
     $('chartSummary').textContent = chartSummary(r, input);
     $('chartTableWrap').innerHTML = chartTable(r, input);
-    const font = { family: 'Roboto', size: 13 };
+    const font = { family: 'Roboto', size: 14 };
     const data = {
       labels: rows.map((x) => x.age),
       datasets: [
@@ -1813,7 +1839,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const fresh = readInput();
     renderPotBar(fresh);
     renderPath(fresh);
-    if (step === LAST) renderResult(fresh);
+    if (step === LAST) { renderResult(fresh); if (chart) chart.resize(); }
     svgify(document);
     if (keep) { const el = document.querySelector('input[name="' + keep + '"]:checked'); if (el) el.focus(); }
   }
