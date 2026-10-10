@@ -1116,7 +1116,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     if (idx === 3) a = Math.max(a, Math.min(input.currentAge, b)); // tööaastad: alates tänasest
     const tense = b < input.currentAge ? 'Sinu minevik' : a > input.currentAge ? 'Sinu tulevik' : 'Sinu praegune elu';
     const years = a === b ? String(input.birthYear + a) : (input.birthYear + a) + '–' + (b >= 100 ? '…' : input.birthYear + b);
-    const label = a === b ? a + '-aastane' : a + '–' + (b >= 100 ? '' : b) + (b >= 100 ? '+' : '') + ' a';
+    const label = a === b ? a + '-aastane' : b >= 100 ? a + '+ a' : a + '–' + b + ' a';
     return label + ' · ' + years + ' · ' + tense;
   }
 
@@ -1223,9 +1223,16 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     if (input.method === 'grow') lockMsg = 'Kasvatad edasi, nii et fondipensioni lepingut pole. Raha kasvab fondis ja võtad välja ainult nii palju, kui kuus vaja (10% tulumaks).';
     else if (input.method === 'lump') lockMsg = 'Võtsid samba raha korraga välja, nii et fondipensioni lepingut pole vaja. Raha on hoiusel ja kasutad seda vajaduse järgi.';
     else if (input.deferral > 0) lockMsg = 'Lükkasid riikliku pensioni ' + input.deferral + ' aastat edasi. Seni elad samba rahast (sild) ja fondipensioni lepingu sõlmid siis, kui riiklik pension algab (' + (pa + input.deferral) + '-aastaselt).';
-    $('contractLocked').textContent = lockMsg;
+    // Lukus: kaarte ei näita, vaid selgitab ja viib sinna, kus otsus tehakse.
+    $('contractLocked').innerHTML = lockMsg + (lockMsg ? (input.payout === 'lump'
+      ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda ' + (pa - 5) + '-aastaselt</button>'
+      : ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="6">Muuda pensionieas</button>') : '');
     $('contractLocked').classList.toggle('d-none', !lockMsg);
     $('contractSet').disabled = !!lockMsg;
+    $('contractSet').classList.toggle('d-none', !!lockMsg);
+    $('h7').textContent = lockMsg
+      ? 'Pensionipõlv: kuidas raha kestab?'
+      : 'Pensionipõlv: kuidas fondipension kestab?';
   }
 
   function renderPotBar(input) {
