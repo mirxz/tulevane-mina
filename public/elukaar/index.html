@@ -1339,7 +1339,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     $('switchNote').textContent = input.switchAge <= input.currentAge
       ? 'Vahetad kohe. Edasi kasvab raha uues fondis (' + pct(FUNDS[input.fundNow].r) + ').'
       : 'Vahetad ' + input.switchAge + '-aastaselt. Seni (' + (input.switchAge - input.currentAge) + ' a) kasvab raha praeguses fondis (' + pct(FUNDS[input.fund18].r) + '), pärast seda uues fondis (' + pct(FUNDS[input.fundNow].r) + ').';
-    $('workNote').innerHTML = 'Pensionieaks (' + pa + ' a) on sinu sammastes umbes <strong>' + eur(pot) + '</strong>.';
+    $('workNote').innerHTML = 'Pensionieaks (' + pa + ' a) kasvab sinu sammaste vara umbes <strong>' + eur(pot).replace(' €', ' euroni') + '</strong>.';
 
     // Kulud: leibkond
     $('hhNote').innerHTML = input.household === 'paar'
