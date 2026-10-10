@@ -186,6 +186,11 @@ fieldset:disabled .choice { cursor: not-allowed; }
   .pot-bar { gap: 0.5rem 1rem; font-size: 0.875rem; }
 }
 
+/* Kulud ükshaaval */
+.cost-table .cost-input { width: 6.5rem; margin-left: auto; text-align: right; }
+.cost-input.is-edited { border-color: var(--blue); background: var(--blue-bg-1); font-weight: 700; }
+.pkg-edited { color: var(--blue) !important; }
+
 </style>
 </head>
 <body>
@@ -445,14 +450,10 @@ fieldset:disabled .choice { cursor: not-allowed; }
         <div class="packages" id="packages"></div>
       </fieldset>
       <details class="mt-3" id="pkgDetails">
-        <summary class="small-muted">Vaata ja muuda paketi sisu</summary>
-        <div id="pkgBreakdown" class="mt-2"></div>
-        <div class="row g-2 align-items-end mt-1">
-          <div class="col-6 col-md-4">
-            <label class="form-label" for="ownNeed">Või sisesta oma summa, €/kuus</label>
-            <input class="form-control" id="ownNeed" type="number" min="0" step="10" placeholder="paketi järgi">
-          </div>
-        </div>
+        <summary class="fw-medium">Muuda kulusid ükshaaval</summary>
+        <p class="small-muted mt-2 mb-2">Kirjuta igale reale oma summa. Muudatused jäävad selle paketi juurde alles ka siis, kui vahepeal teise paketi valid.</p>
+        <div id="pkgBreakdown"></div>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-2 d-none" id="resetPkg">Taasta paketi summad</button>
         <p class="small-muted mt-2 mb-0" id="pkgSource"></p>
       </details>
     </section>
@@ -785,7 +786,6 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const pkg = PACKAGES.find((p) => p.id === radio('pkg')) || PACKAGES[0];
     const household = $('household').value;
     const pkgTotal = packageTotal(pkg, household);
-    const own = parseFloat($('ownNeed').value);
 
     return {
       birthYear: birthYear,
@@ -810,8 +810,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       contract: radio('contract'),
       pkg: pkg,
       pkgTotal: pkgTotal,
-      ownNeed: own > 0 ? own : null,
-      needMonthly: own > 0 ? own : pkgTotal,
+      edited: isEdited(pkg),
+      needMonthly: customTotal(pkg, household),
     };
   }
 
@@ -869,20 +869,59 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
         '<span class="choice-body">' +
         '<span class="pkg-top"><span class="choice-emoji" aria-hidden="true">' + p.emoji + '</span><strong>' + p.name + '</strong><span class="pkg-price">' + eur(total) + '<small> /kuus</small></span></span>' +
         '<small>' + p.tagline + '</small>' +
+        (isEdited(p) ? '<small class="pkg-edited">Sinu muudetud summa: <strong>' + eur(customTotal(p, input.household)) + '</strong></small>' : '') +
         '<span class="pkg-bar" aria-hidden="true"><span class="seg base" style="width:' + w(base) + '"></span><span class="seg joy" style="width:' + w(joy) + '"></span><span class="seg future" style="width:' + w(fut) + '"></span></span>' +
         '<ul class="pkg-facts">' + funFacts(p, input.household).map((f) => '<li><span aria-hidden="true">' + f[0] + '</span> ' + f[1] + '</li>').join('') + '</ul>' +
         '</span></label>';
     }).join('') +
       '<p class="pkg-legend small-muted mb-0"><span class="dot base"></span>põhikulud (Statistikaamet) <span class="dot joy"></span>elamused <span class="dot future"></span>tulevik ja hooldus</p>';
-    $('packages').querySelectorAll('input').forEach((el) => el.addEventListener('change', () => { $('ownNeed').value = ''; update(); }));
+    $('packages').querySelectorAll('input').forEach((el) => el.addEventListener('change', update));
   }
 
+  // Paketi read: [võti, nimi, paketi summa, liik]. Kasutaja muudatused on paketi kaupa failis `overrides`.
+  const overrides = {};
+  function pkgLines(pkg, household) {
+    return statCats(household).map((c) => ['stat:' + c.name, c.name, c.v, 'stat'])
+      .concat(pkg.extras.map((e) => [e[1], e[0], e[2], e[3]]))
+      .concat([['other', 'Muud oma kulud', 0, 'other']]);
+  }
+  function lineValue(pkg, line) {
+    const o = overrides[pkg.id];
+    return o && o[line[0]] !== undefined ? o[line[0]] : line[2];
+  }
+  function customTotal(pkg, household) { return pkgLines(pkg, household).reduce((s, l) => s + lineValue(pkg, l), 0); }
+  function isEdited(pkg) { return !!overrides[pkg.id] && Object.keys(overrides[pkg.id]).length > 0; }
+
+  // Joonista väljad uuesti ainult paketi või leibkonna vahetusel, et trükkimise ajal fookus ei kaoks.
+  let breakdownKey = null;
   function renderBreakdown(input) {
-    const rows = statCats(input.household).map((c) => [c.name, c.v, 'stat'])
-      .concat(input.pkg.extras.map((e) => [e[0], e[2], e[3]]));
-    $('pkgBreakdown').innerHTML = '<table class="table table-sm mb-0"><tbody>' +
-      rows.map((r) => '<tr><td>' + r[0] + (r[2] === 'stat' ? '' : ' <span class="src-chip ' + (r[2] === 'joy' ? 'tuleva' : 'puudub') + '">lisa</span>') + '</td><td class="text-end">' + eur(r[1]) + '</td></tr>').join('') +
-      '<tr class="fw-bold"><td>Kokku</td><td class="text-end">' + eur(input.pkgTotal) + '</td></tr></tbody></table>';
+    const key = input.pkg.id + '|' + input.household;
+    if (key !== breakdownKey) {
+      breakdownKey = key;
+      const chip = { stat: '', joy: ' <span class="src-chip tuleva">elamus</span>', future: ' <span class="src-chip puudub">tulevik</span>', other: '' };
+      $('pkgBreakdown').innerHTML = '<table class="table table-sm align-middle mb-0 cost-table"><thead><tr><th scope="col">Kulu</th><th scope="col" class="text-end">Paketis</th><th scope="col" class="text-end">Sinu summa, €/kuus</th></tr></thead><tbody>' +
+        pkgLines(input.pkg, input.household).map((l, i) =>
+          '<tr><td><label for="cost' + i + '" class="mb-0">' + l[1] + '</label>' + chip[l[3]] + '</td>' +
+          '<td class="text-end small-muted">' + eur(l[2]) + '</td>' +
+          '<td class="text-end"><input class="form-control form-control-sm cost-input" id="cost' + i + '" data-key="' + l[0] + '" type="number" min="0" step="5" inputmode="numeric" value="' + Math.round(lineValue(input.pkg, l)) + '"></td></tr>'
+        ).join('') +
+        '</tbody><tfoot><tr class="fw-bold"><td>Kokku</td><td class="text-end small-muted" id="pkgDefaultTotal"></td><td class="text-end" id="pkgCustomTotal"></td></tr></tfoot></table>';
+      $('pkgBreakdown').querySelectorAll('.cost-input').forEach((el) => el.addEventListener('input', () => {
+        const pkg = readInput().pkg;
+        const line = pkgLines(pkg, $('household').value).find((l) => l[0] === el.dataset.key);
+        const v = Math.max(0, parseFloat(el.value) || 0);
+        overrides[pkg.id] = overrides[pkg.id] || {};
+        if (v === line[2]) delete overrides[pkg.id][line[0]]; else overrides[pkg.id][line[0]] = v;
+        update();
+      }));
+    }
+    $('pkgBreakdown').querySelectorAll('.cost-input').forEach((el) => {
+      const o = overrides[input.pkg.id];
+      el.classList.toggle('is-edited', !!o && o[el.dataset.key] !== undefined);
+    });
+    $('pkgDefaultTotal').textContent = eur(input.pkgTotal);
+    $('pkgCustomTotal').textContent = eur(input.needMonthly);
+    $('resetPkg').classList.toggle('d-none', !input.edited);
     $('pkgSource').innerHTML = '<span class="src-chip stat ms-0">Statistikaamet</span> ' + K.leibkonnad[input.household] + ', uuring ' + K.uuringuaasta + ', hinnad ' + K.hinnad + '.';
   }
 
@@ -962,7 +1001,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const items = [
       ['🏦', eur(potAtPension(input, input.realReturn)), 'sammastes ' + pa + '-aastaselt'],
       ['🏛️', eur(p1) + ' /kuus', 'riiklik pension'],
-      ['🛒', visited.has(8) ? eur(input.needMonthly) + ' /kuus' : 'valimata', 'kulud' + (visited.has(8) ? ' (' + (input.ownNeed ? 'oma summa' : input.pkg.name) + ')' : '')],
+      ['🛒', visited.has(8) ? eur(input.needMonthly) + ' /kuus' : 'valimata', 'kulud' + (visited.has(8) ? ' (' + input.pkg.name + (input.edited ? ', muudetud' : '') + ')' : '')],
     ];
     $('potBar').innerHTML = items.map((x) => '<div class="pot-item"><span class="pot-emoji" aria-hidden="true">' + x[0] + '</span><span><strong>' + x[1] + '</strong><small>' + x[2] + '</small></span></div>').join('');
   }
@@ -1022,7 +1061,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       $('legacyNote').innerHTML = o ? o[3] + (o[0] === 'spend' && r.sustainable > input.needMonthly
         ? ' <button type="button" class="btn btn-link p-0 align-baseline" id="trySpend">Proovi ' + eur(r.sustainable) + ' kuus</button>' : '') : 'Vali üks variant.';
       const t = $('trySpend');
-      if (t) t.addEventListener('click', () => { $('ownNeed').value = r.sustainable; update(); });
+      if (t) t.addEventListener('click', () => { const pkg = input.pkg; overrides[pkg.id] = overrides[pkg.id] || {};
+        const other = lineValue(pkg, ['other', '', 0]);
+        overrides[pkg.id].other = Math.round(other + r.sustainable - input.needMonthly);
+        breakdownKey = null; update(); });
     };
     box.querySelectorAll('input[name="legacy"]').forEach((el) => el.addEventListener('change', () => { legacyChoice = el.value; note(); }));
     note();
@@ -1039,7 +1081,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       [5, '🧳', input.payout === 'lump' ? 'Võtan samba raha korraga välja' : 'Võtan samba raha välja fondipensionina'],
       [6, '🏛️', input.payout === 'lump' || !input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)'],
       [7, '🌳', scenario.id + '. ' + scenario.name],
-      [8, '🛒', (input.ownNeed ? 'Oma summa' : input.pkg.name) + ': ' + eur(input.needMonthly) + ' kuus'],
+      [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
     $('recap').innerHTML = items.map((x) => '<li><span aria-hidden="true">' + x[1] + '</span><span class="flex-grow-1">' + x[2] + '</span><button type="button" class="btn btn-link btn-sm p-0" data-goto="' + x[0] + '">Muuda<span class="visually-hidden">: ' + chapters[x[0]].dataset.label + '</span></button></li>').join('');
   }
@@ -1182,6 +1224,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const b = e.target.closest('[data-goto]');
     if (b) go(parseInt(b.dataset.goto, 10));
   });
+  $('resetPkg').addEventListener('click', () => { delete overrides[readInput().pkg.id]; breakdownKey = null; update(); });
   $('backBtn').addEventListener('click', () => go(step - 1));
   $('nextBtn').addEventListener('click', () => go(step + 1));
   document.querySelectorAll('.chapter input, .chapter select').forEach((el) => {
