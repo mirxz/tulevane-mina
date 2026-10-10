@@ -4,10 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "test": "node tests/engine.mjs && node tests/kalkulaator-mootor.mjs && node tests/elukaar-mootor.mjs && node tests/plaan.mjs && node tests/ratas.mjs && node tests/kalkulaator.mjs && node tests/smoke.mjs && node tests/maandumine.mjs && node tests/tagasiside.mjs"
+    "test": "npm run test:mootor && npm run test:brauser",
+    "test:mootor": "node tests/engine.mjs && node tests/kalkulaator-mootor.mjs && node tests/elukaar-mootor.mjs && node tests/kalkulaator-pension.test.cjs && node tests/kalkulaator-stsenaariumid.test.cjs && node tests/elukaar-pohi.test.cjs && node tests/elukaar-stsenaariumid.test.cjs && node tests/elukaar-invariandid.test.cjs && node tests/elukaar-golden.test.cjs && node tests/elukaar-reeglid.test.cjs",
+    "test:brauser": "node tests/plaan.mjs && node tests/ratas.mjs && node tests/kalkulaator.mjs && node tests/smoke.mjs && node tests/maandumine.mjs && node tests/tagasiside.mjs && node tests/elukaar-ui-raha.mjs && node tests/elukaar-graafik.mjs",
+    "golden:uuenda": "node tests/elukaar-golden.test.cjs --update && node tests/elukaar-graafik.mjs --update"
   },
   "devDependencies": {
     "axe-core": "^4.14.0",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.1",
     "playwright": "^1.56.0",
     "wrangler": "^4.0.0"
   }

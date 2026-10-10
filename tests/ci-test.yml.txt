@@ -1,0 +1,32 @@
+name: Testid
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  mootor:
+    name: Mootori testid (kiired, ilma brauserita)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run test:mootor
+  brauser:
+    name: Brauseri testid (graafik, UI, ligipääsetavus)
+    runs-on: ubuntu-latest
+    needs: mootor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Käivita kohalik server
+        run: |
+          nohup npx wrangler dev --port 8787 > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/elukaar/ >/dev/null && break; sleep 1; done
+      - run: npm run test:brauser
+      - if: failure()
+        run: tail -50 wrangler.log
