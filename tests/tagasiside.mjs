@@ -54,6 +54,26 @@ console.log("\nLink elukaarest");
   check((await page.getAttribute("#tagasisideLink", "href")) === "/tagasiside/", "ilma algpunktita viib link lihtsalt tagasiside lehele");
   await page.close();
 }
+console.log("\nKanal (?k=) maandumislehelt tagasisideni ja eelvaate metasildid");
+{
+  const page = await browser.newPage();
+  await page.goto(url + "/?k=fb", { waitUntil: "domcontentloaded" });
+  const hrefs = await page.$$eval("#level1 a", (as) => as.map((a) => a.getAttribute("href")));
+  check(hrefs.length === 4 && hrefs.every((h) => /^\/elukaar\/\?p=[a-z-]+&k=fb$/.test(h)), "maandumislehe kaardid kannavad kanalit: " + hrefs[0]);
+  await page.click("#level1 a >> nth=1");
+  await page.waitForURL(/\/elukaar\//);
+  check((await page.getAttribute("#tagasisideLink", "href")) === "/tagasiside/?p=liige-steady&k=fb", "kanal jõuab elukaare tagasiside lingini");
+  await page.goto(url + "/?k=%3Cb%3EX%20Y", { waitUntil: "domcontentloaded" });
+  check((await page.$$eval("#level1 a", (as) => as[0].getAttribute("href"))) === "/elukaar/?p=konto-naidis&k=bxy", "kanali tunnus puhastatakse");
+  await page.goto(url + "/", { waitUntil: "domcontentloaded" });
+  check((await page.$$eval("#level1 a", (as) => as[0].getAttribute("href"))) === "/elukaar/?p=konto-naidis", "ilma kanalita lingid muutumatud");
+  const og = await page.$eval('meta[property="og:image"]', (m) => m.content);
+  check(/^https:\/\/.+\/og\.png$/.test(og) && (await page.$eval('meta[name="twitter:card"]', (m) => m.content)) === "summary_large_image" && !!(await page.$('meta[property="og:title"]')) && !!(await page.$('meta[property="og:description"]')), "og:image, og:title, og:description ja twitter:card olemas");
+  const r = await fetch(url + "/og.png");
+  const buf = Buffer.from(await r.arrayBuffer());
+  check(r.status === 200 && (r.headers.get("content-type") || "").includes("image/png") && buf.readUInt32BE(16) === 1200 && buf.readUInt32BE(20) === 630, "/og.png on 1200×630 PNG");
+  await page.close();
+}
 console.log("\nAlgpunkti jälgimine (maandumisleht → elukaar → tagasiside)");
 {
   const page = await browser.newPage();
