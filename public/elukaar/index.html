@@ -1372,8 +1372,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     $('p3At60Set').classList.toggle('d-none', !input.p3Has || p3Done);
     $('p3At60Note').classList.toggle('d-none', input.p3Has && !p3Done);
     $('p3At60Note').innerHTML = !input.p3Has
-      ? 'Sul ei ole III sammast. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda</button>'
-      : p3Done ? 'III samba kohta tegid valiku juba ' + input.p3Age + '-aastaselt: <strong>' + (input.p3Plan === 'lump' ? 'võtsid selle korraga välja' : 'täiendav fondipension') + '</strong>. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda</button>' : '';
+      ? 'Sul ei ole III sammast. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda<span class="visually-hidden"> III samba summat sinu andmetes</span></button>'
+      : p3Done ? 'III samba kohta tegid valiku juba ' + input.p3Age + '-aastaselt: <strong>' + (input.p3Plan === 'lump' ? 'võtsid selle korraga välja' : 'täiendav fondipension') + '</strong>. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda<span class="visually-hidden"> III samba valikut ' + input.p3Age + '-aastaselt</span></button>' : '';
     $('p60Txt').innerHTML = (pa - 5) + '-aastaselt (5 aastat enne pensioniiga, ' + (input.birthYear + pa - 5) + ') avaneb II sammas. Väljamakse algab selles loos pensionieas. Kui hakkad raha välja võtma, lõpevad II samba sissemaksed igaveseks.';
     chapters[7].dataset.label = (pa + 1) + '+ a';
 
@@ -1444,7 +1444,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const lockTxt = !input.p3Has ? 'Sul ei ole III sammast (summa esimeses vaates on 0), seega siin pole midagi välja võtta.'
       : input.p3Age >= pa0 ? 'Oled juba pensionieas, seega kasutad III sammast koos II sambaga pensionieas.'
       : !input.p3Allowed ? 'Avad III samba alles ' + input.p3OpenAge + '-aastaselt, seega 55-aastaselt pole veel midagi välja võtta.' : '';
-    $('p3Locked').innerHTML = lockTxt + (lockTxt ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda III sammast</button>' : '');
+    $('p3Locked').innerHTML = lockTxt + (lockTxt ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda III sammast<span class="visually-hidden"> sinu andmetes</span></button>' : '');
     $('p3Locked').classList.toggle('d-none', !lockTxt);
     $('p3PlanSet').disabled = !!lockTxt;
     $('p3JoinedWrap').classList.toggle('d-none', !input.p3Has);
@@ -1456,12 +1456,12 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const p3Open = input.p3Has && input.p3Plan === 'keep';
     $('payoutPaSet').classList.toggle('d-none', input.payout !== 'grow');
     $('paIINote').classList.toggle('d-none', input.payout === 'grow');
-    $('paIINote').innerHTML = input.payout === 'grow' ? '' : '<strong>II sammas:</strong> valiku tegid ' + (pa - 5) + '-aastaselt: ' + { lump: 'võtad korraga välja', fund: 'fondipension' }[input.payout] + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda</button>';
+    $('paIINote').innerHTML = input.payout === 'grow' ? '' : '<strong>II sammas:</strong> valiku tegid ' + (pa - 5) + '-aastaselt: ' + { lump: 'võtad korraga välja', fund: 'fondipension' }[input.payout] + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda<span class="visually-hidden"> II samba valikut ' + (pa - 5) + '-aastaselt</span></button>';
     $('p3PaSet').classList.toggle('d-none', !(p3Open && input.p3At60 === 'grow'));
     $('paIIINote').classList.toggle('d-none', p3Open && input.p3At60 === 'grow');
     $('paIIINote').innerHTML = '<strong>III sammas:</strong> ' + (!input.p3Has ? 'sul ei ole III sammast.'
-      : !p3Open ? 'valiku tegid ' + input.p3Age + '-aastaselt: ' + (input.p3Plan === 'lump' ? 'võtsid korraga välja' : 'täiendav fondipension') + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda</button>'
-      : 'valiku tegid ' + (pa - 5) + '-aastaselt: ' + { lump: 'võtad pensionieas korraga välja', fund: 'täiendav fondipension' }[input.p3At60] + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda</button>');
+      : !p3Open ? 'valiku tegid ' + input.p3Age + '-aastaselt: ' + (input.p3Plan === 'lump' ? 'võtsid korraga välja' : 'täiendav fondipension') + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda<span class="visually-hidden"> III samba valikut ' + input.p3Age + '-aastaselt</span></button>'
+      : 'valiku tegid ' + (pa - 5) + '-aastaselt: ' + { lump: 'võtad pensionieas korraga välja', fund: 'täiendav fondipension' }[input.p3At60] + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda<span class="visually-hidden"> III samba valikut ' + (pa - 5) + '-aastaselt</span></button>');
     $('paPillarsHint').classList.toggle('d-none', !(input.payout === 'grow' && p3Open && input.p3At60 === 'grow'));
     const curDef = input.deferral;
     $('deferChoices').innerHTML = [0, 1, 2, 3, 4, 5].map((d) => {
@@ -1479,8 +1479,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     else if (input.deferral > 0) lockMsg = 'Paindlik pension: lükkasid riikliku pensioni ' + input.deferral + ' aastat edasi ja seni kasutad II ja III sammast fondipensionina. Riiklik pension algab ' + (pa + input.deferral) + '-aastaselt ja on eluks ajaks suurem.';
     // Lukus: kaarte ei näita, vaid selgitab ja viib sinna, kus otsus tehakse.
     $('contractLocked').innerHTML = lockMsg + (lockMsg ? (input.payout === 'lump'
-      ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda ' + (pa - 5) + '-aastaselt</button>'
-      : ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="6">Muuda pensionieas</button>') : '');
+      ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda ' + (pa - 5) + '-aastaselt<span class="visually-hidden"> II samba väljamakse viisi</span></button>'
+      : ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="6">Muuda pensionieas<span class="visually-hidden"> samba raha kasutamise viisi</span></button>') : '');
     $('contractLocked').classList.toggle('d-none', !lockMsg);
     $('contractSet').disabled = !!lockMsg;
     $('contractSet').classList.toggle('d-none', !!lockMsg);
@@ -1597,7 +1597,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       [7, '🌳', scenario.id + '. ' + scenario.name],
       [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
-    $('recap').innerHTML = items.map((x) => '<li><span aria-hidden="true">' + x[1] + '</span><span class="flex-grow-1">' + x[2] + '</span><button type="button" class="btn btn-link btn-sm p-0" data-goto="' + x[0] + '">Muuda<span class="visually-hidden">: ' + chapters[x[0]].dataset.label + '</span></button></li>').join('');
+    // Iga „Muuda“ nupu ekraanilugeja nimi ütleb, mida see muudab (WCAG 2.4.4).
+    const RECAP_WHAT = { 0: 'sinu andmeid', 4: 'III samba valikut 55-aastaselt', 5: 'II ja III samba valikut ' + (pa - 5) + '-aastaselt',
+      6: 'riikliku pensioni ja samba raha valikut pensionieas', 7: 'pensionipõlve valikut', 8: 'kulupaketti' };
+    $('recap').innerHTML = items.map((x) => '<li><span aria-hidden="true">' + x[1] + '</span><span class="flex-grow-1">' + x[2] + '</span><button type="button" class="btn btn-link btn-sm p-0" data-goto="' + x[0] + '">Muuda<span class="visually-hidden"> ' + (RECAP_WHAT[x[0]] || chapters[x[0]].dataset.label) + '</span></button></li>').join('');
   }
 
   // Otsuste kaart: reeglid ja maksud (Pensionikeskus, SKA 2026) koos kasutaja valikuga.
