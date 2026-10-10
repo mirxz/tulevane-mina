@@ -1814,28 +1814,32 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const best = defs[bi], br = results[bi];
     let html = '<strong>Hoiatus: sinu valitud plaan ei kanna kulusid elu lõpuni</strong> (kaetud kuni ' + mine.coversNeedUntil + '. eluaastani). ';
     if (br.sustainable > mine.sustainable && best.id !== scenario.id) {
+      // Ei muuda valikuid ise: ütleb, mida valida, ja viib sammu juurde, kus see valik tehakse.
+      const how = howTo(best, readInput());
       html += '<br>Parem oleks <strong>' + best.id + '. ' + best.name + '</strong>: see kannab elu lõpuni ' + eur(br.sustainable) + ' kuus (sinu valik ' + eur(mine.sustainable) + ').' +
-        ' <button type="button" class="btn btn-sm btn-primary ms-1" id="tryBest">Proovi seda</button>';
+        '<br>Selleks ' + how.text + ' <button type="button" class="btn btn-sm btn-primary ms-1" data-goto="' + how.step + '">' + how.btn +
+        '<span class="visually-hidden">: vali ' + best.name + '</span></button>';
     } else {
       html += '<br>Ükski väljamakse viis ei kanna neid kulusid elu lõpuni: kõige rohkem kannab ' + eur(Math.max(br.sustainable, mine.sustainable)) + ' kuus. Vali väiksem kulupakett või muuda kulusid.' +
         ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="8">Muuda kulusid</button>';
     }
     box.innerHTML = html;
     box.classList.remove('d-none');
-    const t = $('tryBest');
-    if (t) t.addEventListener('click', () => applyScenario(best));
   }
 
-  // Sea valikud nii, et tulemuseks oleks antud stsenaarium.
-  function applyScenario(s) {
-    const check = (name, value) => { const el = document.querySelector('input[name="' + name + '"][value="' + value + '"]'); if (el) el.checked = true; };
-    const payout = { A: 'lump', B: 'fund', C: 'fund', D: 'fund', E: 'grow' }[s.id];
-    check('payout', payout);
-    if (payout === 'grow') check('payoutPa', 'grow');
-    check('defer', String(s.id === 'C' ? s.deferral : 0));
-    if (s.id === 'B' || s.id === 'D') check('contract', s.id === 'D' ? 'yearly' : 'once');
-    update();
-    $('answer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Mida ja millises sammus valida, et jõuda antud väljamakse viisini.
+  function howTo(s, input) {
+    const pa = P.retirementYears(input);
+    const at60 = { step: 5, btn: 'Muuda ' + (pa - 5) + '-aastaselt' };
+    const atPa = { step: 6, btn: 'Muuda pensionieas' };
+    const fundFirst = input.payout === 'lump'; // fondipensioni valik on siis 60 a sammus
+    if (s.id === 'A') return Object.assign(at60, { text: 'vali ' + (pa - 5) + '-aastaselt II sambale „Kõik korraga“.' });
+    if (s.id === 'E') return Object.assign(at60, { text: 'vali ' + (pa - 5) + '-aastaselt „Jätkan kasvatamist“ ja pensionieas „Kasvatan edasi“.' });
+    if (s.id === 'C') return Object.assign(fundFirst ? at60 : atPa, { text: (fundFirst ? 'vali ' + (pa - 5) + '-aastaselt fondipension ja ' : 'vali pensionieas fondipension ja ') + 'lükka riiklik pension ' + s.deferral + ' aastat edasi.' });
+    // B ja D: fondipension ilma edasilükkamiseta + leping pensionipõlves
+    const contract = s.id === 'D' ? '„Uus leping igal aastal“' : '„Üks leping“';
+    if (input.method === 'fund' && !input.deferral) return { step: 7, btn: 'Muuda pensionipõlves', text: 'vali pensionipõlves ' + contract + '.' };
+    return Object.assign(fundFirst ? at60 : atPa, { text: 'vali fondipension, võta riiklik pension kohe ja pensionipõlves ' + contract + '.' });
   }
 
   // ---------- Navigeerimine ----------
