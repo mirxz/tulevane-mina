@@ -223,7 +223,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <h2 id="h0" tabindex="-1">Kes sa oled ja mis sul juba on?</h2>
         </div>
       </div>
-      <p class="text-secondary">Need andmed kehtivad kogu loo jooksul. Sammaste summad on tänased, edasi arvutame ise, kui palju neist pensioniks kasvab.</p>
+      <p class="text-secondary">Need andmed kehtivad kogu loo jooksul. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb.</p>
       <div class="d-flex flex-wrap gap-2 mb-3">
         <button type="button" class="btn btn-outline-primary btn-sm" id="prefillBtn">Täida Tuleva konto andmetega (näidis)</button>
       </div>
@@ -237,10 +237,6 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <select class="form-select" id="sex"><option value="N">Naine</option><option value="M">Mees</option></select>
         </div>
         <div class="col-6 col-md-3">
-          <label class="form-label" for="household">Pensionil elan</label>
-          <select class="form-select" id="household"><option value="uksi">üksi</option><option value="paar">paaris</option></select>
-        </div>
-        <div class="col-6 col-md-3">
           <label class="form-label" for="pensionAgeYears">Pensioniiga</label>
           <select class="form-select" id="pensionAgeYears">
             <option value="65">65 a</option><option value="66">66 a</option><option value="67">67 a</option><option value="68">68 a</option>
@@ -248,33 +244,50 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <div class="form-text" id="paHint"></div>
         </div>
         <div class="col-6 col-md-3">
+          <label class="form-label" for="p1Monthly">Riiklik pension, €/kuus</label>
+          <input class="form-control" id="p1Monthly" type="number" min="0" step="10" value="900">
+          <div class="form-text"><a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">SKA kalkulaatorist</a></div>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="p2">II sammas, €</label>
+          <input class="form-control" id="p2" type="number" min="0" step="1000" value="25000">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="p3">III sammas, €</label>
+          <input class="form-control" id="p3" type="number" min="0" step="1000" value="5000">
+        </div>
+        <div class="col-6 col-md-3" id="p3JoinedWrap">
+          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
+          <select class="form-select" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="household">Pensionil elan</label>
+          <select class="form-select" id="household"><option value="uksi">üksi</option><option value="paar">paaris</option></select>
+        </div>
+        <div class="col-6 col-md-3">
           <label class="form-label" for="grossMonthly">Brutopalk, €/kuus</label>
           <input class="form-control" id="grossMonthly" type="number" min="0" step="100" value="2200">
         </div>
         <div class="col-6 col-md-3">
-          <label class="form-label" for="p2">II sammas täna, €</label>
-          <input class="form-control" id="p2" type="number" min="0" step="1000" value="25000">
+          <label class="form-label" for="p2Rate">II samba makse</label>
+          <select class="form-select" id="p2Rate">
+            <option value="0">puudub</option><option value="0.02" selected>2%</option><option value="0.04">4%</option><option value="0.06">6%</option>
+          </select>
         </div>
         <div class="col-6 col-md-3">
-          <label class="form-label" for="p3">III sammas täna, €</label>
-          <input class="form-control" id="p3" type="number" min="0" step="1000" value="5000">
-          <div class="form-text">0, kui sul seda pole</div>
+          <label class="form-label" for="p3Monthly">III sambasse, €/kuus</label>
+          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="0">
         </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="p1Monthly">Riiklik pension pensionieas, €/kuus</label>
-          <input class="form-control" id="p1Monthly" type="number" min="0" step="10" value="900">
-          <div class="form-text">Prognoosi saad <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">SKA kalkulaatorist</a>. Tänastes eurodes.</div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="fundCur">Tootlus pärast inflatsiooni</label>
+          <select class="form-select" id="fundCur"></select>
         </div>
       </div>
+      <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
       <!-- Kasvu valikud on peidus: arvutus kasutab vaikeeeldusi (vt jalus). -->
       <div id="growthOpts" hidden>
       <h3 class="h5 section-title mt-4">Kuidas kogud edasi?</h3>
       <h4 class="h6 text-navy mt-3">II sammas</h4>
-      <div class="mb-3">
-        <label class="form-label" for="fundCur">Sinu praegune II samba fond</label>
-        <select class="form-select w-auto fund-select" id="fundCur"></select>
-        <div class="form-text">Kui ei tea, vali keskmine pangafond.</div>
-      </div>
       <fieldset class="mb-3">
         <legend class="form-label">Sinu fond edaspidi</legend>
         <div class="choices">
@@ -298,15 +311,6 @@ fieldset:disabled .choice { cursor: not-allowed; }
         </div>
         <div class="small-muted mt-2" id="switchNote" aria-live="polite"></div>
       </div>
-      <div class="row g-3">
-        <div class="col-6 col-md-4">
-          <label class="form-label" for="p2Rate">II samba makse palgast</label>
-          <select class="form-select" id="p2Rate">
-            <option value="0">puudub</option><option value="0.02" selected>2%</option><option value="0.04">4%</option><option value="0.06">6%</option>
-          </select>
-          <div class="form-text">Riik lisab 4% sotsiaalmaksust.</div>
-        </div>
-      </div>
 
       <h4 class="h6 text-navy mt-4">III sammas</h4>
       <fieldset class="mb-3">
@@ -326,13 +330,8 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <input class="form-control" id="p3OpenAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3OpenYear">
           <div class="form-text" id="p3OpenYear"></div>
         </div>
-        <div class="col-6 col-md-4">
-          <label class="form-label" for="p3Monthly">Sissemakse, €/kuus</label>
-          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="0">
-        </div>
       </div>
       <div class="small-muted mb-3" id="p3WorkNote" aria-live="polite"></div>
-      <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
       </div>
     </section>
 
@@ -418,11 +417,6 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <h2 id="h4" tabindex="-1">55-aastaselt: kas võtad III sambast raha välja?</h2>
         </div>
       </div>
-        <div class="mb-3" id="p3JoinedWrap">
-          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
-          <select class="form-select w-auto" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
-          <div class="form-text">Sellest sõltub soodusmaksu vanus.</div>
-        </div>
       <div id="p3Info" class="mb-3"></div>
       <div id="p3Locked" class="note mb-3 d-none"></div>
       <fieldset id="p3PlanSet" class="mb-3">
@@ -591,7 +585,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
       <div class="note mb-3"><strong>See on prototüüp, mitte finants- ega maksunõu.</strong> Kõik arvutused tehakse sinu brauseris ja midagi ei salvestata.</div>
       <ul>
         <li>Arvutus on sama mis <a href="https://github.com/meelisb/tuleva-tulevik">kalkulaatori vaates</a> (js/pension.js). Summad on tänastes eurodes, palk reaalselt ei kasva.</li>
-        <li>Sammaste kasv pensionieani: II sambasse 2% palgast ja riigi 4%, fondi tootlus 2% aastas pärast inflatsiooni ja tasusid, III sambasse uusi sissemakseid ei tehta. Need on eeldused, mitte lubadus.</li>
+        <li>Sammaste kasv pensionieani: tänane summa kasvab valitud tootlusega (pärast inflatsiooni ja tasusid) ja sinna lisanduvad sissemaksed: II sambasse sinu makse + riigi 4% palgast, III sambasse sinu kuumakse. Tootlus on eeldus, mitte lubadus.</li>
         <li>„Jään ellu“: Statistikaamet LE205 (<span id="kuludMeta"></span>). „Optimaalne“ ja „Mugav“ lisavad sellele näidissummad. Hinnad ostukorvis on ligikaudsed.</li>
         <li>Pensioniiga: 65 a (alates 2027 lisanduvad kuud ja alates 2029 seotakse pensioniiga oodatava elueaga). Arvutus on aastapõhine.</li>
         <li>Maksud ja vanused: <a href="https://www.pensionikeskus.ee/ii-sammas/valjamaksed/valjamaksete-maksustamine/" target="_blank" rel="noopener">II samba väljamaksete maksustamine</a>, <a href="https://www.pensionikeskus.ee/iii-sammas/valjamaksed/" target="_blank" rel="noopener">III samba väljamaksed</a>, <a href="https://www.sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/paindlik-pension" target="_blank" rel="noopener">paindlik vanaduspension</a>.</li>
@@ -898,7 +892,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
 
     // III sammas: kas on, mis vanuses avati, sissemakse. Avamise aasta määrab maksureeglid (enne 2021 või hiljem).
     // have: sammas on olemas (liitumise aeg enne/pärast 2021); future: avan hiljem; no: ei ava.
-    const p3Kind = num('p3') > 0 ? 'have' : 'no'; // kasvu valikud on peidus: III sammas on, kui summa > 0
+    const p3Kind = num('p3') > 0 || num('p3Monthly') > 0 ? 'have' : 'no'; // III sammas on, kui summa või sissemakse > 0
     const p3Has = p3Kind !== 'no';
     const joinedBefore = $('p3Joined').value === 'before';
     const p3OpenAge = p3Kind === 'have'
@@ -1170,7 +1164,6 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
 
     // 18–55: III sammas
     $('p3HasMore').classList.toggle('d-none', !input.p3Has);
-    $('p3JoinedWrap').classList.toggle('d-none', input.p3Kind !== 'have');
     $('p3OpenWrap').classList.toggle('d-none', input.p3Kind !== 'future');
     const oe = $('p3OpenAge');
     if (input.p3Kind === 'future' && document.activeElement !== oe && oe.value !== String(input.p3OpenAge)) oe.value = String(input.p3OpenAge);
@@ -1506,9 +1499,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   });
 
   // ---------- Sündmused ----------
-  ['fund18Fund', 'fundNew', 'fundCur'].forEach((id) => {
+  ['fund18Fund', 'fundNew'].forEach((id) => {
     $(id).innerHTML = Object.entries(FUNDS).map(([k, f]) => '<option value="' + k + '">' + f.name + ' (' + pct(f.r) + ' a)</option>').join('');
   });
+  $('fundCur').innerHTML = Object.entries(FUNDS).map(([k, f]) => '<option value="' + k + '">' + pct(f.r) + ' aastas</option>').join('');
   $('fund18Fund').value = 'index';
   $('fundCur').value = 'mix';
   $('fundNew').value = 'index';
