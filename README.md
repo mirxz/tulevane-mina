@@ -190,3 +190,21 @@ Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsim
 - Andmed: `/api/r`, tabelid `ratas_sundmused` (anonüümne seansi tunnus, vastused, vabatekst; e-posti- ja pika numbri-sarnane tekst maskitakse) ja `ratas_meilid` (e-post ilma seansi tunnuseta, eraldi, et ei saaks vastustega siduda). Tulemused: `/tulemused` (osa „Õnneratas“), e-postid: `/tulemused-meilid.csv` (sama parool).
 - FB/sotsiaalmeedia pilt: `public/ratas/og.png` (1200×630), `og:` märgendid on `index.html`-is.
 - Test: `node tests/ratas.mjs <URL>`.
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+
+## Kalkulaator (`/kalkulaator/`)
+
+Täielik pensionikalkulaator Tuleva pensionikalkulaatori välimuses: sama kaart, helesinine sisendipaneel, segmentnupud ja ümar liugur. Eesmärk on näidata, mitu sisendit on tänane plaani tegemine, ja siis lasta alustada tüüpilisest kogujast.
+
+- **Mootor:** `public/kalkulaator/mootor.js` on Meelise [tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik) `js/pension.js` ES-moodulina. Meie lisatud sisendid (fondi tasu, palga reaalkasv, muud säästud, hoiuse tootlus, maksumäär, „elu lõpuni“ lävi) on märgitud `LISA` ja vaikeväärtustega annavad täpselt Meelise tulemuse (test kontrollib).
+- **Andmekihid:** `public/kalkulaator/andmed/kihid.js`. Iga sisendi vaikeväärtus tuleb ühest kihist (`seadus`, `statistika`, `tuleva`, `konto`, `eeldus`) ja lehel on selle märk. Sinu sisestatud väärtus on kiht `sina` ja „Taasta“ toob vaikeväärtuse tagasi. Uus allikas = uus kiht selles failis.
+- **Statistikaamet:** `andmed/elutabel.js` ja `andmed/kulud.js` on Meelise genereeritud failid. Uuenda tema skriptidega (`scripts/fetch_*.py` tema repos), ära muuda käsitsi.
+- **Tuleva aruanded:** personad ja varajaotus on käsitsi ülekantud avalikest agregaatidest (reporting-engine, `savers_analysis`, `ii_iii_wealth_distribution`, `fund_flow_analysis`). Kommentaarid failis näitavad, kust iga number tuleb. Enne avalikku kasutamist tuleb luba küsida Tuleva andmetiimilt (Tõnu).
+- **Testid:** `node tests/kalkulaator-mootor.mjs` (Meelise testid + lisandused + andmekihid) ja `node tests/kalkulaator.mjs <URL>` (liides, taastamine, graafik, ligipääsetavus).
+
+### Riiklik pension (/kalkulaator/)
+
+Kalkulaator arvutab riikliku pensioni seaduse valemiga (`public/kalkulaator/riiklik.js`): baasosa 399,24 € + 10,477 € × (staaž kuni 1998 + aastakoefitsientide summa), 1.4.2026 väärtustega. Tulemus on mootori sisend `p1Monthly` (tänased väärtused), mida mootor indekseerib `p1Growth` võrra. Vaikimisi reaalindekseerimine 1,5% on projekti eeldus, mitte seadus. Tead täpset summa SKA kalkulaatorist, vali „Sisesta ise“.
+>>>>>>> Stashed changes

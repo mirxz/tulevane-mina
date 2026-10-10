@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pensionikalkulaator · Tulevane Mina</title>
+  <meta name="description" content="Kas su pensioniraha jätkub elu lõpuni? Täielik kalkulaator, mille vaikeväärtused tulevad andmekihtidest: Statistikaamet, Tuleva aruanded, seadused. Tuleva häkatoni prototüüp.">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;450;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/kalkulaator/kalkulaator.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="in">
+      <span class="proto">Häkatoni prototüüp, mitte Tuleva ametlik toode</span>
+      <h1>Kas pensioniraha jätkub elu lõpuni?</h1>
+      <p>Alusta tüüpilisest kogujast, muuda ainult seda, mis sinu puhul teisiti on. Iga vaikeväärtus näitab, kust see tuleb.</p>
+    </div>
+  </header>
+
+  <div class="back"><a href="/">← Tulevane Mina</a></div>
+
+  <main class="layout" id="main">
+    <section class="card" aria-labelledby="h-in">
+      <div class="pad"><h2 id="h-in">Sinu andmed</h2></div>
+      <div class="panel start" id="start"></div>
+      <div id="groups" style="padding:8px 0 0"></div>
+    </section>
+
+    <div id="results">
+      <section class="card res" aria-labelledby="h-res">
+        <h2 id="h-res">Kas su raha jätkub?</h2>
+        <div class="answer" id="answer" aria-live="polite"></div>
+        <div class="metrics" id="metrics"></div>
+        <div class="tabs" id="tabs" role="group" aria-label="Väljamakse viis"></div>
+        <div class="defer" id="deferRow" hidden>
+          <label for="deferral">Riikliku pensioni edasilükkamine</label>
+          <select id="deferral" class="sm">
+            <option value="1">1 aasta (+7,93%)</option>
+            <option value="2" selected>2 aastat (+16,88%)</option>
+            <option value="3">3 aastat (+27,01%)</option>
+            <option value="4">4 aastat (+38,50%)</option>
+            <option value="5">5 aastat (+51,57%)</option>
+          </select>
+        </div>
+        <div class="chart">
+          <svg id="chart" viewBox="0 0 640 300" role="img" tabindex="0" aria-label="Sissetulek ja vajadus vanuse järgi"></svg>
+          <div class="readout" id="readout">Vali tulp hiirega või nooleklahvidega, et näha vanuse numbreid.</div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-cmp">
+        <div class="pad"><h2 id="h-cmp">Neli viisi kõrvuti</h2></div>
+        <div class="tw" tabindex="0" role="region" aria-label="Võrdlustabel"><table class="cmp" id="compare"></table></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-rank">
+        <div class="pad"><h2 id="h-rank">Kuhu sa täna jääd?</h2></div>
+        <div class="rank" id="rank"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-map">
+        <div class="pad"><h2 id="h-map">Sinu otsuste kaart</h2></div>
+        <ul class="tl" id="timeline"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="h-layers">
+        <div class="pad"><h2 id="h-layers">Andmekihid</h2>
+          <p class="hint">Iga number tuleb ühest kihist. Sinu enda sisestatud väärtus kirjutab alati kihi üle.</p></div>
+        <ul class="kihid" id="kihid"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="note"><strong>See on prototüüp, mitte finants- ega maksunõu.</strong> Kõik arvutused tehakse sinu brauseris ja midagi ei salvestata. Tuleva ega selle töötajad ei anna investeerimis- ega maksunõu. Üheski fondis pole tootlus garanteeritud.</div>
+    <p><strong>Eeldused</strong></p>
+    <ul id="eeldused"></ul>
+    <p>Arvutusmootor: <a href="https://github.com/meelisb/tuleva-tulevik">github.com/meelisb/tuleva-tulevik</a> (Meelis Bobrov, tiim Tulevane Mina). Andmed: Statistikaamet, Sotsiaalkindlustusamet, <a href="https://github.com/TulevaEE/reporting-engine">Tuleva reporting-engine</a> avalikud agregaadid. Tuleva logo ei ole kasutusel ja see leht ei ole Tuleva ametlik toode.</p>
+  </footer>
+
+  <script type="module" src="/kalkulaator/kalkulaator.js"></script>
+</body>
+</html>
