@@ -43,4 +43,62 @@ for (const r of [0, 0.02, 0.04, -0.01]) {
   const p = (a) => s.rows.find((x) => x.age === a).i3;
   assert.ok(p(65) > p(75) && p(75) > p(85));
 }
+
+// ---- Tulumaks pensionieas (EMTA 2026): 22%, pensionäri maksuvaba tulu 776 € kuus (9312 € aastas) ----
+const near = (a, b, msg, tol = 1e-6) => assert.ok(Math.abs(a - b) < tol, `${msg}: ${a} vs ${b}`);
+const taxBase = { ...base, realReturn: 0, p2: 100000, needMonthly: 1 };
+const row = (s, age) => s.rows.find((x) => x.age === age);
+const E = { id: 'E' }; // jätkan kasvatamist: ainult lisaväljamaksed
+
+// Riiklik pension: 22% ainult 776 € ületavalt osalt.
+{
+  const s = P.simulate({ ...taxBase, p1Monthly: 1000 }, T, B);
+  near(row(s, 65).i1g, 1000, 'bruto pension');
+  near(row(s, 65).tax1, 0.22 * (1000 - 776), 'tulumaks pensionilt');
+  near(row(s, 65).i1, 1000 - 0.22 * (1000 - 776), 'pension pärast maksu');
+  near(row(s, 64).i1, 0, 'enne pensioniiga pensioni pole');
+  const lo = P.simulate({ ...taxBase, p1Monthly: 700 }, T, B);
+  near(row(lo, 65).tax1, 0, '776 € all tulumaksu pole');
+  near(row(lo, 65).i1, 700, 'madal pension jääb tervelt kätte');
+  const off = P.simulate({ ...taxBase, p1Monthly: 1000, incomeTax: false }, T, B);
+  near(row(off, 65).i1, 1000, 'incomeTax=false: maksu pole');
+  assert.strictEqual(P.INCOME_TAX, 0.22);
+  assert.strictEqual(P.PENSIONER_ALLOWANCE, 9312);
+}
+// Kasutamata maksuvaba tulu kehtib 10% lisaväljamaksele: pension 500 € → 276 €/kuus (3312 €/a) vaba osa.
+{
+  const input = { ...taxBase, p1Monthly: 500, needMonthly: 1000 }; // puudu 6000 €/a
+  const on = P.simulate(input, T, E), off = P.simulate({ ...input, incomeTax: false }, T, E);
+  const grossOn = (6000 - 0.1 * 3312) / 0.9, grossOff = 6000 / 0.9;
+  near(row(on, 65).i2 * 12, 6000, 'kulud kaetud (maksuvaba osaga)');
+  near(row(on, 66).moneyLeft, 100000 - grossOn, 'bruto väljavõtt on väiksem, kui maksuvaba tulu on alles');
+  near(row(off, 66).moneyLeft, 100000 - grossOff, 'ilma maksuvaba tuluta 10% kogu summalt');
+  assert.ok(row(on, 66).moneyLeft > row(off, 66).moneyLeft);
+}
+// Pension üle 776 €: maksuvaba tulu on pensioniga ära kasutatud, lisaväljamakse 10% kogu summalt.
+{
+  const s = P.simulate({ ...taxBase, p1Monthly: 900, needMonthly: 1500 }, T, E);
+  const gap = 1500 * 12 - (900 - 0.22 * (900 - 776)) * 12;
+  near(row(s, 66).moneyLeft, 100000 - gap / 0.9, 'lisaväljamakse 10% kogu summalt');
+}
+// Edasilükatud riiklik pension: vahepealsetel pensioniaastatel on kogu maksuvaba tulu 10% väljamaksetele.
+{
+  const s = P.simulate({ ...taxBase, p1Monthly: 1000, needMonthly: 1000 }, T, { id: 'E', deferral: 2 });
+  near(row(s, 65).i1, 0, 'pensioni algus on edasi lükatud');
+  near(row(s, 66).moneyLeft, 100000 - (12000 - 0.1 * 9312) / 0.9, 'terve maksuvaba tulu kasutuses edasilükkamise ajal');
+  const p = 1000 * (1 + P.DEFERRAL_INCREASE[2]);
+  near(row(s, 67).i1, p - 0.22 * (p - 776), 'edasilükatud pension pärast maksu');
+}
+// Ühekordne väljavõtt (A): 10% maks, millest lahutub pensioniea aasta kasutamata maksuvaba tulu.
+{
+  const s = P.simulate({ ...taxBase, p1Monthly: 500, p2: 10000, needMonthly: 1 }, T, A);
+  near(row(s, 65).moneyLeft, 10000 - 0.1 * (10000 - 3312), 'ühekordne väljavõtt: maksuvaba osa maha');
+  const off = P.simulate({ ...taxBase, p1Monthly: 500, p2: 10000, needMonthly: 1, incomeTax: false }, T, A);
+  near(row(off, 65).moneyLeft, 9000, 'ilma maksuvaba tuluta 10% kogu summalt');
+}
+// Fondipension (B, D) on maksuvaba: tulumaks ei puutu selle makseid.
+{
+  const on = P.simulate({ ...taxBase, p1Monthly: 1000 }, T, B), off = P.simulate({ ...taxBase, p1Monthly: 1000, incomeTax: false }, T, B);
+  near(row(on, 65).i2, row(off, 65).i2, 'fondipension tulumaksuvaba');
+}
 console.log('Elukaare mootor: OK');
