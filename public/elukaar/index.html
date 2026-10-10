@@ -280,7 +280,7 @@ main.container { padding-bottom: 1rem; }
 @media print {
   @page { margin: 14mm; }
   body { background: #fff; }
-  header .lead, #path, nav[aria-label="Loo etapid"], .story-nav, #potBar, .result-actions, #chartToggle, #legacy button, #actionWarn button, .recap button, footer .note ~ *, .path-check { display: none !important; }
+  header .lead, #path, nav[aria-label="Loo etapid"], .story-nav, #potBar, .result-actions, #dlTitle, #chartToggle, #legacy button, #actionWarn button, .recap button, footer .note ~ *, .path-check { display: none !important; }
   .chapter { display: none !important; }
   .chapter[data-step="9"] { display: block !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; animation: none; }
   .chart-wrap { height: 300px; break-inside: avoid; }
@@ -288,6 +288,21 @@ main.container { padding-bottom: 1rem; }
   a { color: inherit; text-decoration: none; }
   .table-compare { font-size: 10pt; }
 }
+
+/* Mobiilis mahub kogu eluteekond ühele reale: väiksemad mummud, silt ainult aktiivsel sammul */
+@media (max-width: 575px) {
+  .path { overflow-x: visible; gap: 0; padding: 0.5rem 0 0.25rem; margin: 0; scroll-snap-type: none; }
+  .path li { flex: 1 1 0; min-width: 0; }
+  .path li::before { top: 1rem; }
+  .path-dot { width: 2rem; height: 2rem; }
+  .path-dot .ico { width: 1rem; height: 1rem; }
+  .path li.current .path-dot { transform: scale(1.1); box-shadow: 0 0 0 3px var(--blue-border-1); }
+  .path-label { font-size: 0.75rem; }
+  .path li:not(.current) .path-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .path-check { left: calc(50% + 0.4rem); width: 0.95rem; height: 0.95rem; }
+  .path-now { font-size: 0.625rem; padding: 0 0.3rem; }
+}
+.result-actions { align-items: center; }
 
 </style>
 </head>
@@ -663,11 +678,6 @@ main.container { padding-bottom: 1rem; }
           <h2 id="h9" tabindex="-1">Kas raha jätkub elu lõpuni?</h2>
         </div>
       </div>
-      <div class="result-actions d-flex flex-wrap gap-2 mb-3">
-        <button type="button" class="btn btn-outline-primary btn-sm" id="dlMd">Laadi alla (Markdown)</button>
-        <button type="button" class="btn btn-outline-primary btn-sm" id="dlPdf" aria-describedby="dlPdfHint">Laadi alla (PDF)</button>
-        <span class="small-muted align-self-center" id="dlPdfHint">PDF: vali printimisaknas „Salvesta PDF-ina“.</span>
-      </div>
       <div class="answer mb-3" id="answer" aria-live="polite"></div>
       <div id="actionWarn" class="note mb-3 d-none" role="status"></div>
       <div class="row g-2 mb-3" id="metrics"></div>
@@ -697,6 +707,12 @@ main.container { padding-bottom: 1rem; }
         <div class="table-responsive mt-2"><table class="table table-compare align-middle mb-0" id="compare"></table></div>
       </details>
 
+      <h3 class="h5 section-title mt-4" id="dlTitle">Salvesta tulemus</h3>
+      <div class="result-actions d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="dlMd">Laadi alla (Markdown)</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="dlPdf" aria-describedby="dlPdfHint">Laadi alla (PDF)</button>
+        <span class="small-muted align-self-center" id="dlPdfHint">PDF: vali printimisaknas „Salvesta PDF-ina“.</span>
+      </div>
     </section>
 
     <!-- Navigeerimine -->
