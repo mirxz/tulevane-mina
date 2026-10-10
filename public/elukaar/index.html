@@ -193,6 +193,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
 .household-note { display: flex; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--blue-border-1); background: var(--blue-bg-1); border-radius: 0.75rem; color: var(--navy); }
 .hh-emoji { font-size: 1.75rem; line-height: 1; }
 .section-title { color: var(--navy); padding-bottom: 0.25rem; border-bottom: 1px solid var(--gray-border-2); margin-bottom: 0.75rem; }
+.chapter legend.form-label { font-size: 1rem; float: none; }
 
 </style>
 </head>
@@ -261,6 +262,76 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <div class="form-text">Prognoosi saad <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">SKA kalkulaatorist</a>. Tänastes eurodes.</div>
         </div>
       </div>
+      <h3 class="h5 section-title mt-4">Kuidas kogud edasi?</h3>
+      <h4 class="h6 text-navy mt-3">II sammas</h4>
+      <div class="mb-3">
+        <label class="form-label" for="fundCur">Sinu praegune II samba fond</label>
+        <select class="form-select w-auto fund-select" id="fundCur"></select>
+        <div class="form-text">Kui ei tea, vali keskmine pangafond.</div>
+      </div>
+      <fieldset class="mb-3">
+        <legend class="form-label">Sinu fond edaspidi</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="fundChange" value="same" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">⚓</span><strong>Jääb samaks</strong><small id="sameFundTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="fundChange" value="switch">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🔄</span><strong>Vahetan fondi</strong><small>Kohe või hiljem. Fondivahetus on tasuta ja raha liigub uude fondi.</small></span></label>
+        </div>
+      </fieldset>
+      <div id="fundNewMore" class="mb-3 d-none">
+        <div class="row g-3">
+          <div class="col-12 col-md-7">
+            <label class="form-label" for="fundNew">Uus fond</label>
+            <select class="form-select fund-select" id="fundNew"></select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label" for="switchAge">Vanus</label>
+            <input class="form-control" id="switchAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="switchYear">
+            <div class="form-text" id="switchYear"></div>
+          </div>
+        </div>
+        <div class="small-muted mt-2" id="switchNote" aria-live="polite"></div>
+      </div>
+      <div class="row g-3">
+        <div class="col-6 col-md-4">
+          <label class="form-label" for="p2Rate">II samba makse palgast</label>
+          <select class="form-select" id="p2Rate">
+            <option value="0">puudub</option><option value="0.02" selected>2%</option><option value="0.04">4%</option><option value="0.06">6%</option>
+          </select>
+          <div class="form-text">Riik lisab 4% sotsiaalmaksust.</div>
+        </div>
+      </div>
+
+      <h4 class="h6 text-navy mt-4">III sammas</h4>
+      <fieldset class="mb-3">
+        <legend class="form-label">Kas avad III samba?</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="p3has" value="have" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌳</span><strong>Mul on III sammas</strong><small>Tänane summa on ülal, III samba väljal.</small></span></label>
+          <label class="choice"><input type="radio" name="p3has" value="future">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Avan hiljem</strong><small>Vabatahtlik lisakogumine. Sissemaksetelt saad tulumaksu tagasi.</small></span></label>
+          <label class="choice"><input type="radio" name="p3has" value="no">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🚫</span><strong>Ei ava</strong><small>Kogun ainult II sambas.</small></span></label>
+        </div>
+      </fieldset>
+      <div id="p3HasMore" class="row g-3 mb-3">
+        <div class="col-6 col-md-4" id="p3JoinedWrap">
+          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
+          <select class="form-select" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
+          <div class="form-text">Sellest sõltub soodusmaksu vanus.</div>
+        </div>
+        <div class="col-6 col-md-3" id="p3OpenWrap">
+          <label class="form-label" for="p3OpenAge">Vanus avamisel</label>
+          <input class="form-control" id="p3OpenAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3OpenYear">
+          <div class="form-text" id="p3OpenYear"></div>
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label" for="p3Monthly">Sissemakse, €/kuus</label>
+          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="50">
+        </div>
+      </div>
+      <div class="small-muted mb-3" id="p3WorkNote" aria-live="polite"></div>
+      <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
     </section>
 
     <!-- 1. 0–18 -->
@@ -334,76 +405,6 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <h2 id="h3" tabindex="-1">Tööaastad: kuidas oma pensioni kogud?</h2>
         </div>
       </div>
-      <p class="text-secondary">Mis on juba kogutud, sisestasid esimeses vaates. Siin valid, kuidas kogud edasi.</p>
-      <h3 class="h5 section-title">II sammas</h3>
-      <div class="mb-3">
-        <label class="form-label" for="fundCur">Sinu praegune II samba fond</label>
-        <select class="form-select w-auto fund-select" id="fundCur"></select>
-        <div class="form-text">Kui ei tea, vali keskmine pangafond.</div>
-      </div>
-      <fieldset class="mb-3">
-        <legend class="form-label">Sinu fond edaspidi</legend>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="fundChange" value="same" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">⚓</span><strong>Jääb samaks</strong><small id="sameFundTxt"></small></span></label>
-          <label class="choice"><input type="radio" name="fundChange" value="switch">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🔄</span><strong>Vahetan fondi</strong><small>Kohe või hiljem. Fondivahetus on tasuta ja raha liigub uude fondi.</small></span></label>
-        </div>
-      </fieldset>
-      <div id="fundNewMore" class="mb-3 d-none">
-        <div class="row g-3">
-          <div class="col-12 col-md-7">
-            <label class="form-label" for="fundNew">Uus fond</label>
-            <select class="form-select fund-select" id="fundNew"></select>
-          </div>
-          <div class="col-6 col-md-3">
-            <label class="form-label" for="switchAge">Vanus</label>
-            <input class="form-control" id="switchAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="switchYear">
-            <div class="form-text" id="switchYear"></div>
-          </div>
-        </div>
-        <div class="small-muted mt-2" id="switchNote" aria-live="polite"></div>
-      </div>
-      <div class="row g-3">
-        <div class="col-6 col-md-4">
-          <label class="form-label" for="p2Rate">II samba makse palgast</label>
-          <select class="form-select" id="p2Rate">
-            <option value="0">puudub</option><option value="0.02" selected>2%</option><option value="0.04">4%</option><option value="0.06">6%</option>
-          </select>
-          <div class="form-text">Riik lisab 4% sotsiaalmaksust.</div>
-        </div>
-      </div>
-
-      <h3 class="h5 section-title mt-4">III sammas</h3>
-      <fieldset class="mb-3">
-        <legend class="form-label">Kas avad III samba?</legend>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="p3has" value="have" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌳</span><strong>Mul on III sammas</strong><small>Tänane summa on esimeses vaates.</small></span></label>
-          <label class="choice"><input type="radio" name="p3has" value="future">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Avan hiljem</strong><small>Vabatahtlik lisakogumine. Sissemaksetelt saad tulumaksu tagasi.</small></span></label>
-          <label class="choice"><input type="radio" name="p3has" value="no">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🚫</span><strong>Ei ava</strong><small>Kogun ainult II sambas.</small></span></label>
-        </div>
-      </fieldset>
-      <div id="p3HasMore" class="row g-3 mb-3">
-        <div class="col-6 col-md-4" id="p3JoinedWrap">
-          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
-          <select class="form-select" id="p3Joined"><option value="before">enne 2021</option><option value="after">2021 või hiljem</option></select>
-          <div class="form-text">Sellest sõltub soodusmaksu vanus.</div>
-        </div>
-        <div class="col-6 col-md-3" id="p3OpenWrap">
-          <label class="form-label" for="p3OpenAge">Vanus avamisel</label>
-          <input class="form-control" id="p3OpenAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3OpenYear">
-          <div class="form-text" id="p3OpenYear"></div>
-        </div>
-        <div class="col-6 col-md-4">
-          <label class="form-label" for="p3Monthly">Sissemakse, €/kuus</label>
-          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="50">
-        </div>
-      </div>
-      <div class="small-muted mb-3" id="p3WorkNote" aria-live="polite"></div>
-      <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
     </section>
 
     <!-- 4. 55 -->
@@ -825,8 +826,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   // ---------- Olek ----------
   const chapters = Array.from(document.querySelectorAll('.chapter'));
   const LAST = chapters.length - 1;
-  // Minevikuetapid (0–18 ja 18) jäävad loost välja: tänane sambasumma tuleb esimesest vaatest.
-  const SKIP = new Set([1, 2]);
+  // Minevikuetapid (0–18, 18) ja tööaastad jäävad eraldi etapina välja: kõik on esimeses vaates.
+  const SKIP = new Set([1, 2, 3]); // tööaastate küsimused on esimeses vaates
   const shown = chapters.map((c, i) => i).filter((i) => !SKIP.has(i));
   let step = 0;
   let visited = new Set([0]);
@@ -1144,7 +1145,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const lockTxt = !input.p3Has ? 'Sul ei ole III sammast, seega siin pole midagi välja võtta.'
       : input.p3Age >= pa0 ? 'Oled juba pensionieas, seega kasutad III sammast koos II sambaga pensionieas.'
       : !input.p3Allowed ? 'Avad III samba alles ' + input.p3OpenAge + '-aastaselt, seega 55-aastaselt pole veel midagi välja võtta.' : '';
-    $('p3Locked').innerHTML = lockTxt + (lockTxt ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="3">Muuda III sammast</button>' : '');
+    $('p3Locked').innerHTML = lockTxt + (lockTxt ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda III sammast</button>' : '');
     $('p3Locked').classList.toggle('d-none', !lockTxt);
     $('p3PlanSet').disabled = !!lockTxt;
     $('p3UseSet').classList.toggle('d-none', input.p3Plan === 'keep');
@@ -1225,7 +1226,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     if (left < 1000 || r.coversNeedUntil !== null && r.coversNeedUntil <= median) {
       box.innerHTML = '<div class="legacy-card"><h3 class="h5">Raha üle ei jää. Mida saaks muuta?</h3>' +
         '<p class="text-secondary">Proovi mõnda neist ja vaata, kuidas tulemus muutub.</p><div class="d-flex flex-wrap gap-2">' +
-        '<button type="button" class="btn btn-outline-primary btn-sm" data-goto="3">💼 Vali teine fond või suurem makse</button>' +
+        '<button type="button" class="btn btn-outline-primary btn-sm" data-goto="0">💼 Vali teine fond või suurem makse</button>' +
         '<button type="button" class="btn btn-outline-primary btn-sm" data-goto="6">🏛️ Lükka riiklik pension edasi</button>' +
         '<button type="button" class="btn btn-outline-primary btn-sm" data-goto="8">🛒 Vali teine kulupakett</button></div></div>';
       return;
@@ -1259,7 +1260,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const pa = P.retirementYears(input);
     const items = [
       [0, '🙂', 'Sündinud ' + input.birthYear + ', II sammas ' + eur(input.p2) + ', III sammas ' + eur(input.p3Base)],
-      [3, '💼', (radio('fundChange') !== 'switch' ? 'Jään fondi: ' + FUNDS[input.fund18].name.toLowerCase() : (input.switchAge > input.currentAge ? 'Vahetan ' + input.switchAge + '-aastaselt' : 'Vahetan kohe') + ' fondi: ' + FUNDS[input.fundNow].name.toLowerCase()) + ', II sammas ' + pct(input.p2Rate) + (input.p3Kind === 'have' ? ', III sambasse ' + eur(input.p3Monthly) + ' kuus' : input.p3Kind === 'future' ? ', avan III samba ' + input.p3OpenAge + '-aastaselt, ' + eur(input.p3Monthly) + ' kuus' : ', III sammast ei ava')],
+      [0, '💼', (radio('fundChange') !== 'switch' ? 'Jään fondi: ' + FUNDS[input.fund18].name.toLowerCase() : (input.switchAge > input.currentAge ? 'Vahetan ' + input.switchAge + '-aastaselt' : 'Vahetan kohe') + ' fondi: ' + FUNDS[input.fundNow].name.toLowerCase()) + ', II sammas ' + pct(input.p2Rate) + (input.p3Kind === 'have' ? ', III sambasse ' + eur(input.p3Monthly) + ' kuus' : input.p3Kind === 'future' ? ', avan III samba ' + input.p3OpenAge + '-aastaselt, ' + eur(input.p3Monthly) + ' kuus' : ', III sammast ei ava')],
       [4, '🔓', !input.p3Has ? 'III sammast ei ole' : input.p3Plan === 'keep' ? 'III sammas jääb kasvama' : (input.p3Plan === 'lump' ? 'Võtan III samba ' + input.p3Age + '-aastaselt korraga välja: ' + eur(input.p3Net) : 'Täiendav fondipension III sambast alates ' + input.p3Age + '-aastaselt: ' + eur(input.p3Net)) + (input.p3Plan === 'keep' ? '' : input.p3Use === 'save' ? ', hoiusele' : ', kasutan kohe')],
       [5, '🧳', input.payout === 'lump' ? 'Võtan samba raha korraga välja' : 'Võtan samba raha välja fondipensionina'],
       [6, '🏛️', input.payout === 'lump' || !input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)'],
