@@ -13,9 +13,10 @@ Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index
 
 ### Saidi ülesehitus (10.10)
 
-- `/` on Kadi leht (`public/index.html`, endine haru `kadi-branch`, varem `/elukaar/`).
+- `/` on maandumisleht (`public/index.html`): selgitab lühidalt, kuhu kasutaja sattus, ja annab kaks valikutaset: 1) Tuleva konto näide, sisestan nullist, Tuleva liikmest koguja, Tuleva mitteliikmest koguja; 2) liikme või mitteliikme all viis koguja profiili. Valik viib aadressile `/elukaar/?p=<profiil>`.
+- `/elukaar/` on Kadi leht (`public/elukaar/index.html`, haru `kadi-branch`). Parameeter `?p=` täidab algandmed (profiilid `PROFILES` lehe lõpus, samad väärtused mis `public/arhiiv/kalkulaator/andmed/kihid.js` `ALGUSPUNKTID`); kõiki välju saab ise muuta.
 - `/arhiiv/` on varasemate prototüüpide sisukord: `/arhiiv/kalkulaator/`, `/arhiiv/plaan/`, `/arhiiv/ratas/`, `/arhiiv/kasiino.html`, `/arhiiv/lauamang/`.
-- Vanad aadressid `/kalkulaator/`, `/plaan/`, `/ratas/` (ka prinditud QR `/ratas/?k=a5`) ja `/elukaar/` suunavad Workeris (`arhiiviAadress` failis `src/index.js`) uuele aadressile, päring säilib.
+- Vanad aadressid `/kalkulaator/`, `/plaan/`, `/ratas/` (ka prinditud QR `/ratas/?k=a5`) suunavad Workeris (`arhiiviAadress` failis `src/index.js`) uuele aadressile, päring säilib.
 
 ## Töövoog
 
