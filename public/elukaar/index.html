@@ -464,7 +464,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <h2 id="h6" tabindex="-1">Pensioniiga: millal võtad riikliku pensioni?</h2>
         </div>
       </div>
-      <p class="text-secondary">Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks. Vahepealsed aastad elad samba rahast (sild).</p>
+      <p class="text-secondary">Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks. Vahepealsed aastad elad II ja III samba rahast. Seda nimetatakse paindlikuks pensioniks.</p>
       <div id="deferLocked" class="note mb-3 d-none"><span id="deferLockedTxt"></span> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda väljamakse viisi</button></div>
       <fieldset id="deferSet">
         <legend class="form-label">Millal hakkad riiklikku pensioni saama?</legend>
@@ -991,9 +991,14 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   // lisaväljamaksetega sambast (10% tulumaks) ja ülejäänu kasvab edasi.
   const GROW = { id: 'E', name: 'Jätkan kasvatamist', short: 'Raha jääb fondi, võtad välja ainult nii palju, kui vaja (10% tulumaks).' };
 
+  // Stsenaariumid failist pension.js. C nimi loo jaoks: ametlik termin on paindlik pension.
+  const SCEN = P.SCENARIOS.map((s) => (s.id === 'C'
+    ? Object.assign({}, s, { name: 'Paindlik pension', short: 'Riikliku pensioni lükkad edasi ja seni kasutad II ja III sammast fondipensionina.' })
+    : s));
+
   // Valikud → üks stsenaarium failist pension.js.
   function scenarioFor(input) {
-    const S = (id) => P.SCENARIOS.find((s) => s.id === id);
+    const S = (id) => SCEN.find((s) => s.id === id);
     const d = { deferral: input.deferral };
     if (input.method === 'lump') return Object.assign({}, S('A'), d);
     if (input.method === 'grow') return Object.assign({}, GROW, d);
@@ -1209,7 +1214,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     let lockMsg = '';
     if (input.method === 'grow') lockMsg = 'Kasvatad edasi, nii et fondipensioni lepingut pole. Raha kasvab fondis ja võtad välja ainult nii palju, kui kuus vaja (10% tulumaks).';
     else if (input.method === 'lump') lockMsg = 'Võtsid samba raha korraga välja, nii et fondipensioni lepingut pole vaja. Raha on hoiusel ja kasutad seda vajaduse järgi.';
-    else if (input.deferral > 0) lockMsg = 'Lükkasid riikliku pensioni ' + input.deferral + ' aastat edasi. Seni elad samba rahast (sild) ja fondipensioni lepingu sõlmid siis, kui riiklik pension algab (' + (pa + input.deferral) + '-aastaselt).';
+    else if (input.deferral > 0) lockMsg = 'Paindlik pension: lükkasid riikliku pensioni ' + input.deferral + ' aastat edasi ja seni kasutad II ja III sammast fondipensionina. Riiklik pension algab ' + (pa + input.deferral) + '-aastaselt ja on eluks ajaks suurem.';
     // Lukus: kaarte ei näita, vaid selgitab ja viib sinna, kus otsus tehakse.
     $('contractLocked').innerHTML = lockMsg + (lockMsg ? (input.payout === 'lump'
       ? ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda ' + (pa - 5) + '-aastaselt</button>'
@@ -1423,7 +1428,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
 
   function renderResult(input) {
     const scenario = scenarioFor(input);
-    const defs = P.SCENARIOS.map((s) => (s.id === 'C' ? Object.assign({}, s, { deferral: input.deferral || 2 }) : s)).concat([GROW]);
+    const defs = SCEN.map((s) => (s.id === 'C' ? Object.assign({}, s, { deferral: input.deferral || 2 }) : s)).concat([GROW]);
     const results = defs.map((s) => Object.assign(P.simulate(input, T, s), { sustainable: P.sustainableNeed(input, T, s) }));
     const mine = Object.assign(P.simulate(input, T, scenario), { sustainable: P.sustainableNeed(input, T, scenario) });
     $('answer').innerHTML = answerText(mine, input);
