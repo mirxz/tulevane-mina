@@ -35,24 +35,29 @@ await page.waitForSelector("#alusta");
 check(posts.some((p) => p.ev === "spin" && p.alk === "test" && new Set(p.jarjekord.split(",")).size === 7), "keerutus salvestas 7 sektori järjekorra ja allika");
 await page.click("#alusta");
 const order = posts.find((p) => p.ev === "spin").jarjekord.split(",").map(Number);
-const names = ["Vajadus", "Riiklik pension", "Sambad", "Kõrvalraha", "Eluiga", "Auto ja kodu", "Ära koonerda"];
+const names = ["Kuu kulud", "Riiklik pension", "II ja III sammas", "Säästud", "Kui kaua elad", "Auto ja kodu", "Unistused"];
 for (let i = 0; i < 7; i++) {
   await page.waitForSelector("#edasi");
   check((await page.textContent(".proglab")).includes(`${i + 1} / 7`) && (await page.getAttribute("[role=progressbar]", "aria-valuenow")) === String(i + 1), `küsimus ${i + 1}/7: edenemisriba`);
   if (i === 0) {
     check((await page.textContent(".chipS")) === names[order[0]], "esimene küsimus on ratta valitud sektor");
-    check(await page.isDisabled("#edasi"), "Edasi on keelatud, kuni valik puudub");
+    check(!(await page.isDisabled("#edasi")), "Edasi on aktiivne (täiskontrast)");
+    await page.click("#edasi");
+    check(await page.isVisible("#valikViga") && (await page.textContent(".chipS")) === names[order[0]], "valikuta Edasi näitab veateadet ega liigu edasi");
+    check((await page.getAttribute("input[name=valik]", "aria-invalid")) === "true" && (await page.evaluate(() => document.activeElement.name)) === "valik", "veaolek: aria-invalid ja fookus esimesel valikul");
+    await a11y(page, "küsimus veaolekus");
     await a11y(page, "küsimus");
   }
   check((await page.textContent(".chipS")) === names[order[i]], `küsimus ${i + 1}: sektor ${names[order[i]]}`);
   await page.check(`input[value=${["tean", "umbes", "eitea"][i % 3]}]`);
+  if (i === 0) check(await page.isHidden("#valikViga"), "valiku tegemine peidab veateate");
   if (i === 2) await page.fill("#tekst", "Ei tea kust vaadata, helista 5551234567");
   if (i === 3) { await page.click("#edasi"); await page.click("#tagasi"); check(await page.isChecked(`input[value=${["tean", "umbes", "eitea"][3 % 3]}]`), "Tagasi säilitab vastuse"); }
   await page.click("#edasi");
 }
 await page.waitForSelector("#meil");
 check((await page.textContent("h1")).includes("Aitäh"), "tänuleht");
-check((await page.textContent(".thanks")).includes("sisendi- ja resoneerimistest"), "tänuleht selgitab, et see on sisend-/resoneerimistest");
+check((await page.textContent(".thanks")).includes("õigeid ega valesid vastuseid"), "tänuleht selgitab, et see polnud eksam");
 check(posts.filter((p) => p.ev === "answer").length >= 8 && posts.some((p) => p.ev === "done"), "vastused ja lõpp salvestati");
 check(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "tänulehel pole külgsuunalist kerimist");
 await a11y(page, "tänuleht");
