@@ -1125,9 +1125,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     const pa = P.retirementYears(input);
     for (let i = 1; i <= 7; i++) { const k = $('k' + i); if (k) k.textContent = kicker(input, i); }
     chapters[3].dataset.label = Math.min(input.currentAge, 55) + '–55';
-    const mk = input.paMonths ? ' a ' + input.paMonths + ' k' : '';
-    chapters[5].dataset.label = (pa - 5) + mk;
-    chapters[6].dataset.label = pa + mk;
+    chapters[5].dataset.label = String(pa - 5); // rajal ainult aastad, kuud on etapi tekstis
+    chapters[6].dataset.label = String(pa);
     $('p60Txt').innerHTML = ageAt(pa - 5, input.paMonths) + ' (5 aastat enne pensioniiga, ' + (input.birthYear + pa - 5) + ') avaneb II sammas. Väljamakse algab selles loos pensionieas. Väljamaksete alustamisel lõpevad II samba sissemaksed igaveseks.';
     chapters[7].dataset.label = (pa + 1) + '+';
 
