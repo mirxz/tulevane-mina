@@ -23,7 +23,8 @@ const goldenFile = join(here, "golden", "elukaar-graafik.json");
 const snap = {};
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
-const ctx = await browser.newContext();
+// reducedMotion: peatükk ilmub 0,25 s hajumisega; axe mõõdab poolläbipaistvat teksti ja värvikontrast kukub ajastusest sõltuvalt (CI on aeglasem).
+const ctx = await browser.newContext({ reducedMotion: "reduce" });
 await ctx.route("**/cdn.jsdelivr.net/npm/chart.js**", (r) => r.fulfill({ contentType: "application/javascript", body: CHART }));
 await ctx.route("**/cdn.jsdelivr.net/npm/bootstrap**", (r) => r.fulfill({ contentType: "text/css", body: BS_CSS }));
 await ctx.route("**/fonts.g*/**", (r) => r.abort());
@@ -97,6 +98,7 @@ for (const [vName, vp] of Object.entries(VIEWPORTS)) {
     check(d.summary.length >= 1, `${tag}: graafiku kokkuvõte puudub`);
     if (GOLDEN_PROFILES.includes(profile)) snap[tag] = { labels: d.labels, ds: d.ds.map((x) => ({ label: x.label, type: x.type, data: x.data })) };
     if (!mobile && profile === "liige-steady") {
+      await page.waitForFunction(() => document.getAnimations().length === 0);
       await page.addScriptTag({ content: AXE });
       const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] } })).violations.filter((x) => x.impact === "serious" || x.impact === "critical").map((x) => x.id + ": " + x.nodes.slice(0, 2).map((n) => n.target.join(" ")).join(", ")));
       check(v.length === 0, `${tag}: ligipääsetavus (axe): ${v.join(" | ")}`);
