@@ -19,6 +19,8 @@
   },
   // Anonüümne tagasiside (otsuste logi 7.10). Tabelid luuakse esimesel päringul ise.
   "d1_databases": [{ "binding": "DB", "database_name": "mina-tagasiside", "database_id": "c85712bf-d45e-41c3-a048-eaf733f58daf" }],
+  // Kutsekirjade saatmine /saada lehelt (10.10). Ainult toodangus; eelvaadete plokis teadlikult puudub.
+  "send_email": [{ "name": "EMAIL", "allowed_sender_addresses": ["mirko@tulevanemina.ee"] }],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",

@@ -22,7 +22,9 @@ const hostIn = (url, col = "host") => col + " IN (" + hostid(url).map(() => "?")
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const isResults = url.pathname === "/tulemused" || url.pathname === "/tulemused.csv" || url.pathname === "/tulemused-meilid.csv" || url.pathname === "/tulemused-tagasiside.csv" || url.pathname === "/tulemused-ratas.csv" || url.pathname === "/tulemused-plaan.csv";
+    const isResults = url.pathname === "/saada" || url.pathname === "/tulemused" || url.pathname === "/tulemused.csv" || url.pathname === "/tulemused-meilid.csv" || url.pathname === "/tulemused-tagasiside.csv" || url.pathname === "/tulemused-ratas.csv" || url.pathname === "/tulemused-plaan.csv";
+    // Kutsekirja klikk (10.10): avalehe ?k=kutse-a|b|c loetakse enne parooli, et klikk läheks kirja ka siis, kui sait on parooliga.
+    if (url.pathname === "/" && request.method === "GET" && KUTSE_K.test(url.searchParams.get("k") || "")) await logKlikk(env, url);
     if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
     // Lauamäng kolis arhiivi (9.10). Vana aadress (ka prinditud QR-kood) annab teadlikult veateate, mitte ei suuna edasi.
     if (url.pathname === "/mang" || url.pathname.startsWith("/mang/")) return gone();
@@ -40,6 +42,7 @@ export default {
     if (url.pathname === "/tulemused-ratas.csv") return ratasCsv(request, env);
     if (url.pathname === "/tulemused-plaan.csv") return plaanCsv(request, env);
     if (url.pathname === "/tulemused" || url.pathname === "/tulemused.csv") return results(request, env, url);
+    if (url.pathname === "/saada") return saada(request, env, url);
     return env.ASSETS.fetch(request);
   },
 };
@@ -531,4 +534,87 @@ function gone() {
 <style>body{margin:0;font-family:Roboto,Arial,sans-serif;color:#293036;background:#fff}main{max-width:520px;margin:0 auto;padding:48px 16px;display:grid;gap:16px}h1{font-family:Merriweather,Georgia,serif;color:#002f63;margin:0;font-size:26px;line-height:34px}p{margin:0;line-height:1.5}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 16px;border-radius:8px;background:#006ce6;color:#fff;text-decoration:none;font-weight:500}</style></head>
 <body><main><h1>Seda prototüüpi enam pole</h1><p>Lauamäng oli Tulevase Mina varasem katsetus ja see on nüüd suletud.</p><p><a href="/">Proovi uut prototüüpi</a></p></main></body></html>`;
   return new Response(html, { status: 410, headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex", "cache-control": "no-store" } });
+}
+
+// ---------------------------------------------------------------------------
+// Kutsekirjad (10.10): /saada saadab Cloudflare Email Service'i kaudu (binding EMAIL, Workers Paid) aadressilt mirko@tulevanemina.ee.
+// Parool sama mis tulemustel (TULEMUSED_VOTI). Töötab ainult toodangu aadressil, eelvaated ei saada kirju.
+// Iga saaja saab eraldi kirja (aadressid ei paista teistele). Aadresse ega sisu ei salvestata; D1-sse läheb ainult saatmise kokkuvõte.
+// Lingi {link} asemele tuleb https://tulevanemina.ee/?k=kutse-<variant>; avalehe klikid loetakse tabelisse kutse_klikid (ilma IP ja küpsiseta).
+const KUTSE_K = /^kutse-[abc]$/;
+const SAATJA = { email: "mirko@tulevanemina.ee", name: "Mirko · Tulevane Mina" };
+const MAX_SAAJAID = 100;
+async function ensureKutse(db) {
+  await db.batch([
+    db.prepare("CREATE TABLE IF NOT EXISTS kutse_klikid (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, host TEXT, k TEXT)"),
+    db.prepare("CREATE TABLE IF NOT EXISTS kutse_saadetud (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, variant TEXT, teema TEXT, ok INTEGER, vigu INTEGER)"),
+  ]);
+}
+async function logKlikk(env, url) {
+  if (!env.DB) return;
+  try { await ensureKutse(env.DB); await env.DB.prepare("INSERT INTO kutse_klikid (ts, host, k) VALUES (?, ?, ?)").bind(new Date().toISOString(), url.hostname, url.searchParams.get("k")).run(); } catch {}
+}
+const htmlKirjaks = (tekst, link) => '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:16px;line-height:1.5;color:#111;max-width:560px">' +
+  esc(tekst).split(/\n{2,}/).map((p) => "<p>" + p.replace(/\n/g, "<br>").split(esc(link)).join('<a href="' + esc(link) + '">' + esc(link) + "</a>") + "</p>").join("") + "</div>";
+async function saada(request, env, url) {
+  if (!env.TULEMUSED_VOTI) return new Response("Parool (secret TULEMUSED_VOTI) pole seadistatud.", { status: 503 });
+  if (!authorized(request, env)) return new Response("Sisesta parool", { status: 401, headers: { "www-authenticate": 'Basic realm="Tulevane Mina tulemused", charset="UTF-8"' } });
+  const toodang = TOODANG.includes(url.hostname);
+  const leht = (sisu) => new Response(`<!doctype html><html lang="et"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Kutsekirjad</title>
+<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;line-height:1.45;color:#111;background:#fff}label{display:block;margin:12px 0 4px;font-weight:600}textarea,input,select{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid #999;border-radius:6px}textarea{min-height:120px}button{margin-top:16px;padding:10px 16px;font:inherit;border-radius:6px;border:0;background:#0b5;color:#fff;cursor:pointer}.small{color:#555;font-size:14px}table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left}.viga{color:#b00}pre{white-space:pre-wrap;background:#f4f4f4;padding:12px;border-radius:6px}</style></head><body>${sisu}</body></html>`,
+    { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
+  if (!env.DB) return new Response("Andmebaas pole seadistatud.", { status: 503 });
+  await ensureKutse(env.DB);
+  const klikid = (await env.DB.prepare("SELECT k, COUNT(*) AS n FROM kutse_klikid GROUP BY k ORDER BY k").all()).results;
+  const saadetud = (await env.DB.prepare("SELECT variant, SUM(ok) AS ok, SUM(vigu) AS vigu FROM kutse_saadetud GROUP BY variant ORDER BY variant").all()).results;
+  const kokkuvote = `<h2>Seis</h2><table><tr><th>Variant</th><th>Saadetud</th><th>Klikke avalehel</th></tr>${["a", "b", "c"].map((v) => {
+    const s = saadetud.find((r) => r.variant === v) || {}, k = klikid.find((r) => r.k === "kutse-" + v) || {};
+    return `<tr><td>${v.toUpperCase()}</td><td>${s.ok || 0}${s.vigu ? ' <span class="viga">(' + s.vigu + " viga)</span>" : ""}</td><td>${k.n || 0}</td></tr>`;
+  }).join("")}</table><p class="small">Klikk = avalehe avamine lingiga ?k=kutse-… (sama inimene võib klikkida mitu korda). Väikese valimi juures on erinevused suunavad, mitte statistiliselt olulised.</p>`;
+
+  if (request.method === "GET") {
+    return leht(`<h1>Kutsekirjad</h1>${toodang ? "" : '<p class="viga">See on eelvaade: kirju siit ei saadeta.</p>'}
+<form method="post">
+<label for="aadressid">Saajad (üks rida või koma kohta, kuni ${MAX_SAAJAID})</label><textarea id="aadressid" name="aadressid" required></textarea>
+<label for="variant">Variant</label><select id="variant" name="variant"><option value="a">A</option><option value="b">B</option><option value="c">C</option></select>
+<label for="teema">Teema</label><input id="teema" name="teema" required maxlength="150">
+<label for="tekst">Tekst ({link} asendub variandi lingiga)</label><textarea id="tekst" name="tekst" required style="min-height:260px">Tere!
+
+…
+
+{link}
+
+Kui sa ei soovi rohkem kirju, vasta lihtsalt sellele kirjale.
+
+Mirko
+Tulevane Mina</textarea>
+<label><input type="checkbox" name="saada" value="1" style="width:auto"> Saada päriselt (ilma linnukeseta näed ainult eelvaadet)</label>
+<button type="submit">Edasi</button>
+</form>${kokkuvote}`);
+  }
+  if (request.method !== "POST") return new Response("Meetod pole lubatud", { status: 405 });
+  const f = await request.formData();
+  const variant = String(f.get("variant") || "");
+  if (!["a", "b", "c"].includes(variant)) return leht('<p class="viga">Vigane variant.</p><p><a href="/saada">Tagasi</a></p>');
+  const teema = clean(f.get("teema"), 150), tekstSisend = String(f.get("tekst") || "").slice(0, 8000);
+  const link = "https://tulevanemina.ee/?k=kutse-" + variant;
+  const tekst = tekstSisend.replace(/\r\n/g, "\n").split("{link}").join(link);
+  const koik = String(f.get("aadressid") || "").split(/[\s,;]+/).map((a) => a.trim().toLowerCase()).filter(Boolean);
+  const aadressid = [...new Set(koik)].filter((a) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a));
+  const vigased = [...new Set(koik)].filter((a) => !aadressid.includes(a));
+  if (!teema || !tekstSisend.trim() || !aadressid.length) return leht('<p class="viga">Teema, tekst ja vähemalt üks korrektne aadress on kohustuslikud.</p><p><a href="/saada">Tagasi</a></p>');
+  if (aadressid.length > MAX_SAAJAID) return leht(`<p class="viga">Korraga kuni ${MAX_SAAJAID} saajat.</p><p><a href="/saada">Tagasi</a></p>`);
+  const paris = f.get("saada") === "1";
+  const eelvaade = `<p>Variant <b>${variant.toUpperCase()}</b> · saajaid <b>${aadressid.length}</b>${vigased.length ? ' · <span class="viga">vigased aadressid jäid välja: ' + esc(vigased.join(", ")) + "</span>" : ""}</p><p><b>Teema:</b> ${esc(teema)}</p><pre>${esc(tekst)}</pre>`;
+  if (!paris) return leht(`<h1>Eelvaade</h1>${eelvaade}<p class="small">Midagi ei saadetud. Mine tagasi ja pane linnuke „Saada päriselt“.</p><p><a href="/saada">Tagasi</a></p>`);
+  if (!toodang) return leht('<p class="viga">Eelvaatest kirju ei saadeta.</p>');
+  if (!env.EMAIL) return leht('<p class="viga">E-posti binding (EMAIL) pole seadistatud.</p>');
+  const html = htmlKirjaks(tekst, link);
+  let ok = 0; const vead = [];
+  for (const a of aadressid) {
+    try { await env.EMAIL.send({ to: a, from: SAATJA, replyTo: SAATJA.email, subject: teema, text: tekst, html }); ok++; }
+    catch (e) { vead.push(a + ": " + (e.code || e.message || "viga")); if (e.code === "E_DAILY_LIMIT_EXCEEDED" || e.code === "E_RATE_LIMIT_EXCEEDED") { vead.push("Peatusin: limiit täis, ülejäänud jäid saatmata."); break; } }
+  }
+  await env.DB.prepare("INSERT INTO kutse_saadetud (ts, variant, teema, ok, vigu) VALUES (?, ?, ?, ?, ?)").bind(new Date().toISOString(), variant, teema, ok, vead.length).run();
+  return leht(`<h1>Saadetud: ${ok} / ${aadressid.length}</h1>${vead.length ? '<p class="viga">' + vead.map(esc).join("<br>") + "</p>" : ""}${eelvaade}<p><a href="/saada">Tagasi</a></p>`);
 }

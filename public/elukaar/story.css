@@ -1,0 +1,313 @@
+/* Tulevane Mina: loo vaade. Tokenid tulevad failist tuleva.css. */
+
+/* Eluteekond */
+.path { list-style: none; display: flex; gap: 0.25rem; padding: 0.5rem 0.5rem 0.25rem; margin: 0 -0.5rem; overflow-x: auto; position: relative; }
+.path li { flex: 1 0 4.25rem; position: relative; }
+.path li::before { content: ''; position: absolute; top: 1.25rem; left: -50%; width: 100%; height: 3px; background: var(--gray-border-2); z-index: 0; }
+.path li:first-child::before { display: none; }
+.path li.visited::before { background: var(--bright-blue); }
+.path button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; width: 100%; border: 0; background: none; padding: 0 0 0.25rem; color: var(--text-secondary); font-size: 0.8125rem; border-radius: 0.5rem; }
+.path button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.path-dot { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: #fff; border: 2px solid var(--gray-border-3); font-size: 1.125rem; transition: transform 0.15s; }
+.path li.visited .path-dot { border-color: var(--bright-blue); background: var(--blue-bg-1); }
+.path li.current .path-dot { border-color: var(--blue); background: var(--blue); transform: scale(1.12); box-shadow: 0 0 0 4px var(--blue-border-1); }
+.path li.current .path-label { color: var(--navy); font-weight: 700; }
+.path li.past .path-dot { filter: grayscale(0.6); }
+.path-label { margin-top: 0.25rem; white-space: nowrap; }
+.path-now { font-size: 0.6875rem; font-weight: 700; color: #fff; background: var(--green); border-radius: 1rem; padding: 0 0.4rem; margin-top: 0.125rem; }
+
+/* Peatükk */
+.chapter { animation: fadein 0.25s ease-out; }
+.chapter[hidden] { display: none !important; }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .chapter { animation: none; } .path-dot { transition: none; } }
+.chapter-head { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+.chapter-art { flex: 0 0 4.5rem; height: 4.5rem; display: grid; place-items: center; font-size: 2.5rem; border-radius: 1rem; background: linear-gradient(135deg, var(--blue-bg-1), #e6f6fd); border: 1px solid var(--blue-border-1); }
+.chapter-kicker { margin: 0 0 0.125rem; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.02em; color: var(--text-navy-secondary); text-transform: uppercase; }
+.chapter h2 { margin: 0; }
+.chapter h2:focus { outline: none; }
+.chapter fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.chapter fieldset:disabled { opacity: 0.5; }
+
+/* Valikukaardid: raadionupp jääb nähtavaks ja klaviatuuriga kasutatavaks */
+.choices { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.choices-sm { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.choice { position: relative; display: block; cursor: pointer; }
+.choice input { position: absolute; top: 0.9rem; right: 0.9rem; width: 1.1rem; height: 1.1rem; accent-color: var(--blue); }
+.choice-body { display: flex; flex-direction: column; gap: 0.25rem; height: 100%; padding: 0.9rem 2.5rem 0.9rem 1rem; border: 1px solid var(--gray-border-3); border-radius: 0.75rem; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; }
+.choice-body small { color: var(--text-secondary); }
+.choice:hover .choice-body { border-color: var(--blue); }
+.choice input:checked + .choice-body { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue); background: var(--blue-bg-1); }
+.choice input:focus-visible + .choice-body { outline: 3px solid var(--navy); outline-offset: 2px; }
+.choice-emoji { font-size: 1.75rem; line-height: 1; }
+fieldset:disabled .choice { cursor: not-allowed; }
+
+.story-note { background: var(--gray-bg-2); border-left: 4px solid var(--bright-blue); border-radius: 0.25rem; padding: 0.75rem 1rem; }
+
+/* Kulupaketid */
+.packages { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.pkg .choice-body { padding-right: 1rem; }
+.pkg input { top: 1.1rem; }
+.pkg-top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; padding-right: 2rem; }
+.pkg-top strong { font-size: 1.125rem; color: var(--navy); }
+.pkg-price { flex-basis: 100%; font-weight: 700; color: var(--navy); white-space: nowrap; }
+.pkg-price small { font-weight: 400; color: var(--text-secondary); }
+.pkg-bar { display: flex; height: 0.6rem; border-radius: 1rem; overflow: hidden; background: var(--gray-bg-2); margin: 0.5rem 0 0.25rem; }
+.seg.base, .dot.base { background: var(--navy); }
+.seg.joy, .dot.joy { background: var(--bright-blue); }
+.seg.future, .dot.future { background: var(--green); }
+.dot { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin: 0 0.25rem 0 0.75rem; }
+.dot:first-child { margin-left: 0; }
+.pkg-legend { grid-column: 1 / -1; }
+.pkg-facts { list-style: none; padding: 0; margin: 0.25rem 0 0; font-size: 0.875rem; }
+.pkg-facts li { display: flex; gap: 0.4rem; padding: 0.15rem 0; }
+
+/* Jooksev kokkuvõte */
+.pot-bar { position: sticky; bottom: 0.75rem; z-index: 5; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0.75rem 1rem; background: var(--navy); color: #fff; border-radius: 0.75rem; box-shadow: var(--box-shadow-calculator); }
+.pot-item { display: flex; align-items: center; gap: 0.5rem; }
+.pot-emoji { font-size: 1.25rem; }
+.pot-item strong { display: block; line-height: 1.1; }
+.pot-item small { display: block; opacity: 0.8; font-size: 0.75rem; }
+
+/* Tulemus */
+.legacy-card { border: 1px solid var(--blue-border-1); border-radius: 0.75rem; padding: 1rem 1.25rem; background: linear-gradient(180deg, var(--blue-bg-1), #fff); }
+.recap { list-style: none; padding: 0; margin: 0; }
+.recap li { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--gray-border-2); }
+.recap li:last-child { border-bottom: 0; }
+.table-compare th.mine { color: var(--blue); }
+
+@media (max-width: 575px) {
+  .chapter-art { flex-basis: 3.25rem; height: 3.25rem; font-size: 1.75rem; }
+  .pot-bar { gap: 0.5rem 1rem; font-size: 0.875rem; }
+}
+
+/* Kulud ükshaaval */
+.cost-table .cost-input { width: 6.5rem; margin-left: auto; text-align: right; }
+.cost-input.is-edited { border-color: var(--blue); background: var(--blue-bg-1); font-weight: 700; }
+.pkg-edited { color: var(--blue) !important; }
+.household-note { display: flex; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--blue-border-1); background: var(--blue-bg-1); border-radius: 0.75rem; color: var(--navy); }
+.hh-emoji { font-size: 1.75rem; line-height: 1; }
+.section-title { color: var(--navy); padding-bottom: 0.25rem; border-bottom: 1px solid var(--gray-border-2); margin-bottom: 0.75rem; }
+.chapter legend.form-label { font-size: 1rem; float: none; }
+.map-choice { margin-top: 0.25rem; font-size: 0.875rem; color: var(--blue); }
+.pkg-or { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 0.25rem; color: var(--text-tertiary); font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.pkg-or::before, .pkg-or::after { content: ''; flex: 1; border-top: 1px solid var(--gray-border-2); }
+.pkg-alt { display: flex; gap: 0.4rem; font-size: 0.875rem; }
+.household-row { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: flex-end; }
+.tips { list-style: none; padding: 0; margin: 0 0 0.75rem; }
+.tips li { padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; background: #fff; border: 1px solid var(--blue-border-1); border-radius: 0.5rem; }
+.legacy-hint { color: var(--text-primary); font-weight: 500; }
+
+/* UX/a11y parandused (ui-ux-pro-max ülevaatus) */
+/* 1. Kontrast: väike hall tekst vähemalt 4.5:1 (#6b7074 valgel 4.9:1, kollasel 4.6:1) */
+.small-muted, .form-text, footer, .pkg-or { color: var(--text-secondary) !important; }
+/* 3. Kleepuv alumine riba ei tohi fookust ega sisu katta */
+html { scroll-padding-bottom: 8rem; }
+main.container { padding-bottom: 1rem; }
+@media (max-width: 575px) {
+  .pot-bar { padding: 0.5rem 0.75rem; gap: 0.25rem 0.75rem; bottom: 0.5rem; }
+  .pot-item small { font-size: 0.6875rem; }
+  .pot-emoji { font-size: 1rem; }
+  html { scroll-padding-bottom: 6rem; }
+}
+/* 2. Rada mobiilis: kerimine ühe sammu kaupa */
+.path { scroll-snap-type: x proximity; scrollbar-width: thin; }
+.path li { scroll-snap-align: center; }
+
+/* SVG ikoonid (asendavad emojisid) */
+.ico { width: 1.25em; height: 1.25em; display: inline-block; vertical-align: -0.2em; flex-shrink: 0; }
+.path-dot { color: var(--navy); }
+.path-dot .ico { width: 1.25rem; height: 1.25rem; }
+.path li.current .path-dot { color: #fff; }
+.path li.past .path-dot { filter: none; color: var(--text-navy-secondary); }
+.chapter-art { color: var(--blue); }
+.chapter-art .ico { width: 2.25rem; height: 2.25rem; stroke-width: 1.75; }
+.choice-emoji { color: var(--blue); line-height: 1; }
+.choice-emoji .ico { width: 1.75rem; height: 1.75rem; }
+.choice input:checked + .choice-body .choice-emoji { color: var(--navy); }
+.pot-emoji { color: var(--bright-blue); display: inline-flex; }
+.pkg-facts li > span:first-child, .pkg-alt > span:first-child, .recap li > span:first-child { color: var(--blue); display: inline-flex; }
+.hh-emoji { color: var(--navy); display: inline-flex; }
+.hh-emoji .ico { width: 1.75rem; height: 1.75rem; }
+@media (max-width: 575px) { .chapter-art .ico { width: 1.75rem; height: 1.75rem; } }
+/* Tumedal taustal alati valged ikoonid (ka möödunud aktiivne samm) */
+.path li.current .path-dot, .path li.current.past .path-dot { color: #fff; }
+.pot-emoji { color: #fff; }
+/* Raja sammud on nupud: hover annab heledalt halli tausta (aktiivne jääb siniseks) */
+.path button { cursor: pointer; }
+.path-dot { transition: transform 0.15s, background-color 0.15s, border-color 0.15s; }
+.path li:not(.current) button:hover .path-dot { background: #eef1f4; border-color: var(--blue); }
+.path li:not(.current) button:hover .path-label { color: var(--navy); }
+@media (prefers-reduced-motion: reduce) { .path-dot { transition: none; } }
+/* Nõuanded: pealkiri, tekst ja nupp eraldi ridadel, rohkem õhku */
+.legacy-card h3 { margin-bottom: 1rem; }
+.tips li { padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.tip-title { display: block; color: var(--navy); margin-bottom: 0.375rem; }
+.tip-body { margin: 0 0 0.875rem; color: var(--text-primary); line-height: 1.55; }
+.legacy-hint { margin-top: 1.25rem; }
+.legacy-card .btn .ico { width: 1.1em; height: 1.1em; }
+/* Vaadatud samm: linnuke (mitte ainult värv) */
+.path-check { position: absolute; top: -0.2rem; left: calc(50% + 0.6rem); z-index: 2; display: grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--navy); color: #fff; border: 2px solid #fff; }
+.path-check .ico { width: 0.65rem; height: 0.65rem; stroke-width: 3.5; vertical-align: 0; }
+/* Ligipääsetav graafik */
+.chart-figure { margin: 0; }
+.chart-summary { color: var(--text-primary); margin-bottom: 0.75rem; }
+.chart-table { max-height: 420px; overflow-y: auto; }
+.chart-table caption { caption-side: top; color: var(--text-secondary); font-size: 0.875rem; }
+.chart-table thead th { position: sticky; top: 0; background: #fff; }
+.chart-table:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+/* Kulupaketi riba: tühi osa nähtav, segmentide vahel valge vahe */
+.pkg-bar { height: 0.75rem; background: #dfe5eb; border: 1px solid var(--gray-border-3); gap: 2px; }
+.pkg-bar .seg { height: 100%; }
+.dot.rest { background: #dfe5eb; border: 1px solid var(--gray-border-3); }
+.pkg-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0; margin-bottom: 0.25rem !important; }
+.pkg-legend .dot { width: 0.75rem; height: 0.75rem; }
+/* Riba tühi osa: valge täide + tumehall äär (3,7:1 nii valgel kui valitud helesinisel taustal) */
+.pkg-bar { background: #fff; border: 1px solid #7d8186; }
+.dot.rest { background: #fff; border: 1px solid #7d8186; }
+/* Keelatud valikukaart (nt täiendav fondipension enne soodusvanust) */
+.choice.is-disabled { cursor: not-allowed; }
+.choice.is-disabled .choice-body { background: var(--gray-bg-2); border-style: dashed; }
+.choice.is-disabled .choice-body strong, .choice.is-disabled .choice-body small { color: var(--text-secondary); }
+.choice.is-disabled:hover .choice-body { border-color: var(--gray-border-3); }
+
+/* Prindivaade (PDF): ainult tulemus */
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff; }
+  header .lead, #path, nav[aria-label="Loo etapid"], .story-nav, #potBar, .result-actions, #dlTitle, #chartToggle, #legacy button, #actionWarn button, .recap button, footer .note ~ *, .path-check { display: none !important; }
+  .chapter { display: none !important; }
+  .chapter[data-step="9"] { display: block !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; animation: none; }
+  .chart-wrap { height: 300px; break-inside: avoid; }
+  .metric, .legacy-card, .tips li, .timeline li, .chart-figure { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+  .table-compare { font-size: 10pt; }
+}
+
+/* Mobiilis mahub kogu eluteekond ühele reale: väiksemad mummud, silt ainult aktiivsel sammul */
+@media (max-width: 575px) {
+  .path { overflow-x: visible; gap: 0; padding: 0.5rem 0 0.25rem; margin: 0; scroll-snap-type: none; }
+  .path li { flex: 1 1 0; min-width: 0; }
+  .path li::before { top: 1rem; }
+  .path-dot { width: 2rem; height: 2rem; }
+  .path-dot .ico { width: 1rem; height: 1rem; }
+  .path li.current .path-dot { transform: scale(1.1); box-shadow: 0 0 0 3px var(--blue-border-1); }
+  .path-label { font-size: 0.75rem; }
+  .path li:not(.current) .path-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .path-check { left: calc(50% + 0.4rem); width: 0.95rem; height: 0.95rem; }
+  .path-now { font-size: 0.625rem; padding: 0 0.3rem; }
+}
+.result-actions { align-items: center; }
+
+/* Väikseim tekst 14px (0.875rem) kõikjal, ka mobiilis */
+.path button, .path-label, .chapter-kicker, .pot-item small, .pkg-or, .src-chip, .table-compare small, .path-now { font-size: 0.875rem !important; }
+.src-chip { line-height: 1.4rem; }
+.path-now { line-height: 1.3; }
+@media (max-width: 575px) {
+  .path-label, .pot-item small, .path-now { font-size: 0.875rem !important; }
+  .path-label { white-space: nowrap; }
+}
+
+/* WCAG 2.5.5 (AAA): klikitavad alad vähemalt 44 × 44 px. Tekstisisesed lingid on erand. */
+.btn, .btn-sm, .form-control, .form-select { min-height: 44px; }
+.btn-sm { display: inline-flex; align-items: center; gap: 0.35rem; }
+.recap .btn-link { min-height: 44px; min-width: 44px; padding: 0 0.5rem !important; display: inline-flex; align-items: center; justify-content: center; }
+.path button { min-height: 44px; min-width: 44px; }
+.choice input { width: 1.25rem; height: 1.25rem; } /* raadionupp on terve kaardi sees, kaart on sihtmärk */
+#pkgDetails summary, details > summary { min-height: 44px; display: flex; align-items: center; }
+.cost-input { min-height: 44px; }
+/* Mobiilis: esimese ja viimase sammu silt ei tohi rajast välja ulatuda */
+@media (max-width: 575px) {
+  .path li:first-child .path-label { align-self: flex-start; }
+  .path li:last-child .path-label { align-self: flex-end; }
+}
+/* Graafik ei tohi olla laiem kui konteiner (mobiil, akna suuruse muutmine) */
+.chart-wrap { width: 100%; min-width: 0; }
+.chart-wrap canvas { max-width: 100%; }
+
+/* Mobiilis on sildid kõigil sammudel (14px). Esimene ja viimane joondatud servale. */
+@media (max-width: 575px) {
+  .path li:not(.current) .path-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .path-label { margin-top: 0.2rem; letter-spacing: -0.01em; }
+}
+/* Graafiku selgitus */
+.chart-explain { border: 1px solid var(--gray-border-2); border-radius: 0.5rem; padding: 0 1rem; background: var(--gray-bg-1); }
+.chart-explain[open] { padding-bottom: 0.75rem; }
+.chart-explain ul { padding-left: 1.1rem; }
+.chart-explain li { margin-bottom: 0.25rem; }
+@media (max-width: 575px) { .chart-wrap { height: 300px; } }
+.chart-summary li { margin-bottom: 0.2rem; }
+
+/* Akordionide nool (summary display:flex peidab brauseri vaikimisi kolmnurga) */
+details > summary { list-style: none; cursor: pointer; gap: 0.5rem; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: ''; flex: 0 0 auto; width: 0.55rem; height: 0.55rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; margin-right: 0.15rem; }
+details[open] > summary::before { transform: rotate(45deg); }
+@media (prefers-reduced-motion: reduce) { details > summary::before { transition: none; } }
+details > summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 0.25rem; }
+
+/* Akordionide ikoon: SVG chevron-down paremal, avamisel pöörab üles (asendab varasema noole) */
+details > summary::before { content: none; display: none; }
+details > summary { justify-content: space-between; }
+details > summary::after {
+  content: ''; flex: 0 0 auto; width: 1.25rem; height: 1.25rem; background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.15s;
+}
+details[open] > summary::after { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { details > summary::after { transition: none; } }
+
+/* Esiletõstetud sissejuhatus (1. vaade ja otsustuskohtade selgitus) */
+.intro-note { background: var(--blue-bg-1); border: 1px solid var(--blue-border-1); border-left: 4px solid var(--blue); border-radius: 0.5rem; padding: 0.875rem 1rem; color: var(--navy); margin-bottom: 1.25rem; }
+
+/* Akordioni ikoon teksti kõrval (mitte rea paremas servas) */
+details > summary { justify-content: flex-start; gap: 0.5rem; }
+
+/* „Muuda kulusid ükshaaval“ näeb välja nagu nupp */
+details > summary.summary-btn { display: inline-flex; width: auto; align-items: center; gap: 0.5rem; font-weight: 500; }
+details > summary.summary-btn::after { margin-left: 0.25rem; }
+details[open] > summary.summary-btn { background: var(--blue); color: #fff; }
+#pkgDetails > summary.summary-btn { display: inline-flex; width: auto; }
+/* Väljasuunav link: ikoon teksti järel, ei murdu üksi järgmisele reale */
+.ext-link .ico { width: 0.95em; height: 0.95em; vertical-align: -0.1em; margin-left: 0.1em; }
+.ext-link:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 0.2rem; }
+/* KKK */
+.faq-item { border: 1px solid var(--gray-border-2); border-radius: 0.5rem; padding: 0 1rem; margin-bottom: 0.5rem; background: #fff; }
+.faq-item[open] { padding-bottom: 0.75rem; }
+.faq-body { padding-top: 0.25rem; }
+.faq-body ul { padding-left: 1.1rem; }
+/* Kasutusel mitteolev väli (nt III sammas, kui pole liitunud) */
+.is-off .form-label { color: var(--text-secondary); }
+.form-control:disabled { background: var(--gray-bg-2); color: var(--text-secondary); }
+
+/* ---------- Sammurida v2: ikoon ringis + silt kõrval, all edenemisriba ---------- */
+.path-v2 li::before { display: none !important; }            /* ühendusjooned asendab edenemisriba */
+.path-v2 { gap: 0.5rem; padding: 0.25rem 0; margin: 0; overflow: visible; }
+.path-v2 li { flex: 1 1 0; min-width: 0; }
+.path-v2 button { flex-direction: row; justify-content: flex-start; gap: 0.6rem; padding: 0.25rem 0.25rem; text-align: left; }
+.path-v2 .path-dot { width: 2.5rem; height: 2.5rem; flex: 0 0 auto; border: 0; background: #e8edf3; color: var(--text-navy-secondary); transform: none !important; box-shadow: none !important; }
+.path-v2 li.visited .path-dot { background: #e8edf3; color: var(--navy); }
+.path-v2 li.current .path-dot { background: var(--blue); color: #fff; }
+.path-v2 .path-label { margin-top: 0; font-size: 1rem !important; color: var(--text-secondary); white-space: nowrap; }
+.path-v2 li.current .path-label { color: var(--navy); font-weight: 700; }
+.path-v2 .path-now { margin-top: 0; margin-left: -0.2rem; }
+.path-v2 .path-check { top: -0.15rem; left: 1.85rem; }
+.path-v2 li:not(.current) button:hover .path-dot { background: #dde4ec; border: 0; }
+.path-v2 li:not(.current) button:hover .path-label { color: var(--navy); }
+.path-progress { height: 4px; background: var(--gray-border-2); border-radius: 2px; margin-top: 0.5rem; overflow: hidden; }
+.path-progress span { display: block; height: 100%; width: 0; background: var(--blue); border-radius: 2px; transition: width 0.25s; }
+@media (prefers-reduced-motion: reduce) { .path-progress span { transition: none; } }
+/* Laiuse järgi: kitsamal ekraanil (kuni ~1000px) silt ikooni alla, et 7 sammu mahuks */
+@media (max-width: 991px) {
+  .path-v2 button { flex-direction: column; justify-content: center; gap: 0.2rem; text-align: center; }
+  .path-v2 .path-label { font-size: 0.875rem !important; }
+  .path-v2 .path-check { left: calc(50% + 0.6rem); }
+  .path-v2 .path-now { margin-left: 0; }
+}
+@media (max-width: 575px) {
+  .path-v2 { gap: 0; }
+  .path-v2 .path-dot { width: 2rem; height: 2rem; }
+  .path-v2 .path-check { left: calc(50% + 0.4rem); }
+}
+@media (max-width: 575px) { .path-v2 button { padding: 0.25rem 0; } }
