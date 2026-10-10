@@ -590,7 +590,7 @@ fieldset:disabled .choice { cursor: not-allowed; }
         <li>Arvutus on sama mis <a href="https://github.com/meelisb/tuleva-tulevik">kalkulaatori vaates</a> (js/pension.js). Summad on tänastes eurodes, palk reaalselt ei kasva.</li>
         <li>Sammaste kasv pensionieani: II sambasse 2% palgast ja riigi 4%, fondi tootlus 2% aastas pärast inflatsiooni ja tasusid, III sambasse uusi sissemakseid ei tehta. Need on eeldused, mitte lubadus.</li>
         <li>„Jään ellu“: Statistikaamet LE205 (<span id="kuludMeta"></span>). „Optimaalne“ ja „Mugav“ lisavad sellele näidissummad. Hinnad ostukorvis on ligikaudsed.</li>
-        <li>Pensioniiga: 65 a 4 k (alates 2029 seotakse oodatava elueaga). Arvutus on aastapõhine, kuud on näidatud kuupäevades, mitte rahavoos.</li>
+        <li>Pensioniiga: 65 a (alates 2027 lisanduvad kuud ja alates 2029 seotakse pensioniiga oodatava elueaga). Arvutus on aastapõhine.</li>
         <li>Maksud ja vanused: <a href="https://www.pensionikeskus.ee/ii-sammas/valjamaksed/valjamaksete-maksustamine/" target="_blank" rel="noopener">II samba väljamaksete maksustamine</a>, <a href="https://www.pensionikeskus.ee/iii-sammas/valjamaksed/" target="_blank" rel="noopener">III samba väljamaksed</a>, <a href="https://www.sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/paindlik-pension" target="_blank" rel="noopener">paindlik vanaduspension</a>.</li>
         <li>Ellujäämine: Statistikaamet RV046, <span id="lifeYear"></span>. „Elu lõpuni“ on vanus, milleni jõuab elusalt 10% sinuvanustest.</li>
       </ul>
@@ -847,10 +847,10 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
     return [null, [0, 18], [18, 18], [18, 55], [55, 55], [pa - 5, pa - 5], [pa, pa], [pa + 1, 100], null, null];
   }
 
-  // Vanus koos kuudega: „65 a 4 k“ ja „65 a 4 k vanuselt“ / „55-aastaselt“.
+  // Vanuse tekstid: „65 a“ ja „65-aastaselt“ (kuud on toetatud, aga lugu näitab täisaastaid).
   const ageTxt = (y, m) => y + ' a' + (m ? ' ' + m + ' k' : '');
   const ageAt = (y, m) => (m ? y + ' a ' + m + ' k vanuselt' : y + '-aastaselt');
-  // Pensioniea reegel kuudega. Alates 2029 on see teadmata (seotud elueaga); prototüüp kasutab 65 a 4 k.
+  // Pensioniea reegel (pension.js). Alates 2029 on see seotud elueaga.
   function ruleAge(birthYear) {
     const r = P.pensionAge(birthYear);
     return { years: r.years, months: r.months };
@@ -970,7 +970,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       p3Gross: p3Gross, p3Net: p3Net, p3Tax: p3Tax, p3Rem: p3Rem,
       extraDeposit: p3Plan !== 'keep' && p3Use === 'save' ? p3Net : 0,
       pensionAgeYears: parseInt($('pensionAgeYears').value, 10),
-      paMonths: parseInt($('pensionAgeYears').value, 10) === ruleAge(birthYear).years ? ruleAge(birthYear).months : 0,
+      paMonths: 0, // vanused näidatakse täisaastates (65 a), kuid ei kasutata
       grossMonthly: num('grossMonthly'),
       p2Rate: parseFloat($('p2Rate').value),
       p3Monthly: p3Monthly,
@@ -1477,9 +1477,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   function syncPensionAge() {
     const rule = P.pensionAge(parseInt($('birthYear').value, 10) || 1980);
     if (!paTouched) $('pensionAgeYears').value = String(rule.years);
-    const opt = $('pensionAgeYears').querySelector('option[value="' + rule.years + '"]');
-    if (opt) opt.textContent = ageTxt(rule.years, rule.months);
-    $('paHint').textContent = 'Reegel: ' + ageTxt(rule.years, rule.months) + (rule.months === 4 ? ', alates 2029 seotud elueaga' : '');
+    $('paHint').textContent = 'Reegli järgi ' + rule.years + ' a';
   }
   $('pensionAgeYears').addEventListener('change', () => { paTouched = true; });
   $('birthYear').addEventListener('input', syncPensionAge);
