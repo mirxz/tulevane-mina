@@ -646,14 +646,6 @@ main.container { padding-bottom: 1rem; }
 
     <footer class="mt-4">
       <div class="note mb-3"><strong>See on prototüüp, mitte finants- ega maksunõu.</strong> Kõik arvutused tehakse sinu brauseris ja midagi ei salvestata.</div>
-      <ul>
-        <li>Arvutus on sama mis <a href="https://github.com/meelisb/tuleva-tulevik">kalkulaatori vaates</a> (js/pension.js). Summad on tänastes eurodes, palk reaalselt ei kasva.</li>
-        <li>Sammaste kasv pensionieani: tänane summa kasvab valitud tootlusega (pärast inflatsiooni ja tasusid) ja sinna lisanduvad sissemaksed: II sambasse sinu makse + riigi 4% palgast, III sambasse sinu kuumakse. Tootlus on eeldus, mitte lubadus.</li>
-        <li>„Jään ellu“: Statistikaamet LE205 (<span id="kuludMeta"></span>). „Optimaalne“ ja „Mugav“ lisavad sellele näidissummad. Hinnad ostukorvis on ligikaudsed.</li>
-        <li>Pensioniiga: 65 a (alates 2027 lisanduvad kuud ja alates 2029 seotakse pensioniiga oodatava elueaga). Arvutus on aastapõhine.</li>
-        <li>Maksud ja vanused: <a href="https://www.pensionikeskus.ee/ii-sammas/valjamaksed/valjamaksete-maksustamine/" target="_blank" rel="noopener">II samba väljamaksete maksustamine</a>, <a href="https://www.pensionikeskus.ee/iii-sammas/valjamaksed/" target="_blank" rel="noopener">III samba väljamaksed</a>, <a href="https://www.sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/paindlik-pension" target="_blank" rel="noopener">paindlik vanaduspension</a>.</li>
-        <li>Ellujäämine: Statistikaamet RV046, <span id="lifeYear"></span>. „Elu lõpuni“ on vanus, milleni jõuab elusalt 10% sinuvanustest.</li>
-      </ul>
     </footer>
   </main>
 
@@ -1743,8 +1735,6 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
   switchEl.addEventListener('input', () => { switchEl.value = switchEl.value.replace(/\D/g, ''); });
   switchEl.addEventListener('change', () => { switchEl.value = String(readInput().switchAge); update(); });
 
-  $('kuludMeta').textContent = 'uuring ' + K.uuringuaasta + ', hinnad ' + K.hinnad;
-  $('lifeYear').textContent = T.aasta;
   syncPensionAge();
   go(0, false);
 })();
