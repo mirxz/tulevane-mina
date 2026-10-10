@@ -190,6 +190,8 @@ fieldset:disabled .choice { cursor: not-allowed; }
 .cost-table .cost-input { width: 6.5rem; margin-left: auto; text-align: right; }
 .cost-input.is-edited { border-color: var(--blue); background: var(--blue-bg-1); font-weight: 700; }
 .pkg-edited { color: var(--blue) !important; }
+.household-note { display: flex; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border: 1px solid var(--blue-border-1); background: var(--blue-bg-1); border-radius: 0.75rem; color: var(--navy); }
+.hh-emoji { font-size: 1.75rem; line-height: 1; }
 
 </style>
 </head>
@@ -471,7 +473,8 @@ fieldset:disabled .choice { cursor: not-allowed; }
           <h2 id="h8" tabindex="-1">Mis elu sa pensionil elada tahad?</h2>
         </div>
       </div>
-      <p class="text-secondary">Vali pakett. Summad on tänastes eurodes ühe inimese kohta kuus. „Jään ellu“ on Statistikaameti andmed: nii palju pensionärid päriselt keskmiselt kulutavad.</p>
+      <div class="household-note mb-3" id="hhNote" aria-live="polite"></div>
+      <p class="text-secondary">Vali pakett. Summad on tänastes eurodes kuus. „Jään ellu“ on Statistikaameti andmed: nii palju pensionärid päriselt keskmiselt kulutavad.</p>
       <fieldset>
         <legend class="visually-hidden">Kulupakett</legend>
         <div class="packages" id="packages"></div>
@@ -1050,6 +1053,11 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       : 'Vahetad ' + input.switchAge + '-aastaselt. Seni (' + (input.switchAge - input.currentAge) + ' a) kasvab raha praeguses fondis (' + pct(FUNDS[input.fund18].r) + '), pärast seda uues fondis (' + pct(FUNDS[input.fundNow].r) + ').';
     $('workNote').innerHTML = 'Pensionieaks (' + pa + ') kasvab sinu sammaste vara umbes <strong>' + eur(pot) + '</strong>.' +
       (potIndex - pot > 1 ? ' Kui oleksid alates tänasest madala tasuga indeksfondis, oleks see umbes <strong>' + eur(potIndex) + '</strong> (' + eur(potIndex - pot) + ' rohkem).' : '');
+
+    // Kulud: leibkond
+    $('hhNote').innerHTML = input.household === 'paar'
+      ? '<span class="hh-emoji" aria-hidden="true">👫</span><span><strong>Elad pensionil paaris.</strong> Summad on sinu osa paari kuludest (ühe inimese kohta). Ühine kodu ja arved teevad elu inimese kohta odavamaks kui üksi. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda</button></span>'
+      : '<span class="hh-emoji" aria-hidden="true">🧍</span><span><strong>Elad pensionil üksi.</strong> Summad on üksi elava pensionäri kulud: kodu ja arved maksad ainult sina. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda</button></span>';
 
     // 55: III samba väljavõtt
     const soon = input.p3Age >= input.p3Open; // kas väljavõtu ajal kehtib soodusmaks
