@@ -3,7 +3,7 @@
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { plaan, lubatav } from "../public/plaan/mudel.js";
+import { plaan, lubatav, elusTn, EELDUSED } from "../public/plaan/mudel.js";
 const AXE = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
 const url = (process.argv[2] || "http://127.0.0.1:8787").replace(/\/$/, "");
 let failed = 0;
@@ -14,7 +14,10 @@ const b0 = { sunniaasta: 1968, sugu: "M", pension: 800, sammas: 40000, sast: 200
 const p0 = plaan(b0);
 check(p0.R === 66, "pensioniiga 1968 → 66");
 check(Math.round(p0.riikKuu) === 800, "riiklik pension õigel ajal 800 €");
-check(plaan({ ...b0, k: 3 }).riikKuu > 940, "3 a hiljem: +18,35%");
+check(Math.round(plaan({ ...b0, k: 3 }).riikKuu) === 1016, "3 a hiljem: +27,01% (SKA 2026)");
+check(Math.round(plaan({ ...b0, k: -1, W: 65 }).riikKuu) === 743, "1 a varem: −7,17% (SKA 2026)");
+check(EELDUSED.e65.M === 16.33 && EELDUSED.e65.N === 21.43, "elada jäänud aastad 65-aastaselt: Statistikaamet 2025");
+check(Math.abs(elusTn("M", 65, 81) - 0.51) < 0.01, "65-aastasest mehest elab 81-aastaseks ~51% (Statistikaamet RV046)");
 check(plaan({ ...b0, sugu: "N" }).turv > p0.turv, "naiste „elu lõpuni“ vanus on kõrgem");
 check(lubatav(b0) > lubatav({ ...b0, fond: "kallis" }), "kallis fond vähendab lubatavat kulu");
 check(plaan({ ...b0, vajadus: lubatav(b0) }).katab && !plaan({ ...b0, vajadus: lubatav(b0) + 200 }).katab, "lubatav kulu on katmise piir");
@@ -57,7 +60,7 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   check((await page.textContent(".vd")).includes("Ära koonerda"), "väike vajadus → ära koonerda");
   // pensioni edasilükkamine
   await page.click("[data-act=kmuuda][data-v='1']"); await page.click("[data-act=kmuuda][data-v='1']"); await page.click("[data-act=kmuuda][data-v='1']");
-  check((await page.textContent(".step")).includes("69-aastaselt") && (await page.textContent(".step")).includes("+18,4%"), "pensioni edasilükkamine: 69 a, +18,4%");
+  check((await page.textContent(".step")).includes("69-aastaselt") && (await page.textContent(".step")).includes("+27%"), "pensioni edasilükkamine: 69 a, +27%");
   await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']"); await page.click("[data-act=kmuuda][data-v='-1']");
   // vahekaartide vahel liikumine
   await page.click("#tab-kaar");
