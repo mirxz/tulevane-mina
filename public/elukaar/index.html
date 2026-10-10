@@ -582,7 +582,7 @@ main.container { padding-bottom: 1rem; }
           <label class="choice"><input type="radio" name="p3paPa" value="grow" checked>
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi</strong><small>Raha jääb fondi. Võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="p3paPa" value="fund">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Täiendav fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
           <label class="choice"><input type="radio" name="p3paPa" value="lump">
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>Ühekordne väljamakse, 10% tulumaks. Raha on hoiusel.</small></span></label>
         </div>
@@ -1532,7 +1532,7 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
       [5, '🧳', 'II sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan korraga välja', fund: 'fondipension' }[input.payout] +
         (input.p3Has && input.p3Plan === 'keep' ? '. III sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan pensionieas korraga välja', fund: 'täiendav fondipension' }[input.p3At60] : '')],
       [6, '🏛️', (input.payout === 'grow' ? 'Pensionieas II sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'fondipension' }[input.method] + '. ' : '') +
-        (input.p3Has && input.p3Plan === 'keep' && input.p3At60 === 'grow' ? 'III sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'täiendav fondipension' }[input.p3pa] + '. ' : '') + (!input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)')],
+        (input.p3Has && input.p3Plan === 'keep' && input.p3At60 === 'grow' ? 'III sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'fondipension' }[input.p3pa] + '. ' : '') + (!input.deferral ? 'Riiklik pension ' + pa + '-aastaselt' : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)')],
       [7, '🌳', scenario.id + '. ' + scenario.name],
       [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
