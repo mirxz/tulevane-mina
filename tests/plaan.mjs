@@ -3,7 +3,7 @@
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { plaan, lubatav, elusTn, EELDUSED } from "../public/plaan/mudel.js";
+import { plaan, lubatav, elusTn, EELDUSED } from "../public/arhiiv/plaan/mudel.js";
 const AXE = readFileSync(createRequire(import.meta.url).resolve("axe-core/axe.min.js"), "utf8");
 const url = (process.argv[2] || "http://127.0.0.1:8787").replace(/\/$/, "");
 let failed = 0;
@@ -39,7 +39,7 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("request", (r) => { if (r.url().endsWith("/api/p")) posts.push(JSON.parse(r.postData() || "{}")); });
   page.on("response", (r) => { if (new URL(r.url()).origin === url && r.status() >= 400) errors.push(r.status() + " " + r.url()); });
-  await page.goto(url + "/?vaade=" + vaade);
+  await page.goto(url + "/arhiiv/plaan/?vaade=" + vaade);
   await page.waitForSelector("[data-act=alusta]");
   check((await page.textContent("h1")).includes("elu lõpuni"), "avaleht: JTBD küsimus");
   check(await page.locator("[data-in=vajadus]").count() === 1 && await page.locator("[data-in=sammas]").isHidden(), "avalehel vähe välju, sambad on kokku volditud");
@@ -119,7 +119,7 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   const page = await ctx.newPage();
   const posts = [];
   page.on("request", (r) => { if (r.url().endsWith("/api/p")) posts.push(JSON.parse(r.postData() || "{}")); });
-  await page.goto(url + "/?vaade=kalk&k=FB!");
+  await page.goto(url + "/arhiiv/plaan/?vaade=kalk&k=FB!");
   await page.waitForSelector("[data-act=alusta]");
   await page.click("[data-act=alusta]"); await page.waitForSelector("[role=tablist]");
   await page.click("[data-act=katab][data-v=jah]"); await page.click("[data-act=kindlus][data-v='3']"); await page.click("[data-act=hirm][data-v=molemad]");
@@ -129,15 +129,23 @@ for (const vaade of ["kalk", "kaar", "korv"]) {
   check(posts.length >= 2 && posts.every((p) => p.alk === "fb"), "allikas „fb“ (puhastatud) läheb kaasa igale sündmusele");
   check(posts.some((p) => p.ev === "share"), "jagamine registreeritakse");
   const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ""));
-  check(clip.includes("/?k=jagatud") && !/\d{4,}/.test(clip.replace(/https?:\/\/\S+/, "")), "jagatav link kannab märget ja ei sisalda isikuandmeid");
+  check(clip.includes("/arhiiv/plaan/?k=jagatud") && !/\d{4,}/.test(clip.replace(/https?:\/\/\S+/, "")), "jagatav link kannab märget ja ei sisalda isikuandmeid");
   await ctx.close();
 }
 // arhiiv ja lauamäng jäävad alles, aga avalehelt neile linki pole
 {
   const page = await browser.newPage();
-  await page.goto(url + "/");
+  const r0 = await page.goto(url + "/");
   const html = await page.content();
-  check(!html.includes("/arhiiv/") && !html.includes("/mang"), "avalehel pole viiteid vanadele mängudele");
+  check(r0.status() === 200 && html.includes("Tulevane Mina") && !html.includes("/mang"), "avaleht (Kadi leht) avaneb ja ei viita lauamängule");
+  const ra = await page.goto(url + "/arhiiv/"); check(ra.status() === 200 && (await page.content()).includes("Arhiiv"), "arhiivi sisukord avaneb");
+  const rp = await page.goto(url + "/arhiiv/plaan/"); check(rp.status() === 200 && (await page.content()).includes("plaan.css"), "arhiiv: plaan alles");
+  const rd = await fetch(url + "/ratas/?k=a5", { redirect: "manual" });
+  check(rd.status === 302 && new URL(rd.headers.get("location")).pathname === "/arhiiv/ratas/" && rd.headers.get("location").endsWith("?k=a5"), "vana /ratas/?k=a5 (QR) suunab arhiivi, päring säilib");
+  for (const [vana, uus] of [["/kalkulaator/", "/arhiiv/kalkulaator/"], ["/plaan/", "/arhiiv/plaan/"], ["/elukaar/", "/"]]) {
+    const r = await fetch(url + vana, { redirect: "manual" });
+    check(r.status === 302 && new URL(r.headers.get("location")).pathname === uus, "vana " + vana + " suunab → " + uus);
+  }
   const r1 = await page.goto(url + "/arhiiv/kasiino.html"); check(r1.status() === 200 && (await page.content()).includes("Millal pensionile minna"), "arhiiv: kasiino alles");
   const r2 = await page.goto(url + "/arhiiv/lauamang/"); check(r2.status() === 200 && (await page.content()).includes("app.js"), "arhiiv: lauamäng alles");
   const r3 = await page.goto(url + "/mang?tuba=ABCDE"); check(r3.status() === 410 && page.url().includes("/mang") && (await page.content()).includes("Seda prototüüpi enam pole"), "vana /mang annab veateate, mitte ei suuna");

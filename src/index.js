@@ -19,6 +19,9 @@ export default {
     if (!isResults) { const gate = protoGate(request, env, url); if (gate) return gate; }
     // Lauamäng kolis arhiivi (9.10). Vana aadress (ka prinditud QR-kood) annab teadlikult veateate, mitte ei suuna edasi.
     if (url.pathname === "/mang" || url.pathname.startsWith("/mang/")) return gone();
+    // Vanad aadressid kolisid 10.10 arhiivi (avalehele tuli Kadi uus leht). Ka prinditud QR-koodid (/ratas/?k=a5) jäävad tööle, päring säilib.
+    const kolis = arhiiviAadress(url);
+    if (kolis) return Response.redirect(url.origin + kolis + url.search, 302);
     if (url.pathname === "/api/tts") return tts(request, url);
     if (url.pathname === "/api/s") return collect(request, env, url);
     if (url.pathname === "/api/p") return collectPlaan(request, env, url);
@@ -29,6 +32,16 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+// Vana aadress → uus aadress arhiivis (null, kui aadress pole kolinud).
+function arhiiviAadress(url) {
+  const p = url.pathname;
+  if (p === "/elukaar" || p === "/elukaar/") return "/";
+  for (const nimi of ["ratas", "kalkulaator", "plaan"]) {
+    if (p === "/" + nimi || p.startsWith("/" + nimi + "/")) return "/arhiiv" + p;
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Prototüübi parool (HTTP Basic auth, kasutajanimi ükskõik mis). Tagastab vastuse, kui ligipääs pole lubatud.
@@ -330,7 +343,7 @@ async function plaanTulemused(env, url, all) {
 }
 
 // ---------------------------------------------------------------------------
-// Õnneratas (/ratas/): seitse küsimust, esimene keerutus määrab järjekorra. Vastused anonüümsed (sid on ainult seansi juhuslik tunnus).
+// Õnneratas (/arhiiv/ratas/): seitse küsimust, esimene keerutus määrab järjekorra. Vastused anonüümsed (sid on ainult seansi juhuslik tunnus).
 // E-post läheb eraldi tabelisse ilma sid-ita, et seda ei saaks vastustega siduda.
 const R_EV = new Set(["spin", "answer", "done", "email"]);
 const R_VALIK = new Set(["tean", "umbes", "eitea"]);
@@ -407,7 +420,7 @@ async function ratasTulemused(env, url, all) {
   const klN = Object.fromEntries(kl.map((r) => [r.k, r.n]));
   const kt = "<table><tr><th>Kanal (?k=…)</th><th>Keeras</th><th>Lõpetas</th></tr>" + (kanalid.map((r) => "<tr><th>" + esc(r.k) + "</th><td>" + r.n + "</td><td>" + (klN[r.k] || 0) + "</td></tr>").join("") || "<tr><td colspan=3>Veel pole.</td></tr>") + "</table>";
   const tx = S.flatMap((s) => s.tekstid.slice(-15).map((v) => "<li><span>" + s.nimi + " · " + ({ tean: "tean", umbes: "umbes", eitea: "ei tea" }[v.valik]) + "</span> " + esc(v.tekst) + "</li>")).join("");
-  return `<section><h2>Õnneratas (/ratas/)</h2><p style="font-size:28px;line-height:36px;margin:0"><b>${lopetas}</b> lõpetanud · ${alustas} keerutanud · ${meile} e-posti</p><p class="small">E-postid: <a href="/tulemused-meilid.csv">laadi CSV</a> (ei ole vastustega seotud). Väike valim, loe hüpoteesina.</p></section><section><h2>Ratas: kus „ei tea“</h2><div class="wrap">${t}</div></section><section><h2>Ratas: kui kaugele jõuti</h2><p class="small">Kui palju vastajaid vastas küsimusele nr N (järjekord on igaühel erinev).</p><div class="wrap">${t2}</div></section><section><h2>Ratas: kanalid</h2><p class="small">Esimese küsimuse jaotus: ${R_NIMED.map((n, i) => n + " " + (esN[i] || 0)).join(", ")}.</p><div class="wrap">${kt}</div></section><section><h2>Ratas: vabatekst (mis jäi katmata)</h2><ul>${tx || "<li>Veel pole.</li>"}</ul></section>`;
+  return `<section><h2>Õnneratas (/arhiiv/ratas/)</h2><p style="font-size:28px;line-height:36px;margin:0"><b>${lopetas}</b> lõpetanud · ${alustas} keerutanud · ${meile} e-posti</p><p class="small">E-postid: <a href="/tulemused-meilid.csv">laadi CSV</a> (ei ole vastustega seotud). Väike valim, loe hüpoteesina.</p></section><section><h2>Ratas: kus „ei tea“</h2><div class="wrap">${t}</div></section><section><h2>Ratas: kui kaugele jõuti</h2><p class="small">Kui palju vastajaid vastas küsimusele nr N (järjekord on igaühel erinev).</p><div class="wrap">${t2}</div></section><section><h2>Ratas: kanalid</h2><p class="small">Esimese küsimuse jaotus: ${R_NIMED.map((n, i) => n + " " + (esN[i] || 0)).join(", ")}.</p><div class="wrap">${kt}</div></section><section><h2>Ratas: vabatekst (mis jäi katmata)</h2><ul>${tx || "<li>Veel pole.</li>"}</ul></section>`;
 }
 
 function gone() {

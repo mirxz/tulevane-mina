@@ -1,10 +1,10 @@
 // Kalkulaatori mootor: Meelise testid (tuleva-tulevik/tests/pension.test.js) ESM-kujul, pluss meie lisatud sisendid.
 // Kasutus: node tests/kalkulaator-mootor.mjs
 import assert from "node:assert";
-import * as P from "../public/kalkulaator/mootor.js";
-import { ELUTABEL as table } from "../public/kalkulaator/andmed/elutabel.js";
-import { riiklikPension, koefitsiendid, vaikimisiStaaz, vaikimisiVarasemKoef } from "../public/kalkulaator/riiklik.js";
-import { KULUD_KAT, ALGUSPUNKTID, varaKohtTurul, TULEVA_FAKTID, kuludKokku } from "../public/kalkulaator/andmed/kihid.js";
+import * as P from "../public/arhiiv/kalkulaator/mootor.js";
+import { ELUTABEL as table } from "../public/arhiiv/kalkulaator/andmed/elutabel.js";
+import { riiklikPension, koefitsiendid, vaikimisiStaaz, vaikimisiVarasemKoef } from "../public/arhiiv/kalkulaator/riiklik.js";
+import { KULUD_KAT, ALGUSPUNKTID, varaKohtTurul, TULEVA_FAKTID, kuludKokku } from "../public/arhiiv/kalkulaator/andmed/kihid.js";
 const base = { birthYear: 1966, sex: 'N', p1Monthly: 900, p2: 30000, p3: 20000, p3Before2021: true, needMonthly: 1200, realReturn: 0.02 };
 const [A, B, C, D] = P.SCENARIOS;
 const Cx = { ...C, deferral: 2 };

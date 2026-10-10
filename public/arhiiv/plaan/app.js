@@ -429,7 +429,7 @@ const H = {
     ui.saadetud = true; render(); document.getElementById("h-ai")?.scrollIntoView({ block: "center" }); say("Aitäh, vastus saadetud.");
   },
   jaga: async () => {
-    const url = location.origin + "/?k=jagatud";
+    const url = location.origin + "/arhiiv/plaan/?k=jagatud";
     const text = "Kas sinu pensioniplaan katab vajaduse elu lõpuni? Proovi 2-minutilist häkatoni prototüüpi (ei küsi nime ega e-posti):";
     const teade = (t) => { const el = document.getElementById("jaga-teade"); if (el) el.textContent = t; say(t); };
     track("share");

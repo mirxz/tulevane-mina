@@ -161,7 +161,7 @@ async function meil(e) {
 }
 
 async function jaga() {
-  const url = location.origin + "/ratas/?k=jagatud", data = { title: "Mis elu sa võidad?", text: "Keeruta pensioniratast. Seitse küsimust, kaks minutit.", url };
+  const url = location.origin + "/arhiiv/ratas/?k=jagatud", data = { title: "Mis elu sa võidad?", text: "Keeruta pensioniratast. Seitse küsimust, kaks minutit.", url };
   try { if (navigator.share) { await navigator.share(data); return; } } catch { return; }
   try { await navigator.clipboard.writeText(url); say("Link kopeeritud"); $app.querySelector("#jaga").textContent = "Link kopeeritud"; } catch { prompt("Kopeeri link", url); }
 }

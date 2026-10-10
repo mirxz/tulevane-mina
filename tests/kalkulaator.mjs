@@ -22,7 +22,7 @@ for (const [label, viewport] of [["mobiil 375 px", { width: 375, height: 800 }],
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("response", (r) => { if (new URL(r.url()).origin === url && r.status() >= 400) errors.push(r.status() + " " + r.url()); });
-  const resp = await page.goto(url + "/kalkulaator/");
+  const resp = await page.goto(url + "/arhiiv/kalkulaator/");
   check(resp.status() === 200, "leht avaneb");
   await page.waitForSelector("#answer strong");
   check((await page.textContent("h1")).includes("jätkub elu lõpuni"), "pealkiri");

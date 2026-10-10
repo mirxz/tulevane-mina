@@ -11,6 +11,12 @@ Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index
 | Toodang (žürii, testijad) | https://mina.tulevane.workers.dev | haru `main` |
 | Eelvaade | `https://<haru>-mina.tulevane.workers.dev` | iga teine haru |
 
+### Saidi ülesehitus (10.10)
+
+- `/` on Kadi leht (`public/index.html`, endine haru `kadi-branch`, varem `/elukaar/`).
+- `/arhiiv/` on varasemate prototüüpide sisukord: `/arhiiv/kalkulaator/`, `/arhiiv/plaan/`, `/arhiiv/ratas/`, `/arhiiv/kasiino.html`, `/arhiiv/lauamang/`.
+- Vanad aadressid `/kalkulaator/`, `/plaan/`, `/ratas/` (ka prinditud QR `/ratas/?k=a5`) ja `/elukaar/` suunavad Workeris (`arhiiviAadress` failis `src/index.js`) uuele aadressile, päring säilib.
+
 ## Töövoog
 
 1. **Otsus.** Mida muudame, on kirjas [otsuste logis](https://claude.ai/code/artifact/db97d812-22e1-4c5c-a076-89b7571d2a54). Ilma otsuseta toodangusse ei liigu midagi.
