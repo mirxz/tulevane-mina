@@ -887,8 +887,8 @@ window.KULUD = {"allikas": "Statistikaamet LE205 (leibkonnaliikme kulutused leib
           saved = -gap; deposit += saved;
         }
       }
-      fund *= 1 + r;
-      fund3 *= 1 + r;
+      // Kasv enne pensioniiga on kogumisfaasis juba arvestatud; siin kasvab vara ainult pensionieast alates (muidu kasvaks see kaks korda).
+      if (age >= pa) { fund *= 1 + r; fund3 *= 1 + r; }
       const income = i1 + sched + extraNet + sched3 + extra3;
       const spend = income + fromDeposit - saved;
       rows.push({
