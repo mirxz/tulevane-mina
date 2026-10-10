@@ -47,6 +47,7 @@ const KORV = [
 const ui = {
   ekraan: "algus", vaade: LOOS.vaade, nahtud: [], kindlusEnne: null, k: 0, W: null, viis: "fondipension",
   s: { sunniaasta: 1968, sugu: "M", pension: 800, sammas: 40000, sast: 20000, sissemakse: 150, fond: "indeks", vajadus: 1200 },
+  iii: "enne", // III sambaga liitumine: enne 2021 | parast | pole (otsuste kaardi jaoks, mudelit ei mõjuta)
   lisa: new Set(), toit: {}, fb: {}, saadetud: false, viga: "", ava: false, lugu: 0, mang: true,
 };
 const lisaSumma = () => KORV.filter((i) => ui.lisa.has(i.id)).reduce((a, i) => a + i.hind, 0);
@@ -154,7 +155,25 @@ function plaanEkraan() {
   ${verdict(p, vaj)}${samm(p)}
   <section aria-labelledby="h-v"><h2 id="h-v" class="sr">Vaata sama plaani kolmel viisil</h2><p class="small" style="margin:0 0 8px">Sama plaan kolmel viisil. Vaheta vahekaarti, et näha seda teisiti.</p>${tabs}
   <div id="panel" role="tabpanel" aria-labelledby="tab-${v}" class="panel">${body}</div></section>
-  ${veel(p)}${eeldused()}${ui.saadetud ? aitah() : tagasiside(p)}`;
+  ${otsused(p)}${veel(p)}${eeldused()}${ui.saadetud ? aitah() : tagasiside(p)}`;
+}
+
+// ---------- otsuste kaart: millised otsused on ees ja millal need sinu jaoks avanevad ----------
+const pct1 = (x) => (x > 0 ? "+" : "−") + proc(x);
+function otsused(p) {
+  const a = ui.s.sunniaasta, aasta = (v) => a + v;
+  const iii = ui.iii === "pole" ? null : ui.iii === "enne" ? 55 : 60;
+  const read = [];
+  if (iii) read.push([iii, "III sammas 10% tulumaksuga", `Regulaarne pikk väljamakse on maksuvaba, ühekordne 10%, kui kogumisest on vähemalt 5 aastat. ${iii === 55 ? "55-aastaselt, sest alustasid enne 2021." : "60-aastaselt, sest alustasid 2021 või hiljem."}`]);
+  read.push([60, "II sammas ja varasem riiklik pension", `II sammas: ühekordne 10%, maksuvaba fondipension. Väljamaksete alustamisel lõpevad II samba sissemaksed igaveseks. Riiklikku pensioni saab võtta kuni 5 aastat varem: ${pct1(COEF["-1"])} (1 a) kuni ${pct1(COEF["-5"])} (5 a) eluks ajaks.`]);
+  read.push([p.R, "Riiklik pension täissummas", "Pensioniiga arvutatakse igal aastal uuesti Statistikaameti eluea järgi, seega see on ligikaudne."]);
+  read.push([p.R + 1, "Riikliku pensioni edasilükkamine", `Iga aasta tõstab pensioni eluks ajaks: ${pct1(COEF["1"])} (1 a) kuni ${pct1(COEF["5"])} (5 a), SKA 2026 keskmised.`]);
+  read.push([Math.max(p.W, 60), "Fondipensioni leping: üks kord või igal aastal uuesti", "Ühe lepinguga lõpeb väljamakse perioodi lõpus. Kui sõlmid lepingu igal aastal uuesti vähemalt maksuvaba perioodiga, jääb see maksuvabaks ega jõua nulli, aga väga kõrges eas on kuumakse väiksem. Selle plaani „igakuiselt“ eeldab iga-aastast uuendamist."]);
+  read.sort((x, y) => x[0] - y[0]);
+  return `<section class="card" aria-labelledby="h-ots"><h2 id="h-ots" style="font-size:18px;line-height:26px">Sinu otsuste kaart</h2>
+  <div class="f"><span>III sambaga liitusid</span>${seg("iii", [["enne", "Enne 2021"], ["parast", "2021 või hiljem"], ["pole", "Pole"]], ui.iii, "III sambaga liitumine")}</div>
+  <ol class="ots">${read.map(([v, t, x]) => `<li><b>${v}-aastaselt · ${aasta(v)}${v < p.vanus ? " · avanenud" : ""}</b><span>${esc(t)}</span><span class="small">${esc(x)}</span></li>`).join("")}</ol>
+  <p class="small">Otsuse saad jõustada: <a href="https://pension.tuleva.ee/withdrawals" target="_blank" rel="noopener">II ja III samba avaldus</a>, <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/" target="_blank" rel="noopener">riiklik pension (SKA)</a>, <a href="https://www.pensionikeskus.ee/kalkulaatorid/kindlustusseltside-ii-samba-valjamakse-kalkulaator/" target="_blank" rel="noopener">kindlustusseltside pakkumised</a>.</p></section>`;
 }
 
 function kalk(p, vaj) {
@@ -336,9 +355,9 @@ function korv(p, vaj) {
 
 function eeldused() {
   return `<details class="det card"><summary>Mida mudel eeldab</summary><ul class="small" style="margin:8px 0 0;padding-left:18px">
-  <li>Kõik summad on tänases rahas.</li><li>Eluiga: Eurostati 2023 keskmine (mees 15,9, naine 21,1 aastat 65-aastaselt), sinu tervist ei arvestata.</li>
+  <li>Kõik summad on tänases rahas.</li><li>Eluiga: Statistikaameti ${EELDUSED.elutabeliAasta}. aasta elutabel (RV045, RV046), 65-aastaselt elada jäänud mehel ${String(EELDUSED.e65.M).replace(".", ",")} ja naisel ${String(EELDUSED.e65.N).replace(".", ",")} aastat. Sinu tervist ei arvestata.</li>
   <li>Fondi reaaltootlus pärast tasu: indeks ${(EELDUSED.fond.indeks * 100).toFixed(1).replace(".", ",")}%, kallis fond ${(EELDUSED.fond.kallis * 100).toFixed(1).replace(".", ",")}% aastas, igal aastal sama.</li>
-  <li>Riiklik pension kasvab ${(EELDUSED.pensionKasv * 100).toFixed(1).replace(".", ",")}% aastas üle inflatsiooni. Paindliku pensioni kordajad: Sotsiaalkindlustusamet.</li>
+  <li>Riiklik pension kasvab ${(EELDUSED.pensionKasv * 100).toFixed(1).replace(".", ",")}% aastas üle inflatsiooni. Paindliku pensioni kordajad: Sotsiaalkindlustusameti 2026 keskmised.</li>
   <li>„Elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest. Pensioniiga on ligikaudne.</li>
   <li>See on häkatoni prototüüp, mitte investeerimisnõu ega Tuleva ametlik teenus.</li></ul></details>`;
 }
@@ -367,6 +386,7 @@ const H = {
   fond: (v) => { ui.s.fond = v; render(); },
   enne: (v) => { ui.kindlusEnne = Number(v); render(); },
   viis: (v) => { ui.viis = v; render(); },
+  iii: (v) => { ui.iii = v; render(); },
   alusta: () => {
     ui.viga = ""; const a = ui.s.sunniaasta;
     if (!(a >= 1941 && a <= 1996)) { ui.viga = "Sünniaasta peab olema vahemikus 1941–1996."; render(); return; }
