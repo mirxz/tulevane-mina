@@ -1,30 +1,35 @@
 // Tulevane Mina – pensioniplaani mudel (häkatoni prototüüp 9.10).
 // Kõik summad on tänases rahas (reaalväärtus). Sisendid on ainult prototüübi baasandmed; terviseandmeid ei küsita.
 // Eeldused on illustratiivsed ja nähtaval (EELDUSED). See ei ole investeerimisnõu.
+import { ELUTABEL } from "./elutabel.js";
 
 export const EELDUSED = {
-  e65: { M: 15.9, N: 21.1 },          // eeldatav eluiga 65-aastaselt, Eurostat 2023 (sama kalibreering mis varasemas prototüübis)
-  gompertz: 0.1,                       // suremuse kasvu kalle aastas
+  e65: { M: ELUTABEL.elada_jaanud.M[65], N: ELUTABEL.elada_jaanud.N[65] }, // elada jäänud aastad 65-aastaselt, Statistikaamet RV045
+  elutabeliAasta: ELUTABEL.aasta,      // Statistikaameti elutabel (RV045, RV046), uuendus: python3 scripts/elutabel.py
   fond: { indeks: 0.041, kallis: 0.034 }, // reaaltootlus pärast tasu: indeks 7,5% – inflatsioon 3% – tasu 0,3% / 1,0%
   pensionKasv: 0.015,                  // riikliku pensioni reaalkasv aastas (indekseerimine)
   ykskorraMaks: 0.10,                  // sammaste ühekordse väljamakse tulumaks
   sast: 0.0,                           // muude säästude reaaltootlus (hoius ≈ inflatsioon)
   turvaline: 0.10,                     // „elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest
 };
-// Paindliku pensioni kordajad (Sotsiaalkindlustusamet), aastat varem (−) või hiljem (+).
-export const COEF = { "-5": -0.2298, "-4": -0.1889, "-3": -0.146, "-2": -0.1004, "-1": -0.0514, "0": 0, "1": 0.0557, "2": 0.1167, "3": 0.1835, "4": 0.257, "5": 0.3368 };
+// Paindliku pensioni kordajad, aastat varem (−) või hiljem (+): Sotsiaalkindlustusameti 2026 keskmised.
+// https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/paindlik-pension (uueneb igal 1. jaanuaril)
+export const COEF = { "-5": -0.3067, "-4": -0.255, "-3": -0.1988, "-2": -0.1378, "-1": -0.0717, "0": 0, "1": 0.0793, "2": 0.1688, "3": 0.2701, "4": 0.385, "5": 0.5157 };
 export const MAX = 105;
 
 export function pensioniiga(sunniaasta) { return Math.round(65 + Math.max(0, sunniaasta - 1962) * 1.5 / 12); }
 
-const A = {};
-function cumH(a, x) { return a / EELDUSED.gompertz * (Math.exp(EELDUSED.gompertz * (x - 65)) - 1); }
-function e65(a) { let s = 0; const dt = 0.05; for (let t = 0; t < 50; t += dt) s += Math.exp(-cumH(a, 65 + t + dt / 2)) * dt; return s; }
-for (const sx of ["M", "N"]) { let lo = 1e-4, hi = 0.5; for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (e65(m) > EELDUSED.e65[sx]) lo = m; else hi = m; } A[sx] = (lo + hi) / 2; }
-export const ellu = (sugu, x) => Math.exp(-cumH(A[sugu], x)); // ellujäämine 65-st (suhteline)
-export function elusTn(sugu, alates, x) { return ellu(sugu, x) / ellu(sugu, alates); }
-const JE = {};
-export function jaakEluiga(sugu, x) { const key = sugu + x; if (JE[key] !== undefined) return JE[key]; let s = 0; const dt = 0.1; for (let t = 0; t < MAX + 10 - x; t += dt) s += elusTn(sugu, x, x + t + dt / 2) * dt; return (JE[key] = s); }
+// Ellujäämine ja elada jäänud aastad: Statistikaameti elutabel (soo ja täisvanuse järgi, vahepeal lineaarselt).
+// Üle 100 aasta tabel puudub: ellujääjad ja elada jäänud aastad lähenevad lineaarselt nullile MAX vanuseks.
+function tabel(rida, x) {
+  if (x >= MAX) return 0;
+  if (x > 100) return rida[100] * (MAX - x) / (MAX - 100);
+  const a = Math.max(0, Math.floor(x)), b = Math.min(100, a + 1), t = x - a;
+  return rida[a] + (rida[b] - rida[a]) * t;
+}
+export const ellu = (sugu, x) => tabel(ELUTABEL.ellujaajad[sugu], x) / ELUTABEL.ellujaajad[sugu][0]; // ellujäämine sünnist
+export function elusTn(sugu, alates, x) { const b = ellu(sugu, alates); return b > 0 ? ellu(sugu, x) / b : 0; }
+export function jaakEluiga(sugu, x) { return Math.max(0.5, tabel(ELUTABEL.elada_jaanud[sugu], Math.min(x, MAX - 0.5))); }
 export function turvalineVanus(sugu, alates) { for (let x = alates; x < MAX; x += 0.25) if (elusTn(sugu, alates, x) <= EELDUSED.turvaline) return Math.round(x); return MAX; }
 export function keskmineVanus(sugu, alates) { return alates + jaakEluiga(sugu, alates); }
 
