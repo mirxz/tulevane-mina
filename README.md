@@ -33,7 +33,7 @@ Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index
 
 - `main` muutub ainult pull requesti kaudu: roheline suitsutest + keegi on eelvaate telefonis läbi mänginud.
 - Mäng on üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts. Server teeb ainult `/api/tts`.
-- Ei mingit analüütikat, küpsiseid ega andmete saatmist. Kui tahame mõõta, otsustame selle enne logis.
+- Ei analüütikateeke ega küpsiseid. Mõõdame ainult anonüümselt ja minimaalselt, vt [ANALUUTIKA.md](ANALUUTIKA.md); mõõtmise muutmine käib selle põhimõtete järgi.
 - Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda ka testi oodatud väärtust (`tests/smoke.mjs`) ja allikaviidet lehe jaluses.
 - Tuleva logo avalikul lehel ei kasuta. Silt „prototüüp“ ja lahtiütlus jäävad alles.
 - **Külmutus:** viimased 60 minutit enne lõppesitlust `main`-i ei muudeta. Esitlus tehakse versioonist, mis on märgitud git-sildiga `pitch`.
@@ -90,6 +90,8 @@ Otsus otsuste logis 7.10. Eesmärk: valida testijate põhjal, milline mäng häk
 - **Ei salvestata:** IP-aadressi, sünniaastat, pensioni, sambavara, tervisevalikuid.
 - **Peamine mõõdik:** osa vastajatest, kes vastas arusaamise küsimusele õigesti **ja** valis mõne tegevuse (mitte „ei midagi“).
 - **Tulemused:** `/tulemused` (parool = Cloudflare secret `TULEMUSED_VOTI`, kasutajanimi ükskõik mis), `/tulemused.csv`. Vaikimisi ainult selle aadressi vastused; eelvaated lingiga „Näita ka eelvaateid“.
+- **Avalehe ja elukaare mõõtmine (11.10):** `public/mootmine.js` saadab `/api/e` kaudu sündmused `maandumine`, `edasi` (valitud eelprofiil), `elukaar`, `samm` (sammu number), `klikk` (valiku või nupu nimi, nt `r:payout=fund`, mitte sisestatud summa) ja `tagasiside`. Serveris ei hoita sündmuste logi: seansi kohta on **üks kokkuvõtterida** (`mina_seansid`: kanal, eelprofiil, esimese ja viimase tegevuse aeg, kaugeim samm, klikkide arv, lipud) ja vaated/klikid on **tunnipõhised loendurid ilma seansita** (`mina_loendur`). Kanal tuleb lingi `?k=…` väärtusest, seansi tunnus on sessionStorage'is (ilma küpsise ja IP-ta); „Ära jälgi“ lülitab välja; robotid jäetakse välja. Aeg salvestatakse UTC-s, tulemuste leht näitab kõiki kellaaegu ja tunnijaotusi Tallinna aja järgi (`src/aeg.js`). Vaated: `src/moot.js` (kutsete konversioon, funnel kanali kaupa, maandumine, eelprofiilid, elukaare sammud ja klikid, elukaare seansi keskmine ja mediaan pikkus, tagasiside allika ja kellaaja järgi). Seansi pikkus on esimesest viimase tegevuseni; lahkumist ei mõõda, seega on see alt hinnang.
+- **Analüütika põhimõtted ([ANALUUTIKA.md](ANALUUTIKA.md)), mida testid kaitsevad:** (1) kliendi sisestatud muutujaid ei salvestata kunagi, (2) tagasisidet ei seostata e-posti ega muu isikuandmega, (3) üldine statistika on minimaalne ja anonüümne (ühe kasutaja liikumist ei jälgita). Põhimõtet muutes muuda ANALUUTIKA.md ja test koos.
 - **Andmebaas:** Cloudflare D1 `mina-tagasiside` (binding `DB`, nii toodangus kui eelvaadetes). Tabelid `sundmused` ja `vastused` luuakse esimesel päringul.
 - Kohalikus testis loob `wrangler dev` kohaliku D1; tulemuste lehe jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (fail on gitignore'is).
 

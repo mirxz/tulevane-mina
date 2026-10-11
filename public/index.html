@@ -69,6 +69,7 @@ p.hint { margin: 0 0 16px; color: var(--text-secondary); }
 .p-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: var(--note-bg); border: 1px solid var(--note-border); color: var(--text-primary); font-size: 0.75rem; font-weight: 500; vertical-align: middle; }
 .p-go { margin-top: auto; padding-top: 6px; color: var(--link); font-weight: 500; }
 .skip { position: absolute; left: -999px; } .skip:focus { left: 8px; top: 8px; background: var(--page-bg); padding: 8px; z-index: 5; }
+  .small-privacy { margin: 8px 0 0; color: var(--text-secondary); font-size: 0.875rem; }
   </style>
 </head>
 <body>
@@ -101,13 +102,25 @@ p.hint { margin: 0 0 16px; color: var(--text-secondary); }
       </ul>
     </section>
 
+    <p class="small-privacy"><strong>Sinu sisestatud andmed ei lahku sinu brauserist.</strong> Loeme ainult anonüümselt, kui palju inimesi kuhu jõuab, ilma küpsiste ja IP-ta. <a href="/privaatsus/">Täpsemalt</a></p>
   </main>
+  <script src="/mootmine.js?v=20261011a"></script>
   <script>
     // Kanali tunnus (?k=fb jne) kantakse kaartide linkidega edasi elukaarele ja sealt tagasisidele.
     (function () {
       var k = (new URLSearchParams(location.search).get('k') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 16);
-      if (!k) return;
-      document.querySelectorAll('a[href^="/elukaar/"]').forEach(function (a) { var h = a.getAttribute('href'); a.setAttribute('href', h + (h.indexOf('?') < 0 ? '?' : '&') + 'k=' + k); });
+      if (k) document.querySelectorAll('a[href^="/elukaar/"]').forEach(function (a) { var h = a.getAttribute('href'); a.setAttribute('href', h + (h.indexOf('?') < 0 ? '?' : '&') + 'k=' + k); });
+    })();
+    // Mõõtmine: avaleht avati ja milline eelprofiil valiti (kuvatakse tulemuste lehel).
+    (function () {
+      if (!window.minaMoot) return;
+      window.minaMoot('maandumine');
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[href^="/elukaar/"]');
+        if (!a) return;
+        var m = /[?&]p=([a-z-]+)/.exec(a.getAttribute('href'));
+        window.minaMoot('edasi', { p: m ? m[1] : '' });
+      });
     })();
   </script>
 </body>

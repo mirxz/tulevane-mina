@@ -151,6 +151,7 @@ textarea:focus-visible, input[type=number]:focus-visible, button:focus-visible {
       <p><a class="btn" href="/">Tagasi algusesse</a></p>
     </section>
   </main>
+  <script src="/mootmine.js?v=20261011a"></script>
   <script>
     (function () {
       var qs = new URLSearchParams(location.search);
@@ -159,7 +160,11 @@ textarea:focus-visible, input[type=number]:focus-visible, button:focus-visible {
       var ss = function (k) { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } };
       var algpunkt0 = ss("mina_p0").replace(/[^a-z-]/g, "").slice(0, 20), vahetusi = Number(ss("mina_vahetusi")) || 0, muutis = ss("mina_muutis") === "1";
       if (!algpunkt) algpunkt = ss("mina_p").replace(/[^a-z-]/g, "").slice(0, 20);
+      if (!alk) alk = ss("mina_k").replace(/[^a-z0-9_-]/g, "").slice(0, 16);
+      // Vastuse tunnus on eraldi juhuslik tunnus (sama vastaja uuesti saatmine asendab eelmise). See EI ole sama mis mõõtmise seansi tunnus (mootmine.js),
+      // et tagasisidet ei saaks siduda kasutaja liikumisega (ANALUUTIKA.md).
       var sid; try { sid = crypto.randomUUID(); } catch (e) { sid = "s" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+      if (window.minaMoot) window.minaMoot("tagasiside");
       var $ = function (id) { return document.getElementById(id); };
       var val = function (n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ""; };
       function sync() {

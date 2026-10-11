@@ -101,6 +101,7 @@
   const skipped = (i) => SKIP.has(i) || (i === 4 && $('p3Joined').value !== 'before');
   const shownSteps = () => chapters.map((c, i) => i).filter((i) => !skipped(i));
   let step = 0;
+  let lastTracked = -1;
   let visited = new Set([0]);
   let legacyChoice = null;
   let chart = null;
@@ -979,6 +980,7 @@
     const shown = shownSteps();
     if (skipped(step)) step = shown.find((i) => i > step);
     visited.add(step);
+    if (window.minaMoot && step !== lastTracked) { lastTracked = step; window.minaMoot('samm', { samm: step }); } // mõõtmine: samm
     chapters.forEach((c, i) => { c.hidden = i !== step; });
     const pos = shown.indexOf(step);
     $('backBtn').style.visibility = pos === 0 ? 'hidden' : 'visible';
@@ -1181,6 +1183,27 @@
 
   // Testikonks: ainult kui test seab window.__ELUKAAR_TEST enne lehe laadimist (tavakasutajale midagi ei avaldata).
   if (window.__ELUKAAR_TEST) window.__elukaar = { readInput: readInput };
+
+  // Mõõtmine (anonüümne, vt public/mootmine.js): elukaar avati, valikute klikid (ainult nimed, mitte summad) ja nupud.
+  (function () {
+    if (!window.minaMoot) return;
+    const profiil = (new URLSearchParams(location.search).get('p') || '').replace(/[^a-z-]/g, '').slice(0, 20);
+    window.minaMoot('elukaar', { p: profiil });
+    const nimi = (t) => String(t).replace(/[^A-Za-z0-9:=_.-]/g, '').slice(0, 40);
+    document.addEventListener('change', (e) => {
+      if (!e.isTrusted) return;
+      const t = e.target;
+      if (t.type === 'radio') window.minaMoot('klikk', { samm: step, nimi: nimi('r:' + t.name + '=' + t.value) });
+      else if (t.id === 'p3Joined') window.minaMoot('klikk', { samm: step, nimi: nimi('s:p3Joined=' + t.value) });
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
+      const b = e.target.closest && e.target.closest('button');
+      if (!b) return;
+      if (b.closest('#path')) window.minaMoot('klikk', { samm: step, nimi: 'b:rada' });
+      else if (b.id) window.minaMoot('klikk', { samm: step, nimi: nimi('b:' + b.id) });
+    }, true); // capture: nupu oma käsitleja joonistab raja uuesti, enne kui sündmus dokumendini jõuaks
+  })();
 
   go(0, false);
 })();

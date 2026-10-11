@@ -26,7 +26,16 @@ CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla
 | 7 | `elukaar-mootor.mjs` | Mirko + Claude | 102 | Fondipensioni tasasus (`annuityDue`), III samba langus, tulumaks ja maksuvaba tulu. |
 | 8 | `elukaar-pohi.test.cjs` | Meelis Burget (tuleva-tulevik), porditud | 41 | Elada jäänud aastad, pensioniiga, edasilükkamise protsendid, kulutasemed. |
 
-Elukaare kontrolle kokku: **51 906**.
+Elukaare kontrolle kokku: **51 906** (alloleval mõõtmise testid ei ole siin sees).
+
+## Mõõtmise testid (tulemuste leht, `/api/e`)
+
+| Fail | Kontrolle | Mida tõestab |
+|---|---|---|
+| `moot.mjs` | 34 | Tallinna aeg (suve-/talveaja ja keskööpiirid), tunnijaotus (loenduri kaaluga), kutsete konversioon (saadetud → klikid), funnel kanali kaupa, elukaare seansi keskmine ja mediaan pikkus, eelprofiilid, sammud, tagasiside allika lõikes; vaates pole ühe kasutaja teekonda. Puhtad funktsioonid, ilma serverita. |
+| `moot-api.mjs` | 44 | `/api/e` valideerimine (robotid välja, vigased väärtused ja tundmatud väljad tagasi), avaleht → elukaar → tulemus → tagasiside, sisestatud arvud ei lähe mõõtmisse, tagasiside tunnus erineb seansi tunnusest, "Ära jälgi" lülitab välja, tulemuste lehel on uued sektsioonid, funnel-rida ja seansi pikkus. Käivita `TULEMUSED_PAROOL=… npm run test:brauser` (väärtus `.dev.vars` failist). |
+| `privaatsus.mjs` | 67 | Analüütika põhimõtted ([ANALUUTIKA.md](../ANALUUTIKA.md)), ilma serverita: iga tabel on nimetatud (uus tabel nõuab otsust), mõõtmise tabelitel täpne veergude loetelu, sündmuste logi puudub, loendurid on seansita, tagasiside ja e-post ei jaga tunnust seansiga ega ühenda JOIN-iga, serveris ei loeta IP-d ega pandud küpsiseid, iga mõõtmiskutse on ülevaadatud, pärandtabelid ei kasva, privaatsusleht `/privaatsus/` on leitav ja vastab tegelikkusele. |
+| `privaatsus-brauser.mjs` | 28 | Sama päris brauseris ja kohalikus D1-s: täidab kõik väljad märgiga väärtustega ja otsib neid võrgupäringutest ning andmebaasist; seansirida on kokkuvõte ilma teekonnata; tagasiside tunnust ei leidu mõõtmise tabelites; vabatekstist eemaldatakse e-post ja telefon. Vajab `wrangler dev` ja kohalikku D1. |
 
 Lisaks (mitte elukaar): `kalkulaator-pension.test.cjs` ja `kalkulaator-stsenaariumid.test.cjs` (Meelis Burget, porditud) kontrollivad prototüüpi 1, kokku 9 775 kontrolli.
 
