@@ -117,6 +117,9 @@
     const taxOn = input.incomeTax !== false;
     const allowance = taxOn ? PENSIONER_ALLOWANCE : 0;
     const needYear = need * 12;
+    // Eripension (politsei, kaitsevägi, kohtunik jt): kindel summa kuus, mudel arvestab seda alates pensioniigast.
+    // Maksustatakse riikliku pensioniga ühiselt: maksuvaba tulu läheb esmalt eripensionile, jääk riiklikule pensionile.
+    const spYear = (input.spMonthly || 0) * 12;
 
     // Samba vara kasvab kuni kasutamiseni ja sinna lisanduvad sissemaksed.
     // Valikuline eraldi III sammas (input.p3Sep = { amount, mode: 'grow' | 'lump' | 'fund' }): oma pott, oma väljamakse viis.
@@ -132,7 +135,7 @@
     let deposit = input.extraDeposit || 0;
     // Ühekordne väljavõtt pensioniea aastal: 10% tulumaks, millest saab maha arvata pensioniea aasta kasutamata maksuvaba tulu.
     const firstRetAge = Math.max(pa, startAge); // esimene pensionieas rida (ühekordsed väljavõtted tehakse selle aasta seisuga)
-    let allowAtPa = Math.max(0, allowance - (firstRetAge >= p1Start ? p1Year : 0));
+    let allowAtPa = Math.max(0, allowance - (firstRetAge >= p1Start ? p1Year : 0) - (firstRetAge >= pa ? spYear : 0));
     const lumpNet = (gross) => {
       const used = Math.min(allowAtPa, gross);
       allowAtPa -= used;
@@ -155,11 +158,14 @@
     for (let age = startAge; age <= MAX_AGE; age++) {
       const fundStart = fund + fund3, depositStart = deposit;
       const i1gross = age >= p1Start ? p1Year : 0;
-      // Riiklik pension pärast tulumaksu: 22% maksuvaba tulu ületavalt osalt (alates pensioniea aastast).
-      const tax1 = taxOn && age >= pa ? INCOME_TAX * Math.max(0, i1gross - allowance) : 0;
+      const ispg = age >= pa ? spYear : 0;
+      const taxSp = taxOn ? INCOME_TAX * Math.max(0, ispg - allowance) : 0;
+      const isp = ispg - taxSp;
+      // Riiklik pension pärast tulumaksu: 22% maksuvaba tulu ületavalt osalt (alates pensioniea aastast), eripensioni järel järelejäänud osast.
+      const tax1 = taxOn && age >= pa ? INCOME_TAX * Math.max(0, i1gross - Math.max(0, allowance - ispg)) : 0;
       const i1 = i1gross - tax1;
       // Kasutamata maksuvaba tulu 10% väljamaksetele: pensioniea aastal on lisaks ühekordsed väljavõtted ära kasutanud osa.
-      let allowLeft = age >= pa ? (age === firstRetAge ? allowAtPa : Math.max(0, allowance - i1gross)) : 0;
+      let allowLeft = age >= pa ? (age === firstRetAge ? allowAtPa : Math.max(0, allowance - i1gross - ispg)) : 0;
       let sched = 0, extraNet = 0, fromDeposit = 0, saved = 0, sched3 = 0, extra3 = 0;
       if (age >= pa) {
         // 1) plaanijärgne maksuvaba väljamakse
@@ -178,7 +184,7 @@
           fund3 -= sched3;
         }
         // 2) vajaduse katmine: hoius, siis lisaväljamakse sambast (10%), viimasena eraldi III sambast (10%)
-        let gap = needYear - i1 - sched - sched3;
+        let gap = needYear - i1 - isp - sched - sched3;
         if (gap > 0) {
           fromDeposit = Math.min(deposit, gap); deposit -= fromDeposit; gap -= fromDeposit;
           if (gap > 0 && fund > 0) {
@@ -196,7 +202,7 @@
       // Kasv enne pensioniiga on kogumisfaasis (ülal) juba arvestatud; siin kasvab vara ainult pensionieast alates.
       // Kasv ja hoiuse väärtuse muutus pensionieast (ühekordne väljamakse on arvestatud pensioniea seisuga).
       if (age >= pa) { fund *= 1 + r; fund3 *= 1 + r; deposit *= 1 + rd; }
-      const income = i1 + sched + extraNet + sched3 + extra3;
+      const income = i1 + isp + sched + extraNet + sched3 + extra3;
       const spend = income + fromDeposit - saved;
       rows.push({
         age: age,
@@ -204,6 +210,9 @@
         i1: i1 / 12, // riiklik pension pärast tulumaksu
         i1g: i1gross / 12, // enne tulumaksu
         tax1: tax1 / 12,
+        isp: isp / 12, // eripension pärast tulumaksu
+        ispg: ispg / 12, // enne tulumaksu
+        taxSp: taxSp / 12,
         i23: (sched + extraNet + sched3 + extra3) / 12,
         i2: (sched + extraNet) / 12, // II sammas (ühine pott); eraldi III samba pott on i3
         i3: (sched3 + extra3) / 12,
@@ -238,13 +247,13 @@
       p1StartAge: p1Start,
       horizonAge: horizon,
       startSpend: startRow.spend,
-      startIncome: startRow.i1 + startRow.i23 + startRow.dep,
+      startIncome: startRow.i1 + startRow.isp + startRow.i23 + startRow.dep,
       coversNeedUntil: short ? short.age : null, // null = katab kuni 100
       gapEnd: gapEnd,
       gapTemporary: gapTemporary,
       aliveAtShortfall: short ? short.alive : 0,
       moneyEndAge: empty ? empty.age : null, // samba ja hoiuse raha lõpeb; null = ei lõpe enne 100
-      incomeAfterMoney: empty ? empty.i1 : null,
+      incomeAfterMoney: empty ? empty.i1 + empty.isp : null,
       spendAt90: (at(90) || { spend: 0 }).spend,
       expectedLifetime: fromPa.reduce((s, x) => s + x.spend * 12 * x.alive, 0),
     };

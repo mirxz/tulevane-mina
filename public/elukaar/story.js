@@ -123,7 +123,7 @@
     // Fondivahetus: minevikus vahetus on juba tänases summas. Tulevikus vahetus: seni kasvab raha vanas fondis.
     // pension.js kasutab ühte tootlust, seega teisendame vahetuseni kasvu samaväärseks tänaseks summaks (mudel on lineaarne).
     const switching = radio('fundChange') === 'switch';
-    const pa = P.retirementYears({ birthYear: birthYear, pensionAgeYears: parseInt($('pensionAgeYears').value, 10) });
+    const pa = P.retirementYears({ birthYear: birthYear, pensionAgeYears: pensionAgeValue() });
     const switchAge = Math.min(pa - 1, Math.max(currentAge, parseInt($('switchAge').value, 10) || currentAge));
     const sex = $('sex').value;
     const rateAt = (a) => (switching && a >= switchAge ? FUNDS[fundNow].r : FUNDS[fund18].r);
@@ -222,7 +222,9 @@
       p3Open: p3Open, p3Age: p3Age, p3Plan: p3Plan, p3Use: p3Use,
       p3Gross: p3Gross, p3Net: p3Net, p3Tax: p3Tax, p3Rem: p3Rem, p3Early: p3Early,
       extraDeposit: p3Plan !== 'keep' && p3Use === 'save' ? p3Net : 0,
-      pensionAgeYears: parseInt($('pensionAgeYears').value, 10),
+      pensionAgeYears: pensionAgeValue(),
+      spMonthly: num('spMonthly'), // eripension (kuus, enne maksu); 0 = puudub
+      soodus: parseInt($('soodus').value, 10) || 0, // soodustingimustel: aastaid varem pensionile
       paMonths: 0, // vanused näidatakse täisaastates (65 a), kuid ei kasutata
       grossMonthly: num('grossMonthly'),
       p2Rate: parseFloat($('p2Rate').value),
@@ -659,7 +661,7 @@
     const pa = P.retirementYears(input);
     const lep = (c) => (c === 'yearly' ? 'uue lepinguga igal aastal' : 'ühe lepinguga');
     const items = [
-      [0, '🙂', ['Sündinud ' + input.birthYear, input.p2Has ? 'II sammas ' + eur(input.p2) : '', input.p3Has ? 'III sammas ' + eur(input.p3Base) : ''].filter(Boolean).join(', ')],
+      [0, '🙂', ['Sündinud ' + input.birthYear, input.p2Has ? 'II sammas ' + eur(input.p2) : '', input.p3Has ? 'III sammas ' + eur(input.p3Base) : '', input.spMonthly > 0 ? 'eripension ' + eur(input.spMonthly) + ' kuus' : ''].filter(Boolean).join(', ')],
       [4, '🔓', !input.p3Has ? 'III sammast ei ole' : input.p3Plan === 'keep' ? 'III sammas jääb kasvama' : (input.p3Plan === 'lump' ? 'Võtan III samba ' + input.p3Age + '-aastaselt korraga välja: ' + eur(input.p3Net) : 'Fondipension III sambast alates ' + input.p3Age + '-aastaselt: ' + eur(input.p3Net)) + (input.p3Plan === 'keep' ? '' : input.p3Use === 'save' ? ', hoiusele' : ', kasutan kohe')],
       // Sammast, mida pole (summa ja sissemakse 0), kokkuvõttes ei mainita.
       [5, '🧳', [input.p2Has ? 'II sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan korraga välja', fund: 'fondipension' }[input.payout] : '',
@@ -694,6 +696,8 @@
       (input.p2Has ? 'II sammas: korraga 10%, fondipension soovitusliku perioodi peale (vähemalt 4 makset aastas) 0%, lühem periood 10%. Kui hakkad raha välja võtma, lõpevad II samba sissemaksed. ' : '') +
       'Riiklikku pensioni saab võtta kuni 5 aastat varem, eluks ajaks väiksemana: −7,17% (1 a), −13,78% (2 a), −19,88% (3 a), −25,50% (4 a), −30,67% (5 a). Selleks on vaja 20–40 aastat staaži.',
       input.p2Has ? { grow: 'Jätkan kasvatamist', lump: 'Võtan korraga välja', fund: 'Fondipension' }[input.payout] : null]);
+    if (input.soodus > 0) items.push([when(pa, m), 'Soodustingimustel vanaduspension', 'Pensionile saab minna ' + input.soodus + ' aastat enne tavalist pensioniiga (lapsed, tervist kahjustav töö jt) ja pension ei vähene. Sinu pensioniiga on ' + pa + ' a. Kontrolli oma õigust SKA lehelt.', input.soodus + ' a varem']);
+    if (input.spMonthly > 0) items.push([when(pa, m), 'Eripension', 'Eripension (politsei, kaitsevägi, kohtunik, Riigikogu jt) on eraldi seaduse alusel makstav pension, mitte I samba osa. Mudel arvestab seda kindla summana alates pensioniigast ja maksustab riikliku pensioniga ühiselt. Uutele teenistujatele (politsei, kaitsevägi, prokurörid alates 2020) enam ei teki. Kontrolli oma õigust SKA lehelt.', eur(input.spMonthly) + ' kuus enne maksu']);
     items.push([when(pa, m), 'Riiklik pension täissummas (' + ageTxt(pa, m) + ')',
       'Vähemalt 15 aastat Eesti staaži. Pensionieas on maksuvaba tulu 776 € kuus (2026), sellest suuremalt osalt on tulumaks 22%. ' + (input.p2Has || input.p3Has ? 'Kindlustusseltsi eluaegne pension on maksuvaba. ' : '') +
       (by + 65 >= 2029 ? 'Alates 2029 seotakse pensioniiga oodatava elueaga, seega see on ligikaudne.' : ''),
@@ -765,7 +769,7 @@
   // Graafiku tekstiline kokkuvõte (põhijäreldused) ja andmetabel (WCAG 1.1.1, ka klaviatuuri ja ekraanilugeja kasutajale).
   function chartSummary(r, input) {
     const pa = r.pensionStartAge, start = r.rows.find((x) => x.age === pa) || r.rows[0];
-    const src = [eur(start.i1) + ' riiklikku pensioni (pärast tulumaksu)', start.i2 > 0.5 ? eur(start.i2) + ' II sambast' : '', start.i3 > 0.5 ? eur(start.i3) + ' III sambast' : '', start.dep > 0.5 ? eur(start.dep) + ' hoiuselt' : ''].filter(Boolean);
+    const src = [eur(start.i1) + ' riiklikku pensioni (pärast tulumaksu)', start.isp > 0.5 ? eur(start.isp) + ' eripensioni (pärast tulumaksu)' : '', start.i2 > 0.5 ? eur(start.i2) + ' II sambast' : '', start.i3 > 0.5 ? eur(start.i3) + ' III sambast' : '', start.dep > 0.5 ? eur(start.dep) + ' hoiuselt' : ''].filter(Boolean);
     const parts = ['Pensioni alguses (' + pa + '-aastaselt) tuleb kuus ' + (src.length > 1 ? src.slice(0, -1).join(', ') + ' ja ' + src[src.length - 1] : src[0]) + '.',
       'Sinu kulud on ' + eur(input.needMonthly) + ' kuus.'];
     // Tulumaks riiklikult pensionilt: 22% summalt, mis ületab pensionäri maksuvaba tulu (776 € kuus, 2026).
@@ -773,6 +777,8 @@
     if (p1row) parts.splice(1, 0, p1row.tax1 > 0.5
       ? 'Riiklikust pensionist (' + eur(p1row.i1g) + ' enne maksu) läheb tulumaksuks ' + eur(p1row.tax1) + ' kuus: 22% summalt, mis ületab pensionäri maksuvaba tulu ' + eur(P.PENSIONER_ALLOWANCE / 12) + ' kuus.'
       : 'Riiklik pension on väiksem kui pensionäri maksuvaba tulu (' + eur(P.PENSIONER_ALLOWANCE / 12) + ' kuus), seega tulumaksu pole.');
+    const spRow = r.rows.find((x) => x.ispg > 0.5);
+    if (spRow) parts.splice(1, 0, 'Eripension ' + eur(spRow.ispg) + ' kuus enne maksu: maksuvaba tulu ' + eur(P.PENSIONER_ALLOWANCE / 12) + ' kuus läheb esmalt eripensionile, riiklikule pensionile jääb sellest ülejääk. Tulumaks kokku ' + eur(spRow.taxSp + spRow.tax1) + ' kuus.');
     if (r.coversNeedUntil === null) parts.push('Kulud on kaetud kuni 100. eluaastani.');
     else parts.push('Kulud on kaetud kuni ' + r.coversNeedUntil + '. eluaastani.');
     if (r.moneyEndAge !== null) parts.push('Samba ja hoiuse raha lõpeb ' + r.moneyEndAge + '-aastaselt, siis jääb ainult riiklik pension ' + eur(r.incomeAfterMoney) + ' kuus.');
@@ -781,9 +787,10 @@
   function chartTable(r, input) {
     const firstPre = r.rows.find((x) => x.pre);
     const rows = r.rows.filter((x) => x.age >= (firstPre ? firstPre.age : r.pensionStartAge));
+    const hasSp = rows.some((x) => x.isp > 0.5);
     return '<table class="table table-sm align-middle mb-0"><caption id="chartTableCaption">Sissetulek ja kulud kuus vanuse järgi (tänastes eurodes, pärast tulumaksu)</caption>' +
-      '<thead><tr><th scope="col">Vanus</th><th scope="col">Aasta</th><th scope="col" class="text-end">I sammas</th><th scope="col" class="text-end">II sammas</th><th scope="col" class="text-end">III sammas</th><th scope="col" class="text-end">Hoiuselt</th><th scope="col" class="text-end">Kulud</th><th scope="col" class="text-end">Puudu</th><th scope="col" class="text-end">Elus</th></tr></thead><tbody>' +
-      rows.map((x) => '<tr><th scope="row">' + x.age + '</th><td>' + x.year + '</td><td class="text-end">' + eur(x.i1) + '</td><td class="text-end">' + eur(x.i2) + '</td><td class="text-end">' + eur(x.i3) + '</td><td class="text-end">' + eur(x.dep) +
+      '<thead><tr><th scope="col">Vanus</th><th scope="col">Aasta</th><th scope="col" class="text-end">I sammas</th>' + (hasSp ? '<th scope="col" class="text-end">Eripension</th>' : '') + '<th scope="col" class="text-end">II sammas</th><th scope="col" class="text-end">III sammas</th><th scope="col" class="text-end">Hoiuselt</th><th scope="col" class="text-end">Kulud</th><th scope="col" class="text-end">Puudu</th><th scope="col" class="text-end">Elus</th></tr></thead><tbody>' +
+      rows.map((x) => '<tr><th scope="row">' + x.age + '</th><td>' + x.year + '</td><td class="text-end">' + eur(x.i1) + '</td>' + (hasSp ? '<td class="text-end">' + eur(x.isp) + '</td>' : '') + '<td class="text-end">' + eur(x.i2) + '</td><td class="text-end">' + eur(x.i3) + '</td><td class="text-end">' + eur(x.dep) +
         '</td><td class="text-end">' + (x.pre ? '–' : eur(input.needMonthly)) + '</td><td class="text-end">' + (x.shortfall > 0.5 ? eur(x.shortfall) : '–') + '</td><td class="text-end">' + Math.round(x.alive * 100) + '%</td></tr>').join('') +
       '</tbody></table>';
   }
@@ -807,7 +814,7 @@
     const ageOf = (a) => a + '-aastaselt';
     const alive = (a) => { const x = rows.find((y) => y.age === a); return x ? Math.round(x.alive * 100) : null; };
     // Etapid: järjestikused aastad, kus kulude katmise allikad on samad.
-    const key = (x) => [x.i1 > 0.5, x.i2 > 0.5, x.i3 > 0.5, x.dep > 0.5, x.shortfall > 0.5].map(Number).join('');
+    const key = (x) => [x.i1 > 0.5, x.isp > 0.5, x.i2 > 0.5, x.i3 > 0.5, x.dep > 0.5, x.shortfall > 0.5].map(Number).join('');
     const phases = [];
     rows.forEach((x) => {
       const last = phases[phases.length - 1];
@@ -815,9 +822,10 @@
       else phases.push({ k: key(x), from: x.age, to: x.age, rows: [x] });
     });
     const avg = (ph, f) => ph.rows.reduce((s, x) => s + x[f], 0) / ph.rows.length;
-    const surplus = (ph) => ph.rows.reduce((s, x) => s + Math.max(0, x.i1 + x.i23 - x.spend), 0) / ph.rows.length;
+    const surplus = (ph) => ph.rows.reduce((s, x) => s + Math.max(0, x.i1 + x.isp + x.i23 - x.spend), 0) / ph.rows.length;
     const parts = (ph) => [
       avg(ph, 'i1') > 0.5 ? 'riiklik pension ' + eur(avg(ph, 'i1')) : '',
+      avg(ph, 'isp') > 0.5 ? 'eripension ' + eur(avg(ph, 'isp')) : '',
       avg(ph, 'i2') > 0.5 ? 'II sammas ' + eur(avg(ph, 'i2')) : '',
       avg(ph, 'i3') > 0.5 ? 'III sammas ' + eur(avg(ph, 'i3')) : '',
       avg(ph, 'dep') > 0.5 ? 'hoiuselt ' + eur(avg(ph, 'dep')) : '',
@@ -827,6 +835,7 @@
       const had = (p, f) => avg(p, f) > 0.5;
       const out = [];
       if (!had(prev, 'i1') && had(ph, 'i1')) out.push('algab riiklik pension');
+      if (!had(prev, 'isp') && had(ph, 'isp')) out.push('algab eripension');
       if (had(prev, 'i2') && !had(ph, 'i2')) out.push(had(ph, 'dep') ? 'lõpevad II samba väljamaksed' : 'saab II samba raha otsa');
       if (had(prev, 'i3') && !had(ph, 'i3')) out.push('saab III samba raha otsa');
       if (!had(prev, 'dep') && had(ph, 'dep')) out.push('hakkad kasutama hoiusele kogunenud raha');
@@ -862,7 +871,7 @@
     const kind = mobile ? 'Kihid' : 'Tulbad';
     const look = '<ul class="mb-0">' +
       '<li>' + kind + ' näitavad iga vanuse kohta, millest kulud kaetakse: ' +
-        [rows.some((x) => x.i1 > 0.5) ? 'tumesinine on riiklik pension (pärast tulumaksu)' : '', rows.some((x) => x.i2 > 0.5) ? 'sinine II sammas' : '', rows.some((x) => x.i3 > 0.5) ? 'täpiline III sammas' : '', rows.some((x) => x.dep > 0.5) ? 'triibuline hoiuselt' : ''].filter(Boolean).join(', ') + '.</li>' +
+        [rows.some((x) => x.i1 > 0.5) ? 'tumesinine on riiklik pension (pärast tulumaksu)' : '', rows.some((x) => x.isp > 0.5) ? 'kollane eripension (pärast tulumaksu)' : '', rows.some((x) => x.i2 > 0.5) ? 'sinine II sammas' : '', rows.some((x) => x.i3 > 0.5) ? 'täpiline III sammas' : '', rows.some((x) => x.dep > 0.5) ? 'triibuline hoiuselt' : ''].filter(Boolean).join(', ') + '.</li>' +
       '<li>Punane katkendjoon on sinu kulud kuus. Kui ' + kind.toLowerCase() + ' jäävad joonest allapoole, on raha puudu.</li>' +
       '<li>Hall joon näitab, mitu protsenti sinuvanustest on veel elus' + (mobile ? ' (täpse protsendi näed graafikut puudutades).' : ' (parem telg).') + '</li></ul>';
     return '<p class="mb-2">' + lead + '</p>' +
@@ -896,6 +905,8 @@
           pointRadius: rows.map((x) => (!mobile && x.age % 5 === 0 ? 3.5 : 0)), pointBorderWidth: 2, pointStyle: 'circle' },
       ],
     };
+    // Eripension tuleb graafikule ainult siis, kui see on olemas (I samba järel, kollane).
+    if (rows.some((x) => x.isp > 0.5)) data.datasets.splice(1, 0, Object.assign({ type: 'bar', label: 'Eripension', data: rows.map((x) => Math.round(x.isp)), backgroundColor: '#f2b14c', borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')));
     const options = {
       responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
@@ -1072,13 +1083,17 @@
 
   // ---------- Pensioniiga ----------
   let paTouched = false;
+  // Soodustingimustel vanaduspension: pensioniiga on valitud iga miinus varem minemise aastad (pension ei vähene).
+  function pensionAgeValue() { return parseInt($('pensionAgeYears').value, 10) - (parseInt($('soodus').value, 10) || 0); }
   function syncPensionAge() {
     const rule = P.pensionAge(parseInt($('birthYear').value, 10) || 1980);
     if (!paTouched) $('pensionAgeYears').value = String(rule.years);
-    $('paHint').textContent = 'Reegli järgi ' + rule.years + ' a';
+    const sd = parseInt($('soodus').value, 10) || 0;
+    $('paHint').textContent = 'Reegli järgi ' + rule.years + ' a' + (sd ? ', soodustingimustel ' + (parseInt($('pensionAgeYears').value, 10) - sd) + ' a' : '');
   }
   $('pensionAgeYears').addEventListener('change', () => { paTouched = true; });
   $('birthYear').addEventListener('input', syncPensionAge);
+  $('soodus').addEventListener('change', syncPensionAge);
 
   // ---------- Sündmused ----------
   ['fund18Fund', 'fundNew'].forEach((id) => {

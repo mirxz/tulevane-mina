@@ -63,6 +63,22 @@
           <input class="form-control" id="p1Monthly" type="number" min="0" step="10" value="900" aria-describedby="p1Unit">
           <div class="form-text"><span id="p1Unit">eurot kuus, enne tulumaksu.</span> Prognoosi leiad <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">Sotsiaalkindlustusameti kalkulaatorist</a></div>
         </div>
+        <div class="col-12 col-sm-6 col-md-3" id="spWrap">
+          <label class="form-label" for="spMonthly">Eripension</label>
+          <input class="form-control" id="spMonthly" type="number" min="0" step="10" value="0" aria-describedby="spUnit">
+          <div class="form-text"><span id="spUnit">eurot kuus, enne tulumaksu, alates pensioniigast. 0 = puudub.</span> <a href="https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid" target="_blank" rel="noopener">SKA eripensionid</a>. Asendab see riikliku pensioni? Pane riikliku pensioni lahtrisse 0.</div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3" id="soodusWrap">
+          <label class="form-label" for="soodus">Varem pensionile</label>
+          <select class="form-select" id="soodus" aria-describedby="soodusHint">
+            <option value="0" selected>ei</option>
+            <option value="1">3 last: 1 a varem</option>
+            <option value="3">4 last: 3 a varem</option>
+            <option value="5">5 last, puudega laps või tervist kahjustav töö nr 2: 5 a varem</option>
+            <option value="10">Tervist kahjustav töö nr 1: 10 a varem</option>
+          </select>
+          <div class="form-text" id="soodusHint">Soodustingimustel vanaduspension: pension ei vähene. <a href="https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/soodustingimustel-vanaduspension" target="_blank" rel="noopener">SKA tingimused</a></div>
+        </div>
         <div class="col-6 col-md-3">
           <label class="form-label" for="p2">II sammas praegu</label>
           <input class="form-control" id="p2" type="number" min="0" step="1000" value="25000" aria-describedby="p2Unit">
