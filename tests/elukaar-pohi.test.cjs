@@ -100,4 +100,48 @@ assert.ok(Math.abs(a2.rows.find((x) => x.age === 70).i1 - 900 * 1.1688) < 0.01);
   assert.ok(f.rows.find((x) => x.age === 66).i23 > 0);
 }
 
+// Paindlik pension (C) ühe lepinguga (Kadi 11.10): fondipension on üks leping nagu B-l, riiklik pension algab edasilükkamise võrra hiljem.
+{
+  const row = (s, age) => s.rows.find((x) => x.age === age);
+  const low = { ...base, needMonthly: 300 }; // väike kulu: näeme lepingu väljamakset, mitte vajaduse katmist
+  const once = P.simulate(low, table, { ...C, deferral: 2, contract: 'once' });
+  const yearly = P.simulate(low, table, { ...C, deferral: 2, contract: 'yearly' });
+  const dflt = P.simulate(low, table, { ...C, deferral: 2 });
+  // Vaikimisi (contract puudub) = uus leping igal aastal, nagu enne.
+  assert.deepStrictEqual(dflt.rows.map((x) => x.i23), yearly.rows.map((x) => x.i23));
+  // Riiklik pension algab 2 aastat hiljem ja on suurem (+16,88%).
+  assert.strictEqual(row(once, 66).i1, 0);
+  assert.ok(Math.abs(row(once, 67).i1 - 900 * 1.1688) < 0.01);
+  // Üks leping: tasane väljamakse lepingu lõpuni (65 + 21 a = 86) ja siis null.
+  assert.ok(Math.abs(row(once, 70).i23 - row(once, 80).i23) < 0.01);
+  assert.strictEqual(row(once, 86).i23, 0);
+  assert.ok(row(yearly, 86).i23 > 0); // uus leping igal aastal ei lõpe
+  // 75-aastaselt on ühe lepingu väljamakse suurem kui igaaastasel uuendamisel.
+  assert.ok(row(once, 75).i23 > row(yearly, 75).i23);
+  // Pensionieas algav ühe lepingu väljamakse (C, ilma edasilükkamiseta samas) on sama mis B-l, kui vajadus seda ei piira.
+  const b = P.simulate(low, table, B);
+  const c0 = P.simulate(low, table, { ...C, deferral: 0, contract: 'once' });
+  assert.ok(Math.abs(row(b, 70).i23 - row(c0, 70).i23) < 0.01);
+}
+
+// Eraldi III samba fondipension: üks leping (tasane väljamakse) või uus leping igal aastal.
+{
+  const row = (s, age) => s.rows.find((x) => x.age === age);
+  const mk = (sep) => P.simulate({ ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', ...sep } }, table, { id: 'E' }); // E: II kasvab, i23 on ainult III
+  const once = mk({ contract: 'once' }), yearly = mk({ contract: 'yearly' });
+  const term = P.fundPensionTerm(table, 'N', 65);
+  assert.ok(Math.abs(row(once, 66).i23 - row(once, 65 + term - 1).i23) < 0.01); // tasane
+  assert.strictEqual(row(once, 65 + term).i23, 0);                              // lõpeb perioodi lõpus
+  assert.ok(row(yearly, 65 + term).i23 > 0);                                    // uus leping igal aastal ei lõpe
+  assert.deepStrictEqual(mk({}).rows.map((x) => x.i23), yearly.rows.map((x) => x.i23)); // contract puudub = igal aastal
+  // III fondipension alates 55: periood loetakse 55-aastasest (30 a) ja lõpeb 85-aastaselt, mitte 86.
+  const t55 = P.fundPensionTerm(table, 'N', 55);
+  const s55 = mk({ contract: 'once', start: 55 });
+  assert.ok(row(s55, 55 + t55 - 1).i23 > 0);
+  assert.strictEqual(row(s55, 55 + t55).i23, 0);
+  // II ja III on eraldi lepingud: II B (üks leping) + III igal aastal annab teise tulemuse kui mõlemad ühe lepinguga.
+  const both = (c3) => P.simulate({ ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', contract: c3 } }, table, B);
+  assert.notDeepStrictEqual(both('once').rows.map((x) => x.i23), both('yearly').rows.map((x) => x.i23));
+}
+
 console.log('OK');
