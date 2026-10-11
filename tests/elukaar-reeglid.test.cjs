@@ -36,6 +36,16 @@ const txt = (m) => JSON.stringify(m);
 check(txt(dm55).includes('Alates 55'), 'enne 2021 liitunule peab otsusekaardil olema "Alates 55"');
 check(txt(dm60).includes('Alates 60'), '2021 või hiljem liitunule peab otsusekaardil olema "Alates 60"');
 check(R.iii_samba_soodusiga.enne_2021 === 55 && R.iii_samba_soodusiga.alates_2021 === 60, 'soodusiga reeglites');
+// II ja III samba fondipension on eraldi lepingud: III leping ei sõltu II stsenaariumist ega vastupidi.
+{
+  const low = { ...base, needMonthly: 300, p2: 50000 };
+  const mk = (c3, sc) => P.simulate({ ...low, p3Sep: { amount: 20000, mode: 'fund', contract: c3 } }, T, sc);
+  const iii = (s) => s.rows.map((r) => r.i3.toFixed(4)).join();
+  check(R.fondipensioni_lepingud.eraldi === true, 'fondipensioni lepingud on eraldi (reeglites)');
+  check(iii(mk('once', { id: 'B' })) === iii(mk('once', { id: 'D' })), 'III leping „üks“ ei tohi sõltuda II valikust');
+  check(iii(mk('yearly', { id: 'B' })) === iii(mk('yearly', { id: 'D' })), 'III leping „igal aastal“ ei tohi sõltuda II valikust');
+  check(iii(mk('once', { id: 'B' })) !== iii(mk('yearly', { id: 'B' })), 'III lepingu valik peab väljamakset muutma');
+}
 // Dokumenteeritud erisus: 0,9% kuus ei ole sama mis tabeli +7,93% esimese aasta kohta (tõestame, et erisus on teada).
 const kuine = 0.009 * 12;
 check(Math.abs(kuine - R.edasilykkamine.tabel['1']) > 0.02 && /ERISUS/.test(R.edasilykkamine.kommentaar), 'erisus 0,9%/kuus vs 7,93%/aastas peab olema dokumenteeritud');
