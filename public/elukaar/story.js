@@ -176,11 +176,11 @@
         p3Tax = p3Age >= p3Open ? 0.10 : 0.22;
         p3Gross = b; p3Net = b * (1 - p3Tax);
       } else {
-        // Üks leping: periood III samba väljamakse algusest, tasane väljamakse (annuiteeditegur); muidu uus leping igal aastal.
+        // Üks leping: periood III samba väljamakse algusest, osakute arv jagatud veel tegemata väljamaksetega (KoPS § 60¹ lg 5), seega makse järgib fondi väärtust; muidu uus leping igal aastal.
         const once3 = radio('contract3') === 'once', term3 = P.fundPensionTerm(T, sex, p3Age);
         for (let a = p3Age; a < pa; a++) {
           const left3 = term3 - (a - p3Age);
-          const pay = once3 ? (left3 > 0 ? b / P.annuityDue(left3, rateAt(a)) : 0) : b / P.fundPensionTerm(T, sex, a);
+          const pay = once3 ? (left3 > 0 ? b / left3 : 0) : b / P.fundPensionTerm(T, sex, a);
           b -= pay; p3Gross += pay; p3Net += pay * (a >= p3Open ? 1 : 0.78);
           p3Early[a] = (pay * (a >= p3Open ? 1 : 0.78)) / 12; // enne pensioniiga makstav III samba fondipension kuus (graafikule)
           b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3 : 0); // sissemakse läheb samasse lepingupotti
@@ -800,7 +800,7 @@
 
   // Selgitus: kuidas graafikut lugeda + sinu graafik etappide kaupa (muutub koos valikutega).
   const isMobile = () => window.matchMedia('(max-width: 575px)').matches;
-  function chartExplain(r, input, mobile) {
+  function chartExplain(r, input, mobile, scenario) {
     // Kirjutatud nii, et graafiku sisu on arusaadav ka ilma seda nägemata (ekraanilugeja).
     const pa = r.pensionStartAge, need = input.needMonthly;
     const rows = r.rows.filter((x) => x.age >= pa);
@@ -859,20 +859,23 @@
         (surplus(ph) > 0.5 ? ' Üle jääb keskmiselt ' + eur(surplus(ph)) + ' kuus, see läheb hoiusele.' : '') +
         (endAlive !== null && ph.to < 100 ? ' ' + ageOf(ph.to).replace('-aastaselt', '-aastaseks') + ' elab umbes ' + endAlive + '% sinuvanustest.' : '') + '</li>';
     }));
+    // Fondipensioni makse = osakud × hind (KoPS § 52³ lg 8, § 60¹ lg 5), seega muutub see koos fondi väärtusega.
+    const fundNote = (scenario && ['B', 'C', 'D'].includes(scenario.id)) || (input.p3Sep && input.p3Sep.mode === 'fund') || r.rows.some((x) => x.pre && x.i3 > 0.5)
+      ? '<li>Fondipensioni makse muutub koos fondi väärtusega. Joonis eeldab ühtlast tootlust.</li>' : '';
     const kind = mobile ? 'Kihid' : 'Tulbad';
     const look = '<ul class="mb-0">' +
       '<li>' + kind + ' näitavad iga vanuse kohta, millest kulud kaetakse: ' +
         [rows.some((x) => x.i1 > 0.5) ? 'tumesinine on riiklik pension (pärast tulumaksu)' : '', rows.some((x) => x.i2 > 0.5) ? 'sinine II sammas' : '', rows.some((x) => x.i3 > 0.5) ? 'täpiline III sammas' : '', rows.some((x) => x.dep > 0.5) ? 'triibuline hoiuselt' : ''].filter(Boolean).join(', ') + '.</li>' +
       '<li>Punane katkendjoon on sinu kulud kuus. Kui ' + kind.toLowerCase() + ' jäävad joonest allapoole, on raha puudu.</li>' +
-      '<li>Hall joon näitab, mitu protsenti sinuvanustest on veel elus' + (mobile ? ' (täpse protsendi näed graafikut puudutades).' : ' (parem telg).') + '</li></ul>';
+      '<li>Hall joon näitab, mitu protsenti sinuvanustest on veel elus' + (mobile ? ' (täpse protsendi näed graafikut puudutades).' : ' (parem telg).') + '</li>' + fundNote + '</ul>';
     return '<p class="mb-2">' + lead + '</p>' +
       '<p class="mb-1 fw-medium">Mis eri vanustes juhtub</p><ul class="mb-3">' + items.join('') + '</ul>' +
       '<p class="mb-1 fw-medium">Kuidas graafik välja näeb</p>' + look;
   }
 
-  function renderChart(r, input) {
+  function renderChart(r, input, scenario) {
     const mobile = isMobile();
-    $('chartExplain').innerHTML = chartExplain(r, input, mobile);
+    $('chartExplain').innerHTML = chartExplain(r, input, mobile, scenario);
     // Mobiilis: kihiline pindgraafik pensioniea algusest (tulpade asemel), elus-% ilma eraldi teljeta.
     const rows = mobile ? r.rows.filter((x) => x.age >= r.pensionStartAge || x.pre) : r.rows;
     $('chartSummary').innerHTML = chartSummary(r, input).map((s) => '<li>' + s + '</li>').join(''); // iga lause eraldi real
@@ -939,7 +942,7 @@
     mine.rows.forEach((x) => { if (x.age < mine.pensionStartAge && input.p3Early[x.age]) { x.i3 = input.p3Early[x.age]; x.pre = true; } });
     $('answer').innerHTML = answerText(mine, input);
     renderMetrics(mine);
-    renderChart(mine, input);
+    renderChart(mine, input, scenario);
     renderLegacy(mine, input);
     renderMap(input, scenario);
     renderRecap(input, scenario);

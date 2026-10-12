@@ -23,7 +23,7 @@ CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla
 | 4 | `elukaar-graafik.mjs` + `golden/elukaar-graafik.json` | Mirko + Claude | 1 383 | 8 profiili × 2 vaadet (töölaud, mobiil): graafik = tabel = kokkuvõte, kulude joon alles pensionieast, "Elus %" ei kasva, tekstides pole NaN/undefined, axe ligipääsetavus. Kohalik Chart.js, ilma CDN-ita. |
 | 5 | `elukaar-reeglid.test.cjs` + `reeglid.json` | Mirko + Claude | 35 | Iga konstant (22%, 776 €, 10%, 55/60 a, edasilükkamise tabel) on kirjas allika ja kuupäevaga ning mootor kasutab täpselt neid. Test kukub, kui allikas puudub või on üle aasta vana. Dokumenteerib erisuse "0,9% kuus" vs tabeli 7,93% esimese aasta kohta. |
 | 6 | `elukaar-ui-raha.mjs` | Mirko + Claude | 45 | `story.js` loogika: III samba plaanid ja fondivahetus ei tekita ega kaota raha (`c3Adj`, `switchAdj`, `p3RemNow`). Kasutab testikonksu `window.__ELUKAAR_TEST`. |
-| 7 | `elukaar-mootor.mjs` | Mirko + Claude | 102 | Fondipensioni tasasus (`annuityDue`), III samba langus, tulumaks ja maksuvaba tulu. |
+| 7 | `elukaar-mootor.mjs` | Mirko + Claude | 102 | Fondipensioni makse järgib fondi väärtust (osakud / veel tegemata väljamaksed, KoPS § 52³ ja § 60¹), III samba langus, tulumaks ja maksuvaba tulu. |
 | 8 | `elukaar-pohi.test.cjs` | Meelis Burget (tuleva-tulevik), porditud | 41 | Elada jäänud aastad, pensioniiga, edasilükkamise protsendid, kulutasemed. |
 
 Elukaare kontrolle kokku: **51 906** (alloleval mõõtmise testid ei ole siin sees).

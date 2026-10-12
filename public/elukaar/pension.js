@@ -64,13 +64,6 @@
     return Math.max(1, Math.round(table.elada_jaanud[sex][Math.min(age, MAX_AGE)]));
   }
 
-  // Annuiteeditegur: n võrdset makset aasta alguses, saldo kasvab tootlusega r. Tootlusel 0 on see n.
-  function annuityDue(n, r) {
-    if (!(n > 0)) return 0;
-    if (Math.abs(r) < 1e-12) return n;
-    return (1 - Math.pow(1 + r, -n)) / (1 - 1 / (1 + r));
-  }
-
   // Pensioniiga aastates: kasutaja (või Tuleva konto) antud väärtus või ligikaudne reegel.
   function retirementYears(input) {
     return input.pensionAgeYears || pensionAge(input.birthYear).years;
@@ -167,14 +160,15 @@
           sched = fund / fundPensionTerm(table, input.sex, age); // uus leping igal aastal lühima maksuvaba perioodiga
         } else if (contractStart !== null && age >= contractStart) {
           const left = contractTerm - (age - contractStart);
-          // Tasane reaalne makse: saldo jagatud annuiteeditegur (makse aasta alguses, saldo kasvab edasi), mitte lihtsalt 1/left.
-          sched = left > 0 ? fund / annuityDue(left, r) : 0;
+          // Seadus (KoPS § 52³ lg 8, § 60¹ lg 5): osakute arv jagatakse iga kord veel tegemata väljamaksete arvuga.
+          // Euro makse = osakud × hind, seega makse järgib fondi väärtust (makse_k = pott / n × (1 + r)^k), see ei ole tasane.
+          sched = left > 0 ? fund / left : 0;
         }
         fund -= sched;
-        // Eraldi III sammas fondipensionina (maksuvaba): üks leping (tasane väljamakse) või uus leping igal aastal.
+        // Eraldi III sammas fondipensionina (maksuvaba): üks leping (osakud / veel tegemata väljamaksed) või uus leping igal aastal.
         if (sep && sep.mode === 'fund') {
           const left3 = once3 ? term3 - (age - start3) : 0;
-          sched3 = once3 ? (left3 > 0 ? fund3 / annuityDue(left3, r) : 0) : fund3 / fundPensionTerm(table, input.sex, age);
+          sched3 = once3 ? (left3 > 0 ? fund3 / left3 : 0) : fund3 / fundPensionTerm(table, input.sex, age);
           fund3 -= sched3;
         }
         // 2) vajaduse katmine: hoius, siis lisaväljamakse sambast (10%), viimasena eraldi III sambast (10%)
@@ -268,7 +262,7 @@
     { id: 'D', name: 'Leping igal aastal uuesti', short: 'Maksuvaba fondipension, mille lepingu sõlmid igal aastal uuesti. Ei saa otsa, aga väheneb vanas eas.' },
   ];
 
-  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, retirementYears, yearlyContribution, survival, horizonAge, fundPensionTerm, annuityDue, INCOME_TAX, PENSIONER_ALLOWANCE, decisionMap, simulate, sustainableNeed };
+  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, retirementYears, yearlyContribution, survival, horizonAge, fundPensionTerm, INCOME_TAX, PENSIONER_ALLOWANCE, decisionMap, simulate, sustainableNeed };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Pension = api;
 })(typeof window !== 'undefined' ? window : globalThis);
