@@ -45,7 +45,9 @@
       <div class="row g-3 fields">
         <div class="col-6 col-md-3">
           <label class="form-label" for="birthYear">Sünniaasta</label>
-          <input class="form-control" id="birthYear" type="number" min="1950" max="1990" value="1980">
+          <input class="form-control" id="birthYear" type="number" inputmode="numeric" min="1930" max="2008" value="1980" aria-describedby="birthYearHint birthYearNote">
+          <div class="form-text" id="birthYearHint">Vahemikus 1930–2008.</div>
+          <div class="visually-hidden" id="birthYearNote" role="status"></div>
         </div>
         <div class="col-6 col-md-3">
           <label class="form-label" for="sex">Sugu</label>
@@ -525,6 +527,6 @@
   <script src="../data/kulud.js?v=20261010h"></script>
   <script src="profiilid.js?v=20261010h"></script>
   <script src="pension.js?v=20261011c"></script>
-  <script src="story.js?v=20261011e"></script>
+  <script src="story.js?v=20261012d"></script>
 </body>
 </html>
