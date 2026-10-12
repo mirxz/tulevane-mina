@@ -1,4 +1,4 @@
-// Elukaare mootor (public/elukaar/pension.js): fondipensioni tasasus ja annuiteeditegur. Kasutus: node tests/elukaar-mootor.mjs
+// Elukaare mootor (public/elukaar/pension.js): fondipensioni makse järgib seadust (osakud / veel tegemata väljamaksed). Kasutus: node tests/elukaar-mootor.mjs
 import assert from "node:assert";
 globalThis.window = globalThis;
 await import("../public/data/elutabel.js");
@@ -6,29 +6,30 @@ await import("../public/elukaar/pension.js");
 const P = globalThis.Pension, T = globalThis.ELUTABEL;
 const [A, B, C, D] = P.SCENARIOS;
 
-assert.strictEqual(P.annuityDue(10, 0), 10);
-assert.ok(Math.abs(P.annuityDue(3, 0.02) - (1 + 1 / 1.02 + 1 / 1.02 ** 2)) < 1e-12);
-assert.strictEqual(P.annuityDue(1, 0.04), 1);
-
 const base = { birthYear: 1984, sex: 'M', pensionAgeYears: 65, p1Monthly: 1000, p2: 40000, p3: 0, grossMonthly: 0, p2Rate: 0, p3Monthly: 0, needMonthly: 1 };
 
-// B: üks leping annab kogu perioodi jooksul võrdse reaalse makse ka positiivse tootluse korral.
+// B: üks leping. Seadus (KoPS § 52³ lg 8, § 60¹ lg 5): osakute arv jagatakse iga kord veel tegemata väljamaksete arvuga,
+// väljamakse = osakud × hind. Seega makse_k = pott / n × (1 + r)^k: tasane 0% juures, kasvab positiivse ja kahaneb negatiivse tootluse korral.
 for (const r of [0, 0.02, 0.04, -0.01]) {
   const s = P.simulate({ ...base, realReturn: r }, T, B);
   const term = P.fundPensionTerm(T, 'M', 65);
   const pay = s.rows.filter((x) => x.age >= 65 && x.age < 65 + term).map((x) => x.i2);
   assert.strictEqual(pay.length, term);
-  pay.forEach((v) => assert.ok(Math.abs(v - pay[0]) < 1e-6, `B makse tasane r=${r}: ${v} vs ${pay[0]}`));
   const pot = 40000 * (1 + r) ** (65 - (P.CURRENT_YEAR - 1984));
+  pay.forEach((v, k) => assert.ok(Math.abs(v - pot / term * (1 + r) ** k / 12) < 1e-6, `B makse_k = pott/n·(1+r)^k r=${r} k=${k}: ${v}`));
+  // Osakute arv on jääv: iga makse jagatud fondi hinnaga (1 + r)^k on sama, ja nende summa on pott.
   const pv = pay.reduce((sum, v, k) => sum + v * 12 / (1 + r) ** k, 0);
-  assert.ok(Math.abs(pv - pot) < 1e-6, `B maksete PV = saldo r=${r}: ${pv} vs ${pot}`);
+  assert.ok(Math.abs(pv - pot) < 1e-6, `B maksete väärtus fondi hinnas = pott r=${r}: ${pv} vs ${pot}`);
   assert.strictEqual(s.rows.find((x) => x.age === 65 + term).i2, 0);
+  if (r > 0) assert.ok(pay[term - 1] > pay[0], 'positiivse tootluse korral makse kasvab');
+  if (r < 0) assert.ok(pay[term - 1] < pay[0], 'negatiivse tootluse korral makse kahaneb');
 }
 {
+  // Esimene makse on pott / n (mitte annuiteet): 2% juures väiksem kui tasane makse oleks.
   const r = 0.02, s = P.simulate({ ...base, realReturn: r }, T, B);
   const pot = 40000 * 1.02 ** (65 - (P.CURRENT_YEAR - 1984));
   const term = P.fundPensionTerm(T, 'M', 65);
-  assert.ok(Math.abs(s.rows.find((x) => x.age === 65).i2 - pot / P.annuityDue(term, r) / 12) < 1e-6);
+  assert.ok(Math.abs(s.rows.find((x) => x.age === 65).i2 - pot / term / 12) < 1e-6);
 }
 
 // D (leping igal aastal uuesti): ei saa otsa, väheneb vanemas eas (stsenaariumi omadus, mitte viga).

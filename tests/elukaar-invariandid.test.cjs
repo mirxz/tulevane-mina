@@ -98,14 +98,14 @@ for (const input of cases.slice(0, 80)) {
   check(s.rows.every((x) => x.tax1 === 0 && near(x.i1, x.i1g)), label(input, 'E') + ': incomeTax=false → maksu pole');
 }
 
-// 9. Tasasus: ühe lepingu fondipension (B) maksab võrdset reaalset makset kogu lepingu ajal (kui vajadus on väike, siis lisaväljamakseid pole).
+// 9. Seadus (KoPS § 52³ lg 8, § 60¹ lg 5): ühe lepingu fondipensioni (B) makse järgib fondi väärtust, makse_k = makse_0 × (1 + r)^k (kui vajadus on väike, siis lisaväljamakseid pole).
 for (const input of cases.slice(0, 120)) {
   const i = { ...input, needMonthly: 1, extraDeposit: 0 };
   const s = P.simulate(i, T, B);
   const pa = P.retirementYears(i), cur = P.CURRENT_YEAR - i.birthYear, start = Math.max(pa, cur);
   const term = P.fundPensionTerm(T, i.sex, start);
   const pay = s.rows.filter((x) => x.age >= start && x.age < start + term).map((x) => x.i2);
-  check(pay.length > 0 && pay.every((v) => near(v, pay[0], 1e-6)), label(i, 'B') + ': makse on tasane kogu lepingu ajal');
+  check(pay.length > 0 && pay.every((v, k) => near(v, pay[0] * (1 + i.realReturn) ** k, 1e-6)), label(i, 'B') + ': makse järgib fondi väärtust (osakud / veel tegemata väljamaksed)');
   const after = s.rows.find((x) => x.age === start + term);
   check(!after || after.i2 === 0, label(i, 'B') + ': pärast lepingut makset pole');
 }
