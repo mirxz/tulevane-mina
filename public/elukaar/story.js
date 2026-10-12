@@ -108,7 +108,7 @@
 
   function readInput() {
     const num = (id) => Math.max(0, parseFloat($(id).value) || 0);
-    const birthYear = Math.min(1990, Math.max(1950, parseInt($('birthYear').value, 10) || 1980));
+    const birthYear = Math.min(2008, Math.max(1930, parseInt($('birthYear').value, 10) || 1980));
     const currentAge = P.CURRENT_YEAR - birthYear;
     const fund18 = $('fundCur').value; // praegune fond (muutuja nimi ajalooline)
     const fundNow = radio('fundChange') === 'switch' ? $('fundNew').value : fund18;
@@ -1078,7 +1078,18 @@
     $('paHint').textContent = 'Reegli järgi ' + rule.years + ' a';
   }
   $('pensionAgeYears').addEventListener('change', () => { paTouched = true; });
-  $('birthYear').addEventListener('input', syncPensionAge);
+  $('birthYear').addEventListener('input', () => { $('birthYearNote').textContent = ''; syncPensionAge(); });
+  // Väljaspool vahemikku sisestatud aasta asendatakse lähima lubatud aastaga (pärast sisestuse lõppu, mitte trükkimise ajal).
+  // Teade on nähtamatu role="status" piirkonnas: nägija näeb muutust väljas, ekraanilugeja kasutaja kuuleb seda.
+  $('birthYear').addEventListener('change', () => {
+    const el = $('birthYear'), min = parseInt(el.min, 10), max = parseInt(el.max, 10);
+    const v = parseInt(el.value, 10);
+    if (v >= min && v <= max) return;
+    const fixed = isNaN(v) ? 1980 : Math.min(max, Math.max(min, v));
+    el.value = String(fixed);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    $('birthYearNote').textContent = 'Muudetud aastaks ' + fixed + '.';
+  });
 
   // ---------- Sündmused ----------
   ['fund18Fund', 'fundNew'].forEach((id) => {
