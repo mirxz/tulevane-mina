@@ -112,8 +112,8 @@ assert.ok(Math.abs(a2.rows.find((x) => x.age === 70).i1 - 900 * 1.1688) < 0.01);
   // Riiklik pension algab 2 aastat hiljem ja on suurem (+16,88%).
   assert.strictEqual(row(once, 66).i1, 0);
   assert.ok(Math.abs(row(once, 67).i1 - 900 * 1.1688) < 0.01);
-  // Üks leping: tasane väljamakse lepingu lõpuni (65 + 21 a = 86) ja siis null.
-  assert.ok(Math.abs(row(once, 70).i23 - row(once, 80).i23) < 0.01);
+  // Üks leping: väljamakse järgib fondi väärtust (osakud / veel tegemata väljamaksed, 2% tootlus) lepingu lõpuni (65 + 21 a = 86) ja siis null.
+  assert.ok(Math.abs(row(once, 80).i23 / row(once, 70).i23 - 1.02 ** 10) < 1e-9);
   assert.strictEqual(row(once, 86).i23, 0);
   assert.ok(row(yearly, 86).i23 > 0); // uus leping igal aastal ei lõpe
   // 75-aastaselt on ühe lepingu väljamakse suurem kui igaaastasel uuendamisel.
@@ -124,13 +124,13 @@ assert.ok(Math.abs(a2.rows.find((x) => x.age === 70).i1 - 900 * 1.1688) < 0.01);
   assert.ok(Math.abs(row(b, 70).i23 - row(c0, 70).i23) < 0.01);
 }
 
-// Eraldi III samba fondipension: üks leping (tasane väljamakse) või uus leping igal aastal.
+// Eraldi III samba fondipension: üks leping (makse järgib fondi väärtust) või uus leping igal aastal.
 {
   const row = (s, age) => s.rows.find((x) => x.age === age);
   const mk = (sep) => P.simulate({ ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', ...sep } }, table, { id: 'E' }); // E: II kasvab, i23 on ainult III
   const once = mk({ contract: 'once' }), yearly = mk({ contract: 'yearly' });
   const term = P.fundPensionTerm(table, 'N', 65);
-  assert.ok(Math.abs(row(once, 66).i23 - row(once, 65 + term - 1).i23) < 0.01); // tasane
+  assert.ok(Math.abs(row(once, 65 + term - 1).i23 / row(once, 66).i23 - 1.02 ** (term - 2)) < 1e-9); // järgib fondi väärtust
   assert.strictEqual(row(once, 65 + term).i23, 0);                              // lõpeb perioodi lõpus
   assert.ok(row(yearly, 65 + term).i23 > 0);                                    // uus leping igal aastal ei lõpe
   assert.deepStrictEqual(mk({}).rows.map((x) => x.i23), yearly.rows.map((x) => x.i23)); // contract puudub = igal aastal
