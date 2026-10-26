@@ -23,7 +23,7 @@
   const CHILD_R = { none: 0, parent: 0, account: 0.04 };
   // Hooldekodu omaosalus kuus [secondary]: keskmine kohatasu 1 603 € (ERR 11.2025), hoolduse osa (u 600 €) maksab omavalitsus,
   // inimesele jääb u 1 000 €. SKA 2023: kohatasu 1 252 €, inimese osa 638 € (Riigikogu seletuskiri). Ametlikku 2026 tabelit pole
-  // (kontrollitud 16.10.2026): täpsem number SKA hooldekodu statistikast. Sama mis kalkulaatoris.
+  // (kontrollitud 26.10.2026): täpsem number SKA hooldekodu statistikast. Sama mis kalkulaatoris.
   const CARE_HOME = 1000;
   const PRICE = { tank: 80, mince: 10, trip: 1800, cafe: 12 }; // 50 l kütust, 1 kg veisehakkliha, kaks nädalat soojal maal (lend + majutus), kohvikulõuna
 

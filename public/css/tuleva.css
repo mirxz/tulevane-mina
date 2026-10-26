@@ -1,6 +1,6 @@
 /* Tuleva disainisüsteem Elukaare jaoks.
    Allikas: TulevaEE/onboarding-client (MIT litsents, © 2017 Tuleva), https://github.com/TulevaEE/onboarding-client
-   Iga plokk viitab failile, kust see on võetud (SCSS → CSS, muutujad välja kirjutatud). Kontrollitud 16.10.2026.
+   Iga plokk viitab failile, kust see on võetud (SCSS → CSS, muutujad välja kirjutatud). Kontrollitud 26.10.2026.
    Bootstrap tuleb CDN-ist vaikeseadetega, seega Tuleva SCSS-muutujad (nt $blue → $primary) on siin Bootstrapi CSS-muutujatena. */
 
 /* ---------- 1. Muutujad: src/components/_variables.scss ---------- */

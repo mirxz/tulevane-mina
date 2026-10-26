@@ -66,15 +66,15 @@
   "vaartus": 5,
   "allikas": "Pensionikeskus: II sambast saab pensionile jääda kuni 5 aastat enne vanaduspensioniiga (sünniaasta järgi); erand ainult täielik puuduv töövõime",
   "url": "https://www.pensionikeskus.ee/ii-sammas/valjamaksed/",
-  "kontrollitud": "2026-10-15",
+  "kontrollitud": "2026-10-26",
   "kommentaar": "Soodustingimustel pension ega eripension II sammast varem ei ava. Mootor: open2 = max(pensionile minek, pa − 5)."
  },
  "aastahinne": {
   "vaartus": 10.477,
-  "allikas": "SKA: aastahinde väärtus alates 1.04.2026 (tuleva-tulevik README)",
-  "url": "https://sotsiaalkindlustusamet.ee/",
-  "kontrollitud": "2026-10-15",
-  "kommentaar": "[secondary] Tiimi teisest repost. Mootor: AASTAHINNE, workAccrual (RPKS § 12, § 13¹, § 25)."
+  "allikas": "SKA: pensioni indekseerimine, aastahinne 10,477 € alates 1.04.2026 (ingliskeelne leht, uuendatud 01.04.2026, kirjutab aastaks ekslikult 2025)",
+  "url": "https://www.sotsiaalkindlustusamet.ee/en/pension-and-benefits/pension-amount/pension-indexation",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Mootor: AASTAHINNE, workAccrual (RPKS § 12, § 13¹, § 25)."
  },
  "laste_ii_samba_sissemakse_kuus": {
   "tabel": {
@@ -83,7 +83,7 @@
   },
   "allikas": "SKA: Perehüvitiste määrad ja maksmine (kogumispensioni täiendavad sissemaksed, 4% Eesti keskmisest sotsiaalmaksuga maksustatavast kuutulust); KoPS § 10, PHS § 40 lg 2",
   "url": "https://sotsiaalkindlustusamet.ee/perehuvitised-ja-muud-toetused/perehuvitiste-ulevaade/perehuvitiste-maarad-ja-maksmine",
-  "kontrollitud": "2026-10-16",
+  "kontrollitud": "2026-10-26",
   "kommentaar": "Uueneb igal aastal (SKA avaldab järgmise aasta summa). Kuni lapse 3-aastaseks saamiseni, ühele vanemale, kes on II sambas."
  },
  "laste_pensionilisa_aastahinnetes": {
@@ -91,10 +91,10 @@
   "ilma_ii_sambata_2013_kuni_2021_08": 3.5,
   "vanem_syndinud_enne": 1983,
   "ilma_ii_sambata_alates_2021_09": 3.5,
-  "allikas": "RPKS § 24 lg 1¹ (1991–2012 3,5 aastahinnet, enne 1991 1,5 + staaž, p 2–3: 3,5; SKA laste kasvatamise leht) ja § 28 lg 2 p 12 (2 a staaži lapse kohta)",
+  "allikas": "RPKS § 24 lg 1¹ (1981–2012 sündinud laps 3,5 aastahinnet, enne 1981 1,5 + staaž, p 2–3: 3,5; SKA laste kasvatamise leht nimetab piiriks 1991, summa sama) ja § 28 lg 2 p 12 (2 a staaži lapse kohta)",
   "url": "https://www.riigiteataja.ee/akt/RPKS",
-  "kontrollitud": "2026-10-16",
-  "kommentaar": "Enne 1991 sündinud lapse eest 1,5 lisa + 2 a staaži = 3,5 ühikut. Lg 6 osaline lisa (< 36 kuud II samba sissemakseid) mudelis puudub."
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Enne 1981 sündinud lapse eest 1,5 lisa + 2 a staaži = 3,5 ühikut. Lg 6 osaline lisa (< 36 kuud riigi II samba lisamakseid) on mootoris: childSupplement, k.iiMonths (TLV-88)."
  },
  "tuleva_eeldused": {
   "palga_kasv": 0.03,
@@ -102,7 +102,7 @@
   "iii_makse_indekseeritud": false,
   "allikas": "Tuleva kogumiskalkulaator: SALARY_GROWTH 3%, vaikimisi inflatsioon 2% (EKP eesmärk), III samba makse konstantne (TulevaEE/onboarding-client pensionCalculator/calculation.ts)",
   "url": "https://github.com/TulevaEE/onboarding-client",
-  "kontrollitud": "2026-10-16",
+  "kontrollitud": "2026-10-26",
   "kommentaar": "TLV-86. Elukaare UI kasutab neid vaikimisi; mootor ilma sisendita mitte."
  },
  "paindlik_varem": {

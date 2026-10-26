@@ -70,8 +70,8 @@
   }
 
   // Pensioniiga (RPKS § 7, alates 2027; § 7¹ üleminek 2027–2029): aastal t on pensioniiga 65 a + (65-aastaste meeste ja naiste
-  // keskmine eeldatav eluiga aastatel t−8 … t−4) − (sama 2018–2022), kuu täpsusega, tõuseb kuni 3 kuud aastas (lg 8).
-  // Valem annab kehtestatud väärtused: 2027 65 a 1 k, 2028 65 a 3 k, 2029 65 a 4 k (kontrollitud 16.10.2026).
+  // keskmine eeldatav eluiga aastatel t−8 … t−4) − (sama 2018–2022), kuu täpsusega, tõuseb kuni 3 kuud aastas (lg 7).
+  // Valem annab kehtestatud väärtused: 2027 65 a 1 k, 2028 65 a 3 k, 2029 65 a 4 k (kontrollitud 26.10.2026).
   // Tulevikku keegi ei tea: nagu SKA kalkulaator eeldame, et eluiga jääb viimase avaldatud aasta tasemele (TLV-87).
   // Andmed: Statistikaamet RV045 (scripts/fetch_elutabel.py → elutabel.js eluiga65; test kontrollib, et on samad).
   const LIFE_EXP_65 = { 2018: 17.94, 2019: 18.245, 2020: 18.3, 2021: 17.06, 2022: 17.795, 2023: 18.52, 2024: 18.755, 2025: 18.88 };
@@ -90,7 +90,7 @@
     return m;
   }
   // Isiku pensioniiga: kehtib selle aasta pensioniiga, millal inimene sellesse vanusesse jõuab (RPKS § 7 lg 10).
-  // Sünnikuud ei tea: eeldame jaanuari. 2029 ja varasemad väärtused on kehtestatud või eelnõus, hilisemad prognoos.
+  // Sünnikuud ei tea: eeldame jaanuari. 2029 ja varasemad väärtused on kehtestatud, hilisemad prognoos.
   function pensionAge(birthYear) {
     let year = birthYear + 65, months = 0;
     for (let y = birthYear + 65; y <= birthYear + 72; y++) {
@@ -172,7 +172,7 @@
     return gross * 12 * (rate > 0 ? rate + 0.04 : 0) * wageFactor(input, a) + (input.p3Monthly || 0) * 12 * p3Factor(input, a);
   }
 
-  // Varem pensionile ilma vähenduseta (SKA, kontrollitud 16.10.2026). Lapsed (input.kids, õigust kasutab üks vanem):
+  // Varem pensionile ilma vähenduseta (RPKS § 10, SVPS § 1, kontrollitud 26.10.2026). Lapsed (input.kids, õigust kasutab üks vanem):
   // 3 last 1 a, 4 last 3 a, 5+ last või puudega laps 5 a. Tervist kahjustav töö (SVPS, input.hazard): nimekiri nr 1 10 a,
   // nimekiri nr 2 5 a (staaž kuni 31.12.2030, põlevkivi 2049). Eraldi alused (RPKS § 10, SVPS § 1), kumbki loeb aastad tavalisest pensionieast; RPKS § 6: määratakse üks pension isiku valikul. Seega kehtib see, mis annab rohkem aastaid varem, aastad ei liitu.
   function earlyYears(input) {
@@ -202,9 +202,9 @@
     return input.rescueBasis !== 'toetus' && kidsY > 0 ? pa - kidsY : pa;
   }
 
-  // Laste pensionilisa kuus (RPKS § 24 lg 1¹ ja § 28 lg 2 p 12, kontrollitud 16.10.2026; laps kasvatatud ≥ 8 a):
+  // Laste pensionilisa kuus (RPKS § 24 lg 1¹ ja § 28 lg 2 p 12, kontrollitud 26.10.2026; laps kasvatatud ≥ 8 a):
   // - enne 2013 sündinud laps (RPKS § 24 lg 1¹ p 1 ja 1¹, Riigi Teataja 01.10.2026): 1,5 aastahinnet + 31.12.1980–2012 sündinul
-  //   veel 2 aastahinnet; varem sündinul 2 aastat staaži (§ 28; staažiaasta = 1 aastahinne, § 12). Kokku kõigil 3,5.
+  //   veel 2 aastahinnet; varem sündinul 2 aastat staaži (§ 28; staažiaasta = 1 aastahinne, § 11 lg 2). Kokku kõigil 3,5.
   //   (SKA leht nimetab staaži piiriks 1991; summa on sama.)
   // - 2013–08.2021 sündinud laps: 3,5 aastahinnet ainult enne 1983 sündinud vanemale, kes ei ole II sambas (p 2).
   // - 09.2021+ sündinud laps: 3,5 aastahinnet, kui vanem ei ole lapse 3 esimesel aastal II sambas (p 3; mudel: II sammast pole).
@@ -229,7 +229,7 @@
     return AASTAHINNE * 3.5 * ((k.b1991 || 0) + (k.b2012 || 0) + after2013);
   }
 
-  // Tervist kahjustava töö lisa (SVPS § 3, kontrollitud 16.10.2026): soodustingimustel vanaduspensionile nimekirja nr 1 alusel
+  // Tervist kahjustava töö lisa (SVPS § 3, kontrollitud 26.10.2026): soodustingimustel vanaduspensionile nimekirja nr 1 alusel
   // (SVPS § 1 p 1) lisandub 3,1% aastahindest iga nimekirja nr 1 tööaasta eest ja allmaatöödel lisaks 21,9% aastahindest
   // iga allmaatöö aasta eest (TLV-88). SKA kalkulaatoris seda valikut pole, seega lisame alati (prognoos seda ei sisalda).
   function hazardSupplement(input) {
