@@ -1,135 +1,94 @@
 # Tulevane Mina
 
-Tuleva häkatoni 2026 prototüüp: pane pensioniaastad panuseks, ratas veeretab su elu läbi suremusstatistika ja tulevane sina helistab. Lõpuks näitab mäng kõiki elusid ja paljastab kasiinovõtted.
+> Prototüüp: kas sinu raha jätkub kogu eluks? Tehtud Tuleva liikmete häkatonil Tallinnas (2026-10-09 kuni 2026-10-11). See ei ole finants- ega maksunõu ega Tuleva ametlik kalkulaator.
 
-Lehed on kaustas `public/` (avaleht, elukaar `/elukaar/`, arhiveeritud prototüübid `/arhiiv/`). Cloudflare Worker `src/index.js` serveerib neid ja teeb väikesed liidesed:
+## Mis see on
+
+Tulevane Mina on veebileht, mis näitab inimesele ühe loona, kas tema pensioniraha ja muu sissetulek katab kulud tänasest elu lõpuni. Inimene läbib elu etapid (lapsepõlv, tööelu, 55, 60, pensioniiga, pensionipõlv) ja vastab igal etapil mõne küsimusega. Lõpus näeb ta graafikut: sissetulek vanuse järgi (riiklik pension, II sammas, III sammas, hoius ja vajadusel eripension) ning kulud selle kõrval.
+
+- „Elu lõpuni“ tähendab siin vanust, milleni jõuab elusalt 10% sinuvanustest (Statistikaameti elutabeli järgi).
+- Kõik arvutused tehakse brauseris. Sisestatud numbrid ei lähe serverisse.
+- Summad on tänastes eurodes. Eeldused (näiteks fondi tootlus) on lehel nähtavad ja muudetavad.
+- Eesmärk on, et inimene saaks otsuseid (millal pensionile minna, kas võtta II ja III samba raha varem välja, kuidas fondipensioni võtta) võrrelda ühe loo sees, mitte mitmes kalkulaatoris.
+
+**Olek (2026-10-26):** põhitoode on **Elukaar** (`/elukaar/`) ja seda arendatakse. Varasemad häkatoni katsetused (kalkulaator, plaan, õnneratas, kasiinomäng, lauamäng) on arhiivis ja töötavad edasi, aga neid ei arendata, vt [docs/arhiiv.md](docs/arhiiv.md). Domeen tulevanemina.ee läheb 2026-10-26 üle Tuleva AS-ile, vt „Üleandmine“ allpool.
+
+## Mida inimene näeb
+
+Avaleht `/` selgitab lühidalt, kuhu kasutaja sattus, ja laseb valida algpunkti: Tuleva konto näide, sisestan nullist, Tuleva liikmest koguja või mitteliikmest koguja (viimase kahe all viis koguja profiili). Valik viib aadressile `/elukaar/?p=<profiil>`, kus algandmed on täidetud ja kõiki välju saab muuta.
+
+Elukaar koosneb sammudest. Sammude arv ja sisu sõltuvad valikutest (näiteks 55-aastaselt sammu ei tule, kui III samba vanus on sisestatud, ja eripensioni samm on seotud sellega, kas eripension on olemas).
+
+| Samm | Vanus | Küsimus |
+| --- | --- | --- |
+| 0 | Sina | Kes sa oled ja mis sul juba on? |
+| 1 | 0–18 | Lapsepõlv: kas keegi kogus sulle raha? |
+| 2 | 18 | Tööelu algab: kuidas said oma pensionifondi? |
+| 3 | 18–55 | Tööaastad: kas võtad samba raha varem välja? |
+| 4 | 55 | 55-aastaselt: esimene otsustuskoht |
+| 5 | 60 | Mida teed II ja III samba rahaga? |
+| 6 | 65 | Pensioniiga |
+| 7 | 66+ | Pensionipõlv: kuidas fondipension kestab? |
+| 8 | Kulud | Mis elu sa pensionil elada tahad? |
+| 9 | Eripension | Eripension algab |
+| 10 | Tulemus | Kas raha jätkub elu lõpuni? |
+
+Tulemuse samm näitab graafikut „Sissetulek ja kulud vanuse järgi“ (tabelina ka), kokkuvõtet, valikuid ja selgitust, kuidas graafikut lugeda. Tulemuse saab alla laadida Markdown- ja PDF-failina. Paljude väljade juures on „?“ selgitus ja viide allikale.
+
+### Väljamakse viisid
+
+Tulemuses võrreldakse viit viisi, kuidas II ja III samba raha kasutada. Kõigil on sama kulureegel, seega erinevad nad ainult maksu, tootluse, riikliku pensioni algusaja ja väljamakse graafiku poolest.
+
+| Tähis | Nimi | Mida see tähendab |
+| --- | --- | --- |
+| A | Kõik korraga | II ja III sammas ühekordselt välja (10% maks), raha hoiusel, kasutad vajaduse järgi |
+| B | Üks fondipensioni leping | Maksuvaba fondipension elada jäänud aastate peale; leping lõpeb perioodi lõpus |
+| C | Sild ja riiklik pension hiljem | Riiklik pension algab hiljem ja on eluks ajaks suurem; seni elad sambast |
+| D | Leping igal aastal uuesti | Maksuvaba fondipension, mille lepingu sõlmid igal aastal uuesti; ei saa otsa, aga väheneb vanas eas |
+| E | Jätkan kasvatamist | Raha jääb fondi kasvama, vajadusel võtad osa välja (10% tulumaks); vaikevalik |
+
+## Kuidas arvutus töötab
+
+**Ühine kulureegel:** igal aastal kulutad oma vajaduse. Allikad järjekorras: riiklik pension, samba plaanijärgne väljamakse, hoius (varasemad ülejäägid või ühekordne väljamakse), lisaväljamakse sambast (10% maks). Ülejääk läheb hoiusele (reaaltootlus vaikimisi −1%).
+
+**Mida mudel arvestab:** riiklik pension (vana ja uus süsteem, paindlik pension varem ja hiljem), eripension, soodustingimustel pension (lapsed, tervist kahjustav töö, päästeteenistus, ametniku staaž), II ja III samba varane väljavõtt, fondipension, töö pärast pensioniiga, tulumaks ja maksuvaba tulu, laste pensionilisa ja riigi II samba lisamakse lapse eest.
+
+**Mida mudel ei arvesta:** hoolduskulu ei ole eraldi mudelis (hooldekodu omaosalus on toodud ainult võrdlusena kulutaseme juures); inimene vastutab ise tingimuste (näiteks tervist kahjustava töö staaži) täitmise eest.
+
+**Kust numbrid tulevad:** seadused (riikliku pensionikindlustuse seadus, kogumispensionide seadus, tulumaksuseadus, päästeteenistuse seadus, avaliku teenistuse seadus, soodustingimustel vanaduspensioni seadus), Sotsiaalkindlustusameti (SKA) lehed, EMTA, Statistikaamet ja Tuleva avalik kood (TulevaEE/onboarding-client). Iga konstant on failis `tests/reeglid.json` koos allika ja kontrollimise kuupäevaga; test kukub, kui allikas puudub või on üle 400 päeva üle vaatamata. Arvutust on võrreldud SKA pensionikalkulaatoriga (2026-10-17) ja Tuleva kogumiskalkulaatoriga. Arvutus ei ole juriidiline hinnang.
+
+## Kuidas projekt on üles ehitatud
+
+| Kaust või fail | Mis see on |
+| --- | --- |
+| `public/index.html` | Avaleht (maandumisleht) |
+| `public/elukaar/` | Elukaar: `index.html` (sammud), `story.js` (valikud ja liides), `pension.js` (arvutusmootor, puhtad funktsioonid), `abi.js` („?“ selgitused), `profiilid.js` (algprofiilid) |
+| `public/data/` | Statistikaameti elutabel (`elutabel.js`) ja kulutasemed (`kulud.js`) |
+| `public/tagasiside/`, `public/privaatsus/` | Tagasiside leht ja privaatsuspoliitika |
+| `public/mootmine.js` | Anonüümne mõõtmine, vt „Mõõtmine ja privaatsus“ |
+| `public/arhiiv/` | Varasemad prototüübid, vt [docs/arhiiv.md](docs/arhiiv.md) |
+| `src/index.js` | Cloudflare Worker: serveerib lehti, teeb väikesed liidesed, parooliga tulemuste lehe |
+| `src/moot.js`, `src/aeg.js` | Tulemuste lehe vaated ja Tallinna aja arvestus |
+| `tests/` | Automaattestid, vt [tests/README.md](tests/README.md) |
+| `docs/` | Skeemid (`elukaar_harud.drawio`, `otsustusmudel.drawio`) ja arhiivi kirjeldus |
+| `scripts/elutabel.py` | Statistikaameti elutabeli allalaadimine; kirjutab faili `public/plaan/elutabel.js`, mida enam ei ole (plaan on arhiivis), ja Elukaare `public/data/elutabel.js` seega sellega uuesti ei teki (TBC, vt „Igal aastal uuendatavad väärtused“) |
+| `wrangler.jsonc` | Cloudflare'i seadistus (Worker, domeenid, andmebaas) |
+| `mirko-claud-skills/` | Tuleva tiimile antud üleandmise dokument ja kaks Claude'i oskust (`.skill`) |
+
+Worker `src/index.js` teeb need liidesed:
 
 | Liides | Mida teeb |
 | --- | --- |
-| `/api/tts` | loeb tulevase mina kõne ette eesti häälega |
 | `/api/e` | anonüümne mõõtmine (avaleht, elukaar, tagasiside), vt [ANALUUTIKA.md](ANALUUTIKA.md) |
 | `/api/t` | tagasiside lehe `/tagasiside/` vastused |
-| `/api/r`, `/api/p`, `/api/s`, `/api/mang/tuba` | arhiveeritud prototüüpide (ratas, plaan, kasiino, lauamäng) vastused |
+| `/tulemused`, `/tulemused*.csv`, `/saada` | parooliga tulemuste leht ja kutsekirjade saatmine |
+| `/api/tts`, `/api/r`, `/api/p`, `/api/s`, `/api/mang/tuba` | arhiveeritud prototüüpide liidesed |
 
-Vastused ja mõõtmine lähevad Cloudflare D1 andmebaasi `mina-tagasiside`. Kasutaja sisestatud arve ega isikuandmeid ei salvestata (testid kontrollivad, vt `tests/privaatsus.mjs`).
+Vanad aadressid `/kalkulaator/`, `/plaan/` ja `/ratas/` suunatakse Workeris uuele aadressile `/arhiiv/…` (päring säilib). Aadress `/mang` annab teadlikult teate „Seda prototüüpi enam pole“.
 
-## Aadressid
+## Käivita kohalikult
 
-| Mis | Aadress | Kust tuleb |
-| --- | --- | --- |
-| Toodang (žürii, testijad) | https://mina.tulevane.workers.dev | haru `main` |
-| Eelvaade | `https://<haru>-mina.tulevane.workers.dev` | iga teine haru |
-
-### Saidi ülesehitus (10.10)
-
-- `/` on maandumisleht (`public/index.html`): selgitab lühidalt, kuhu kasutaja sattus, ja annab kaks valikutaset: 1) Tuleva konto näide, sisestan nullist, Tuleva liikmest koguja, Tuleva mitteliikmest koguja; 2) liikme või mitteliikme all viis koguja profiili. Valik viib aadressile `/elukaar/?p=<profiil>`.
-- `/elukaar/` on Kadi leht (`public/elukaar/index.html`, haru `kadi-branch`). Parameeter `?p=` täidab algandmed (profiilid `PROFILES` lehe lõpus, samad väärtused mis `public/arhiiv/kalkulaator/andmed/kihid.js` `ALGUSPUNKTID`); kõiki välju saab ise muuta.
-- `/arhiiv/` on varasemate prototüüpide sisukord: `/arhiiv/kalkulaator/`, `/arhiiv/plaan/`, `/arhiiv/ratas/`, `/arhiiv/kasiino.html`, `/arhiiv/lauamang/`.
-- Vanad aadressid `/kalkulaator/`, `/plaan/`, `/ratas/` (ka prinditud QR `/ratas/?k=a5`) suunavad Workeris (`arhiiviAadress` failis `src/index.js`) uuele aadressile, päring säilib.
-
-## Töövoog
-
-1. **Otsus.** Mida muudame, on kirjas [otsuste logis](https://claude.ai/code/artifact/db97d812-22e1-4c5c-a076-89b7571d2a54). Ilma otsuseta toodangusse ei liigu midagi.
-2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/tagasiside`. Kiired katsetused võib teha enne claude.ai artefaktis.
-3. **Push.** Haru läheb GitHubi. Automaatselt käivituvad:
-   - GitHub Actions → `.github/workflows/smoke.yml`: `wrangler deploy --dry-run` ja `npm test` (kõik mootori-, stsenaariumi- ja brauseritestid, vt [tests/README.md](tests/README.md));
-   - Cloudflare → eelvaate-URL.
-4. **Test.** Üks inimene, mitte muudatuse tegija, mängib eelvaate telefonis läbi (kontrollnimekiri allpool).
-5. **Toodangusse.** Pull request → `main`, kui test on roheline ja eelvaade üle vaadatud. Cloudflare avaldab mõne minutiga.
-6. **Märge.** Otsuste logis märgitakse, mis läks toodangusse ja millal.
-
-## Reeglid
-
-- `main` muutub ainult pull requesti kaudu: roheline suitsutest + keegi on eelvaate telefonis läbi mänginud.
-- Väliseid skripte võimalikult vähe. Lubatud: Google Fonts ja elukaares Bootstrap 5.3.3 (CSS) ning Chart.js 4.4.1 jsDelivr CDN-ist, kindla versiooniga (testid suunavad need kohalikule `node_modules` koopiale). Uue välise skripti lisamine on otsus otsuste logis. Serveri liidesed on ainult need, mis on loetletud lehe alguses.
-- Ei analüütikateeke ega küpsiseid. Mõõdame ainult anonüümselt ja minimaalselt, vt [ANALUUTIKA.md](ANALUUTIKA.md); mõõtmise muutmine käib selle põhimõtete järgi.
-- Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda ka testi oodatud väärtust (`tests/smoke.mjs`) ja allikaviidet lehe jaluses.
-- Tuleva logo avalikul lehel ei kasuta. Silt „prototüüp“ ja lahtiütlus jäävad alles.
-- **Külmutus:** viimased 60 minutit enne lõppesitlust `main`-i ei muudeta. Esitlus tehakse versioonist, mis on märgitud git-sildiga `pitch`.
-- **Tagasivõtmine:** Cloudflare → Workers & Pages → mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
-
-## Hääl (kõnesüntees)
-
-Kõne-ekraanil loeb tulevane mina tsitaadi ette. Tekst läheb `/api/tts` kaudu TartuNLP Neurokõnele (Tartu Ülikool) ja tagasi tuleb heli. Sõnumis on ainult vanus ja summa, mitte isikuandmed.
-
-- Hääled: mees `albert`, naine `kylli` (`VOICES` failis `public/index.html`). Võimalikud: albert, indrek, kalev, kylli, lee, liivika, luukas, mari, meelis, peeter, tambet, vesta.
-- Kiire kontroll brauseris: `/api/tts?proov=1&haal=albert` peab mängima lause „Tere! Siin räägib sinu tulevane mina.“
-- Hääl välja (nt Wizard of Oz, kui tiimiliige räägib ise): lisa aadressile `?haal=vaikne`.
-- Kui kõnesüntees ei vasta, jätkub mäng tekstiga.
-- Häält tasub kuulata Google Home kõlarist (Bluetooth), mitte telefonist.
-
-## Kõne turvareeglid
-
-Kõne tulevaselt minalt kasutab samu võtteid nagu telefonipetturid. Seepärast kehtivad kindlad reeglid, mida ükski muudatus ei muuda:
-
-1. Kõne ei küsi kunagi midagi: koode, PIN-i, ID-kaarti, Smart-ID-d, linke ega ülekandeid. Tulevane mina ainult räägib.
-2. Kõne toimub ainult mängus ja algab mängija enda tegevusest. Päris telefonikõnesid kellegi numbrile ei tee.
-3. Häälekloonimist ei kasuta.
-4. Kõne-ekraanil on alati rida „Tulevane Mina ei küsi kunagi koode, PIN-i ega raha.“ Suitsutest kontrollib seda.
-
-Mängu lõpp paljastab, et kõne kasutas petturite võtteid, ja soovitab kahtluse korral kõne lõpetada ning ise panka helistada.
-
-## Raamid: panus ja kingitus
-
-Sama otsust saab näidata kahes raamis. Arvutus on mõlemas identne, muutub ainult sõnastus.
-
-- **Panus** (vaikimisi): kasiino-kiht, koefitsiendid, LIVE-riba, võlts taimer ja nügimine. Lõpp paljastab iga võtte.
-- **Kingitus** (`?raam=kingitus`): ootamine on kingitus tulevasele minale. Mängija valib, mida tahaks pensionil teha. Protsendid koefitsientide asemel, LIVE-riba ja taimerit pole. Kõne tänab kingituse eest või ütleb ilma süüdistamata, et see ei jõudnud kohale (riiklik pension ei pärandu, II ja III sammas pärandub).
-- Mõlema raami lõpus on link teise raami. Valikuid ei loendata ega salvestata (andmete kogumine vajab otsuste logis otsust).
-
-## Elu-kupong (`?raam=kupong`)
-
-Spordiennustuse variant. Mängija valib mängu avaekraanil (Pensioniratas, Kingitus, Elu-kupong); valik jõuab aadressiribale `?raam=` kujul.
-
-- **Turud:** pensioni ajastus (−3, 0, +3, +5 a) koos valikuga, kas varem saadud raha kulub või kasvab sambas; fondivalik (kallis 1,0% vs indeks 0,3%, näited); lubadus riigile (alkohol ühikutes nädalas, suitsetamine) ehk BOOST; üle/alla inflatsioon, palgakasv, indeksi tootlus (5% marginaaliga).
-- **Mudel:** 2000 seemnega simuleeritud elu ja majandust. Panused on seotud: lubadus muudab elukõverat ja seega ajastuse koefitsienti. Lubaduste mõju eluea kaotusena (Wood jt 2018, Doll jt 2004). Kuusissetulek = riiklik pension + sambavara jagatud eeldatava allesjäänud elueaga (fondipensioni loogika), tänases rahas. Tervelt elatud aastad Eurostati 2023 näitaja järgi.
-- **Paljastus:** sõltumatuse eeldus vs päris tõenäosus, suur koefitsient = halb panus, raha kasv vahepeal, makropanused ei muuda pensioni, „võimalik võit“ = parim 10%, populaarne kombo, petturivõtted.
-
-## Ülevaatus ja õigused
-
-Heidi Reinson andis 8.10 loa prototüüpi häkatonil avalikult testida; eraldi mängureegli piiranguid ta ei sea. Prototüübis pole viiteid tema uurimistööle ega sealsetele leidudele. Detailsem tagasiside tuleb hiljem (otsuste logi). Häkatoni tulemuste varalised õigused kuuluvad Tulevale.
-
-## Mõõtmine ja tagasiside
-
-Otsus otsuste logis 7.10. Eesmärk: valida testijate põhjal, milline mäng häkatonil esitada.
-
-- **Loos:** kui aadressil pole `?raam=`, loositakse avaekraanil üks kolmest mängust (sama brauser saab sama loosi). Mängija võib vahetada.
-- **Sündmused (anonüümne seansi-ID):** `start` (alustas mängu), `reveal` (jõudis tõe-ekraanile), `feedback` (andis tagasisidet). Kaasas ainult loositud ja mängitud mängu nimi.
-- **Tagasiside (6. ekraan):** arusaamise küsimus (õige/vale), „pani mõtlema“ 1–5, järgmine tegevus, aus/manipuleeriv, segment, eelistus (kui mängis mitut), vaba vastus kuni 280 märki.
-- **Ei salvestata:** IP-aadressi, sünniaastat, pensioni, sambavara, tervisevalikuid.
-- **Peamine mõõdik:** osa vastajatest, kes vastas arusaamise küsimusele õigesti **ja** valis mõne tegevuse (mitte „ei midagi“).
-- **Tulemused:** `/tulemused` (parool = Cloudflare secret `TULEMUSED_VOTI`, kasutajanimi ükskõik mis), `/tulemused.csv`. Vaikimisi ainult selle aadressi vastused; eelvaated lingiga „Näita ka eelvaateid“.
-- **Avalehe ja elukaare mõõtmine (11.10):** `public/mootmine.js` saadab `/api/e` kaudu sündmused `maandumine`, `edasi` (valitud eelprofiil), `elukaar`, `samm` (sammu number), `klikk` (valiku või nupu nimi, nt `r:payout=fund`, mitte sisestatud summa) ja `tagasiside`. Serveris ei hoita sündmuste logi: seansi kohta on **üks kokkuvõtterida** (`mina_seansid`: kanal, eelprofiil, esimese ja viimase tegevuse aeg, kaugeim samm, klikkide arv, lipud) ja vaated/klikid on **tunnipõhised loendurid ilma seansita** (`mina_loendur`). Kanal tuleb lingi `?k=…` väärtusest, seansi tunnus on sessionStorage'is (ilma küpsise ja IP-ta); „Ära jälgi“ lülitab välja; robotid jäetakse välja. Aeg salvestatakse UTC-s, tulemuste leht näitab kõiki kellaaegu ja tunnijaotusi Tallinna aja järgi (`src/aeg.js`). Vaated: `src/moot.js` (kutsete konversioon, funnel kanali kaupa, maandumine, eelprofiilid, elukaare sammud ja klikid, elukaare seansi keskmine ja mediaan pikkus, tagasiside allika ja kellaaja järgi). Seansi pikkus on esimesest viimase tegevuseni; lahkumist ei mõõda, seega on see alt hinnang.
-- **Elukaare tulemuste kiirmuutmine (24.10.2026):** tulemuste lehe kokkuvõtte real tehtud valikud loendatakse eesliitega `q:` (`q:r:<valik>=<väärtus>`), lisa-nupud nimega `b:add-kids` ja `b:add-work`. Uusi andmeid ei lisandu, sisestatud summasid ei saadeta (kontroll: `tests/privaatsus.mjs`, lubatud kutsete nimekiri). Kadi kinnitas 26.10.2026.
-- **Analüütika põhimõtted ([ANALUUTIKA.md](ANALUUTIKA.md)), mida testid kaitsevad:** (1) kliendi sisestatud muutujaid ei salvestata kunagi, (2) tagasisidet ei seostata e-posti ega muu isikuandmega, (3) üldine statistika on minimaalne ja anonüümne (ühe kasutaja liikumist ei jälgita). Põhimõtet muutes muuda ANALUUTIKA.md ja test koos.
-- **Andmebaas:** Cloudflare D1 `mina-tagasiside` (binding `DB`, nii toodangus kui eelvaadetes). Tabelid `sundmused` ja `vastused` luuakse esimesel päringul.
-- Kohalikus testis loob `wrangler dev` kohaliku D1; tulemuste lehe jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (fail on gitignore'is).
-
-## Ligipääsetavus
-
-Siht WCAG 2.1 AA; põhimõtted on disainisüsteemi README-s („Ligipääsetavus“).
-
-- Võit/kaotus: sinine `--gain` ja oranž triibuline `--loss`, mitte roheline–punane; alati ka sõna, märk või muster.
-- Puuteala ≥ 44 px, fookus liigub sammu vahetusel pealkirjale, ratta tulemus teatatakse ekraanilugejale.
-- Vilkumine ja helin lõpevad 5 s jooksul; `prefers-reduced-motion` peatab animatsioonid.
-- `npm test` jooksutab igal ekraanil axe-core'i (WCAG 2.1 A/AA); tõsine või kriitiline viga kukutab testi.
-
-## Käsitsi kontrollnimekiri (eelvaade telefonis)
-
-- [ ] Avaneb telefonis, teksti ei lõigata ja külgsuunas kerida ei saa.
-- [ ] Sünniaasta, sugu ja pension muudavad pensioniiga ja eeldatavat eluiga.
-- [ ] Panus: kõik 11 koefitsiendinuppu töötavad ja kupong muutub.
-- [ ] Ratas keerleb ja jääb seisma, keskel on vanus.
-- [ ] Kõne heliseb. Nii „Vasta“ kui ka „Keeldu“ viivad tsitaadini ja hääl loeb selle ette. Turvarida on nähtav.
-- [ ] Tõde: graafik, kolm numbrit, paljastatud võtted ja tabel on olemas.
-- [ ] „Proovi teist panust“ ja „Alusta otsast“ töötavad.
-- [ ] Mõlemad sood ja vähemalt valikud −5, 0 ja +5 on läbi proovitud.
-- [ ] Ratas ja graafik on loetavad ka halltoonis (telefoni ligipääsetavuse seadetes värvifilter → halltoonid).
-- [ ] Avaekraanil on üks mäng loositud ja loosimärkus nähtav; tagasiside saatmine näitab „Aitäh!“ ja vastus jõuab /tulemused lehele.
-- [ ] Elu-kupong: mänguvalik avaekraanil, lubadus muudab ajastuse koefitsienti, kõne ja arveldatud kupong.
-- [ ] `?raam=kingitus`: tegevuse küsimus, protsendid, kingituse kupong, kõne ja paljastus raami kohta; link teise raami töötab.
-
-## Kohalik test
+Vaja on Node.js (CI kasutab versiooni 22).
 
 ```
 npm install
@@ -137,24 +96,86 @@ npx playwright install chromium
 npm run test:koik           # mootor + brauser; käivitab wrangler dev ise ja paneb pärast kinni
 ```
 
-Käsitsi (nt arendades): `npx wrangler dev` ühes aknas, `npm test` teises. Tulemuste lehe testide jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (gitignore'is); `test:koik` võtab parooli sealt.
+Arendades: `npx wrangler dev` ühes aknas (leht on aadressil http://localhost:8787), `npm test` teises. Tulemuste lehe testide jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (fail on `.gitignore`'is; `test:koik` võtab parooli sealt).
 
-- **Wrangler** on Cloudflare'i käsureatööriist (`package.json` arendussõltuvus, seadistus `wrangler.jsonc`). `wrangler dev` käivitab sama Workeri sinu arvutis: lehed, `/api/*` liidesed, ümbersuunamised ja kohaliku D1 andmebaasi (kaust `.wrangler/`).
-- **Port 8787 peab olema vaba.** Kui seal jookseb mõni muu server (nt `python -m http.server 8787`), ei käivitu wrangler ja brauseritestid kukuvad vigadega 501 või TimeoutError. Kontroll: `lsof -i :8787`.
+- **Wrangler** on Cloudflare'i käsureatööriist (`package.json` arendussõltuvus). `wrangler dev` käivitab sama Workeri sinu arvutis: lehed, `/api/*` liidesed, ümbersuunamised ja kohaliku andmebaasi (kaust `.wrangler/`).
+- **Port 8787 peab olema vaba.** Kui seal jookseb mõni muu server, ei käivitu wrangler ja brauseritestid kukuvad vigadega 501 või TimeoutError. Kontroll: `lsof -i :8787`.
 - **Teine port:** `npx wrangler dev --port 8788` ja anna testile aadress, nt `node tests/smoke.mjs http://127.0.0.1:8788`. `npm test` kasutab alati porti 8787.
-- Testide täpsem kirjeldus: [tests/README.md](tests/README.md).
 
-## Ühekordne seadistus
+## Testid
 
-1. **GitHub:** repo on [mirxz/tulevane-mina](https://github.com/mirxz/tulevane-mina) (privaatne kuni pühapäevase demoni) ja lisa sinna selle kausta failid, näiteks GitHub Desktopis: *Add existing repository* → *Publish*.
-2. **Cloudflare:** Workers & Pages → *Create* → *Import a repository* → vali `tulevane-mina`.
-   - Workeri nimi: `mina` (peab klappima `wrangler.jsonc` failiga); konto alamdomeen `tulevane`.
-   - Build command: tühi.
-   - Deploy command: `npx wrangler deploy`.
-   - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
-3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
-4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
-5. **Prototüübi parool (valikuline):** samas kohas *Secret* nimega `PROTO_VOTI`. Kui see on seatud, küsib sait parooli; ilma selleta on sait avatud.
+- `npm run test:mootor`: kiired testid ilma brauserita (umbes 15 sekundit): arvutusmootor, reeglid, golden master, invariandid (300 juhuslikku sisendit × 6 väljamakse viisi), võrdlus SKA ja Tuleva kalkulaatoriga, privaatsuse põhimõtted.
+- `npm run test:brauser`: brauseritestid (liides, graafik, ligipääsetavus axe-core'iga); vajavad töötavat `wrangler dev` serverit.
+- `npm run golden:uuenda`: kui arvud muutusid **teadlikult**, kirjutab golden masterid uuesti; vaata pärast `git diff` üle.
+
+Mida iga test kontrollib ja mida ta **ei** tõesta, on kirjas failis [tests/README.md](tests/README.md). GitHub Actions jooksutab `npm test` igal push'il ja pull requestil.
+
+## Töövoog ja reeglid
+
+1. **Otsus.** Mida muudame ja miks, kirjutatakse otsuste logisse. Kus Tuleva tiim seda logi hoiab: TBC (seni oli see üleandja Claude'i projekti dokument, mis ei ole avalik).
+2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/tagasiside`.
+3. **Push.** Haru läheb GitHubi. Automaatselt käivituvad:
+   - GitHub Actions (`.github/workflows/smoke.yml`): `wrangler deploy --dry-run` ja `npm test`;
+   - Cloudflare: eelvaate-URL `https://<haru>-mina.tulevane.workers.dev`.
+4. **Test.** Üks inimene, mitte muudatuse tegija, vaatab eelvaate telefonis läbi (kontrollnimekiri allpool).
+5. **Toodangusse.** Pull request → `main`, kui CI on roheline ja eelvaade üle vaadatud. Cloudflare avaldab mõne minutiga.
+6. **Märge.** Otsuste logis märgitakse, mis läks toodangusse ja millal.
+
+**Reeglid**
+
+- `main` muutub ainult pull requesti kaudu.
+- Väliseid skripte võimalikult vähe. Lubatud: Google Fonts ning elukaares Bootstrap 5.3.3 (CSS) ja Chart.js 4.4.1 jsDelivr CDN-ist kindla versiooniga (testid suunavad need kohalikule `node_modules` koopiale). Uue välise skripti lisamine on otsus otsuste logis.
+- Ei analüütikateeke ega küpsiseid. Mõõtmine on anonüümne ja minimaalne, vt [ANALUUTIKA.md](ANALUUTIKA.md).
+- Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda `tests/reeglid.json` (väärtus, allikas, `kontrollitud`) ja vajadusel golden masterid.
+- Tuleva logo avalikul lehel ei kasutata; silt „prototüüp“ ja lahtiütlus jäävad alles. Seni kehtinud reegel; Tuleva võib selle muuta.
+- **Tagasivõtmine:** Cloudflare → Workers & Pages → mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
+
+## Aadressid
+
+| Mis | Aadress | Märkus |
+| --- | --- | --- |
+| Toodang | https://mina.tulevane.workers.dev | haru `main` |
+| Toodang, oma domeen | https://tulevanemina.ee ja https://www.tulevanemina.ee | sama Worker; domeen läheb 2026-10-26 üle Tuleva AS-ile, Workeri ühendus uues kontos: TBC |
+| Eelvaade | `https://<haru>-mina.tulevane.workers.dev` | iga teine haru |
+
+## Mõõtmine ja privaatsus
+
+Kolm reeglit kehtivad alati ja neid kaitsevad automaattestid; täpsemalt [ANALUUTIKA.md](ANALUUTIKA.md):
+
+1. Kliendi sisestatud muutujaid (sünniaasta, palk, samba summad, kulud) ei salvestata kunagi; need jäävad brauserisse.
+2. Tagasisidet ei seostata e-posti ega muu isikuandmega.
+3. Üldine kasutusstatistika on minimaalne ja anonüümne: ühe kasutaja liikumist ei jälgita, küpsiseid ega IP-d ei ole.
+
+**Mida mõõdetakse.** `public/mootmine.js` saadab `/api/e` kaudu sündmused (maandumine, valitud eelprofiil, elukaare algus, sammu number, valiku või nupu tähis, tagasiside). Server hoiab seansi kohta **ühe kokkuvõtterea** (`mina_seansid`) ja vaated-klikid **tunnipõhiste loenduritena ilma seansita** (`mina_loendur`). Kanal tuleb lingi `?k=…` väärtusest, seansi tunnus on vahekaardi `sessionStorage`'is. „Ära jälgi“ lülitab mõõtmise välja; robotid jäetakse välja. Aeg salvestatakse UTC-s, tulemuste leht näitab Tallinna aja järgi.
+
+**Elukaare tulemuste kiirmuutmine (2026-10-24).** Tulemuste lehe kokkuvõtte real tehtud valikud loendatakse eesliitega `q:` (`q:r:<valik>=<väärtus>`) ja lisa-nupud nimega `b:add-kids` ning `b:add-work`. Uusi andmeid ei lisandu, sisestatud summasid ei saadeta (kontroll: `tests/privaatsus.mjs`).
+
+**Tagasiside leht `/tagasiside/`.** Elukaare lõpus on link lehele, mis ei küsi nime ega e-posti. Neli küsimust ja vaba kommentaar: kas oskas algandmeid täita, kas oskab öelda, millise vanuseni raha jätkub, kas nimetab vähemalt ühe asja, mida enne ei teadnud, ja kas muudaks oma plaani. Vastused lähevad `/api/t` kaudu andmebaasi (tabel `tagasiside_vastused`); e-posti-sarnased tekstid ja pikad numbrid maskitakse enne salvestamist.
+
+**Tulemused.** `/tulemused` ja CSV-d (`/tulemused-tagasiside.csv`, `/tulemused-ratas.csv`, `/tulemused-plaan.csv`, `/tulemused-meilid.csv`) on HTTP Basic auth'i taga: parool on Cloudflare'i saladus `TULEMUSED_VOTI`, kasutajanimi võib olla mis tahes. Vaikimisi näitab leht ainult toodangu aadresside vastuseid. Lehel `/saada` (sama parool) saab saata kutsekirju (variandid A, B, C); saatja aadress on seadistatud `wrangler.jsonc` plokis `send_email` ja see tuleb domeeni üleandmisel muuta.
+
+**Andmebaas.** Cloudflare D1 `mina-tagasiside` (binding `DB`, nii toodangus kui eelvaadetes); tabelid luuakse esimesel päringul. Mis tabelis mida hoitakse, on tabelina failis [ANALUUTIKA.md](ANALUUTIKA.md). D1 võib sisaldada tagasiside vabatekste ja e-posti aadresse; **andmeid ei panda repo sisse** (ei `.sql` eksporti ega CSV-sid).
+
+**Privaatsuspoliitika** on lehel `/privaatsus/`.
+
+## Ligipääsetavus
+
+Siht on WCAG 2.1 AA.
+
+- `npm test` jooksutab ekraanidel axe-core'i (WCAG 2.1 A/AA); tõsine või kriitiline viga kukutab testi.
+- „?“ selgitused avanevad dialoogina (fookus, Esc), kohustuslik väli on märgitud sõnaga, veateade nimetab välja, „Edasi“ viib fookuse veateatele.
+- Telefonis on kokkuvõtteriba ühel real ja silti ei kärbita.
+
+## Käsitsi kontrollnimekiri (eelvaade telefonis)
+
+- [ ] Avaleht ja Elukaar avanevad telefonis, teksti ei lõigata ja külgsuunas kerida ei saa.
+- [ ] Iga avalehe algpunkt viib Elukaarele täidetud algandmetega.
+- [ ] Sünniaasta, sugu ja pension muudavad pensioniiga ja eeldatavat eluiga.
+- [ ] Sammud lähevad edasi ja tagasi; kohustuslik väli, mis on tühi, annab selge veateate.
+- [ ] Tulemuse graafik on loetav, tabelivaade töötab, „Tuleviku hindades“ lüliti muudab numbreid.
+- [ ] Markdown- ja PDF-eksport sisaldavad kogu tulemuse sisu.
+- [ ] Tagasiside lehe saatmine näitab kinnitust.
+- [ ] Graafik on loetav ka halltoonis (telefoni ligipääsetavuse seadetes värvifilter).
 
 ## Igal aastal uuendatavad väärtused (elukaar)
 
@@ -178,97 +199,65 @@ Need arvud muutuvad seaduse või indekseerimise järgi. Vaata need üle **igal a
 | Laste pensionilisa kordajad | 3,5 aastahinnet (sünniaja ja II samba järgi) | seadusemuudatusega | `childSupplement`; `reeglid.json` | RPKS § 24 lg 1¹, § 28 lg 2 p 12 |
 | Tervist kahjustava töö staaži tähtaeg | 31.12.2030 (põlevkivi 2049) | seadusemuudatusega | `abi.js`, `docs/otsustusmudel.drawio` | SVPS |
 | III samba maksusoodustus | 15% tulust, max 6 000 € | seadusemuudatusega | `story.js` | EMTA |
-| Elutabel | Statistikaamet 2025 | igal aastal (RV045, RV046) | `public/data/elutabel.js` (genereeritud) | Statistikaamet |
+| Elutabel | Statistikaamet 2025 | igal aastal (RV045, RV046) | `public/data/elutabel.js` (genereeritud, generaator TBC, vt allpool) | Statistikaamet |
 | Kulutasemed | Statistikaamet LE205, LE211, IA002 | igal aastal | `public/data/kulud.js` (genereeritud) | Statistikaamet |
 | Üksi elava pensionäri toetus | 200 € aastas, pension alla 992 € (2026) | igal aastal (sotsiaalministri määrus) | `abi.js` (household) | SKA |
 | Hooldekodu omaosalus | u 1 000 € (kohatasu 1 603 €) | igal aastal | `story.js` | SKA, ERR |
 | Eelprofiilide riiklik pension | `p1Monthly` | 1. aprill (indekseerimine) | `public/elukaar/profiilid.js` | SKA kalkulaator |
 
-Andmefailid `public/data/elutabel.js` ja `public/data/kulud.js` genereeritakse Statistikaameti avatud API-st Meelise skriptidega (`scripts/fetch_elutabel.py`, `scripts/fetch_kulud.py` repos [meelisb/tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik)). Pärast uuendamist käivita `npm run test:koik`.
+Andmefailid `public/data/elutabel.js` ja `public/data/kulud.js` on genereeritud Statistikaameti avatud API-st. Faili `elutabel.js` päis viitab Meelise skriptile `fetch_elutabel.py` (repo [meelisb/tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik)); selle repo `scripts/elutabel.py` kirjutab hoopis `public/plaan/elutabel.js` ega loo veergu `K` (mõlemad sood kokku) ega välja `eluiga65`. Seega ei ole Elukaare praegune elutabel selles repos korratav, ja kulude fail sõltub samuti Meelise skriptist (`fetch_kulud.py`): kes ja kuidas neid uuendab, on TBC. Pärast uuendamist käivita `npm run test:koik`.
 
-## Allikad
+## Pane see oma Cloudflare'i kontole tööle
 
-- Pensioni kordajad: Sotsiaalkindlustusamet, paindlik vanaduspension, 2026 keskmised (plaanis `public/plaan/mudel.js`; arhiivimängudes vanad väärtused).
-- Suremus (plaan): Statistikaameti elutabel RV045 ja RV046, fail `public/plaan/elutabel.js`, uuendus `python3 scripts/elutabel.py`. Arhiivimängudes Gompertzi mudel (Eurostat 2023).
-- Pensioniiga: TulevaEE/onboarding-client `pensionCalculator/calculation.ts` (MIT).
+Sait jookseb Cloudflare Workersina. Uue kontoga sammud:
 
-## Plaani prototüüp (avaleht, 9.10)
+1. **GitHub:** repo on [mirxz/tulevane-mina](https://github.com/mirxz/tulevane-mina) (avalik seisuga 2026-10-26). Võta see üle (Settings → Transfer ownership) või tee oma koopia.
+2. **Cloudflare:** Workers & Pages → *Create* → *Import a repository* → vali repo.
+   - Workeri nimi: `mina` (peab klappima `wrangler.jsonc` failiga).
+   - Build command: tühi. Deploy command: `npx wrangler deploy`.
+   - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
+   - Aadressi osa `tulevane` on praeguse konto alamdomeen. Teises kontos on aadress `mina.<teie-alamdomeen>.workers.dev` ja eelvaated `<haru>-mina.<teie-alamdomeen>.workers.dev`; `TOODANG` loend failis `src/index.js` tuleb sellele vastavalt uuendada.
+3. **Andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta: `d1_databases` ja `previews.d1_databases`).
+4. **Saladused:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*:
+   - `TULEMUSED_VOTI`: tulemuste lehe parool;
+   - `PROTO_VOTI` (valikuline): kui see on seatud, küsib kogu sait parooli; ilma selleta on sait avatud.
+5. **Oma domeen:** `wrangler.jsonc` plokk `routes` (`custom_domain: true`). Domeeni tsoon peab olema samas Cloudflare'i kontos kui Worker.
+6. **E-post (kutsekirjad):** `send_email` plokis `allowed_sender_addresses` peab olema aadress, mis kuulub selle konto domeenile. Eelvaadetes saatmist teadlikult ei ole.
+7. **Kontroll:** `npm run test:koik`, siis ava avaleht, Elukaar ja `/tulemused`.
 
-Häkatonil sõnastatud probleem (JTBD): „Kui pean otsustama, millal ja kuidas oma pensioniraha kasutama hakata, tahan näha, kas mu plaan katab vajaduse elu lõpuni, et teha otsus, mida ma enam hiljem ei kahetse.“ Emotsioon: „Kui olen vana, ei peaks koonerdama.“
+## Üleandmine
 
-Avalehel on samale plaanile kolm vaadet; vaade loositakse (`?vaade=kalk|kaar|korv` valib käsitsi):
+- **Domeen tulevanemina.ee** läheb 2026-10-26 üle Tuleva AS-ile. Mis domeeni küljes on (registreering, DNS-tsoon, Worker, andmebaas, e-post), mis muutub üleandmisel ja mis on veel kokku leppimata, on kirjas dokumendis `mirko-claud-skills/Tulevane Mina üleandmine Tuleva tiimile.md`. Samas dokumendis on kolme arvutusmootori võrdlus ning riikliku pensioni (I samba) arvutusloogika koos avatud kontrollidega.
+- **Mida see tähendab saidile:** Workeri custom domain töötab ainult sama Cloudflare'i konto tsooniga. Kui tsoon liigub uude kontosse, tuleb Worker seal uuesti avaldada (eelmine jaotis), muidu jääb sait ainult workers.dev aadressile. E-posti suunamine ja kutsekirjade saatja aadress tuleb uues kontos uuesti seadistada.
+- **Claude'i oskused:** kaustas `mirko-claud-skills/` on kaks `.skill` faili: `tulevane-mina-arvutuste-kontroll` (pensioniarvutuste kontrolli meetod ja seadusviidete tähised) ja `tulevane-mina-sait` (saidi hooldus, saladuste nimed, turvareeglid).
+- **Lahtised (TBC):** kas Tuleva võtab ainult domeeni või ka saidi; kes vastutab tagasiside andmete eest; kus otsuste logi elab; kes uuendab elutabeli ja kulude faile.
 
-- **Kalkulaator** (`kalk`): sissetulek kuus, vajadus, turvaline kulu.
-- **Elukaar** (`kaar`): sissetulek aastate kaupa tulpadena, vajaduse joon ja otsustuspunktid (sammaste väljamakse, riiklik pension, pooled / 10% elavad kauem).
-- **Ostukorv** (`korv`): millist elu saan endale lubada; korvi summa ja plaani kandevõime.
+## Arhiiv
 
-Mudel on failis `public/plaan/mudel.js`: Statistikaameti elutabel (ainult vanus ja sugu, terviseandmeid ei küsita), paindliku pensioni kordajad, fondipension (vara jagatud allesjäänud elueaga), tänases rahas. „Elu lõpuni“ = vanus, milleni jõuab elusalt 10% sinuvanustest. Eeldused on lehel avatavad.
+Varasemad prototüübid on aadressidel `/arhiiv/kalkulaator/`, `/arhiiv/plaan/`, `/arhiiv/ratas/`, `/arhiiv/kasiino.html` ja `/arhiiv/lauamang/`. Nende tehniline kirjeldus (hääl, turvareeglid, mõõtmine, andmetabelid) on failis [docs/arhiiv.md](docs/arhiiv.md). Ligipääsetavad on need `/arhiiv/` sisukorra kaudu; avalehelt neile linki pole.
 
-Mõõtmine: `/api/p` salvestab D1 tabelitesse `plaan_sundmused` ja `plaan_vastused` ainult vaate, kindluse enne/pärast (1–5), vastuse „kas plaan katab?“ (ja kas see klapib mudeliga), suurema hirmu (otsa / elamata), eelistuse ja vabateksti. Summasid ega vanust ei salvestata. Tulemused on `/tulemused` lehe ülaosas.
+## Sõnastik
 
-Arhiiv: kasiino-, kingitus- ja kupongimäng on aadressil `/arhiiv/kasiino.html`, lauamäng `/arhiiv/lauamang/` (vana aadress `/mang`, ka prinditud QR-kood, annab teadlikult veateate „Seda prototüüpi enam pole“). Avalehelt neile linki pole; need on alles põhimõtete laenamiseks.
+| Mõiste | Tähendus |
+| --- | --- |
+| Elukaar | Selle projekti põhileht `/elukaar/` |
+| I sammas | Riiklik pension (maksab Sotsiaalkindlustusamet) |
+| II sammas | Kohustuslik kogumispension pensionifondis |
+| III sammas | Vabatahtlik lisapension maksusoodustusega |
+| Fondipension | Regulaarne väljamakse II või III sambast kindla perioodi jooksul |
+| Eripension | Eraldi pension teatud ametitele (näiteks politsei, kaitsevägi) |
+| Soodustingimustel pension | Pensionile minek varem tööaja, laste või päästeteenistuse alusel, pension ei vähene |
+| Paindlik pension | Riikliku pensioni edasilükkamine (suurem) või varem võtmine (väiksem) |
+| Tänased eurod | Summad on arvutatud tänaste hindadega, inflatsioon on maha arvatud |
+| SKA, EMTA | Sotsiaalkindlustusamet, Maksu- ja Tolliamet |
+| KoPS, RPKS, TuMS, SVPS | Kogumispensionide seadus, riikliku pensionikindlustuse seadus, tulumaksuseadus, soodustingimustel vanaduspensioni seadus |
+| Worker, D1 | Cloudflare'i serverita kood ja selle SQL-andmebaas |
+| Golden master | Salvestatud arvud, mille iga muutus testis nähtavaks tehakse |
+| WCAG 2.1 AA, axe-core | Ligipääsetavuse standard ja selle automaatne kontroll |
+| Tuleva | Pensionifondide pakkuja (tuleva.ee), häkatoni korraldaja |
 
-## Lauamäng (`/arhiiv/lauamang/`, arhiivis)
+## Autorid ja õigused
 
-Paberprototüübi v0.1 reeglid kolmel tasemel, et häki ajal testida, itereerida ja lihtsustada:
-
-- **L1 kaaslane** `/arhiiv/lauamang/kaaslane.html`: paberlaua kõrvale. Majandus-, sündmus- ja vestluskaardid, elukell (2 täringut + muutjad) ja tulevase mina kõne (TartuNLP hääl).
-- **L2 üksi** `/arhiiv/lauamang/`: kogu mäng telefonis. Stardikaart või „Minu enda elu“ (suurusjärgud, 1 münt ≈ 5 000 €).
-- **L3 paar ja seltskond** `/arhiiv/lauamang/`, kaks moodust:
-  - **Ühes telefonis**: kordamööda, iga käigu ees „Anna telefon“, sest tervisekaart on salajane.
-  - **Igaüks oma telefonis**: võrgutuba, 5-täheline kood ja link. Olek on D1 tabelis `mang_toad` versiooniga; samaaegsed käigud saavad vastuseks 409 ja proovivad uuesti. Toad kustuvad 3 päevaga. Salvestatakse ainult mänguolek.
-
-Reeglid elavad failis `public/arhiiv/lauamang/engine.js` (puhtad funktsioonid) ja kaardid failis `public/arhiiv/lauamang/kaardid.json`. Reeglit muutes muuda mootorit ja kaarte, mitte kasutajaliidest.
-
-Testid:
-
-- `node tests/engine.mjs`: 400 juhuslikku mängu.
-- `node tests/mang.mjs http://127.0.0.1:8787`: kaaslane, üksi, paar, kolm telefoni toas, axe.
-
-Teadaolevad lüngad v0.1-s:
-
-- „Säästumäära seadja“ eriõigus (Rõõmu asemel +1 Vara) pole digis rakendatud.
-- Tervisekontroll valib automaatselt (+1 Tervis või kõrge riski ohjamine).
-
-### Allikas ja jagamine (10.10)
-
-- Lingile lisatud `?k=fb` (või `reklaam`, `lkd`, `tuleva`…) jääb seadmes meelde ja salvestatakse koos vaate sündmustega ning vastustega (väli `allikas`, kuni 16 märki `a–z 0–9 _ -`). Esimene allikas jääb kehtima. `/tulemused` näitab kanalite kaupa, mitu alustas ja mitu vastas.
-- Aitäh-ekraanil on nupp „Jaga linki“ (telefonis süsteemne jagamine, mujal kopeerib lingi). Link on `/?k=jagatud`, sõnum ei sisalda sisestatud andmeid. Jagamine registreeritakse sündmusena `share`.
-- `/tulemused` ülaosas on loendur: lõpetanud, alustanud seadmeid, jaganud.
-- Olemasolevatele D1 tabelitele lisatakse veerg `allikas` automaatselt esimesel päringul.
-
-## Õnneratta maandumisleht (`/ratas/`, 10.10)
-
-Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsimuse järjekorra (esimene = ratta valitud sektor, ülejäänud segamini), üks küsimus korraga, seitsmesegmendiline edenemisriba, lõpus tänuleht (sisend-/resoneerimistest) ja valikuline e-post pühapäevase testlingi jaoks.
-
-- Aadress ja allikas: `/ratas/?k=<allikas>` (nt `?k=a5` paber-QR, `?k=fb`, `?k=tanav`). Jagamisnupp lisab `?k=jagatud`.
-- Andmed: `/api/r`, tabelid `ratas_sundmused` (anonüümne seansi tunnus, vastused, vabatekst; e-posti- ja pika numbri-sarnane tekst maskitakse) ja `ratas_meilid` (e-post ilma seansi tunnuseta, eraldi, et ei saaks vastustega siduda). Tulemused: `/tulemused` (osa „Õnneratas“), e-postid: `/tulemused-meilid.csv` (sama parool).
-- FB/sotsiaalmeedia pilt: `public/ratas/og.png` (1200×630), `og:` märgendid on `index.html`-is.
-- Test: `node tests/ratas.mjs <URL>`.
-
-## Kalkulaator (`/kalkulaator/`)
-
-Täielik pensionikalkulaator Tuleva pensionikalkulaatori välimuses: sama kaart, helesinine sisendipaneel, segmentnupud ja ümar liugur. Eesmärk on näidata, mitu sisendit on tänane plaani tegemine, ja siis lasta alustada tüüpilisest kogujast.
-
-- **Mootor:** `public/kalkulaator/mootor.js` on Meelise [tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik) `js/pension.js` ES-moodulina. Meie lisatud sisendid (fondi tasu, palga reaalkasv, muud säästud, hoiuse tootlus, maksumäär, „elu lõpuni“ lävi) on märgitud `LISA` ja vaikeväärtustega annavad täpselt Meelise tulemuse (test kontrollib).
-- **Andmekihid:** `public/kalkulaator/andmed/kihid.js`. Iga sisendi vaikeväärtus tuleb ühest kihist (`seadus`, `statistika`, `tuleva`, `konto`, `eeldus`) ja lehel on selle märk. Sinu sisestatud väärtus on kiht `sina` ja „Taasta“ toob vaikeväärtuse tagasi. Uus allikas = uus kiht selles failis.
-- **Statistikaamet:** `andmed/elutabel.js` ja `andmed/kulud.js` on Meelise genereeritud failid. Uuenda tema skriptidega (`scripts/fetch_*.py` tema repos), ära muuda käsitsi.
-- **Tuleva aruanded:** personad ja varajaotus on käsitsi ülekantud avalikest agregaatidest (reporting-engine, `savers_analysis`, `ii_iii_wealth_distribution`, `fund_flow_analysis`). Kommentaarid failis näitavad, kust iga number tuleb. Enne avalikku kasutamist tuleb luba küsida Tuleva andmetiimilt (Tõnu).
-- **Testid:** `node tests/kalkulaator-mootor.mjs` (Meelise testid + lisandused + andmekihid) ja `node tests/kalkulaator.mjs <URL>` (liides, taastamine, graafik, ligipääsetavus).
-
-### Riiklik pension (/kalkulaator/)
-
-Kalkulaator arvutab riikliku pensioni seaduse valemiga (`public/kalkulaator/riiklik.js`): baasosa 399,24 € + 10,477 € × (staaž kuni 1998 + aastakoefitsientide summa), 1.4.2026 väärtustega. Tulemus on mootori sisend `p1Monthly` (tänased väärtused), mida mootor indekseerib `p1Growth` võrra. Vaikimisi reaalindekseerimine 1,5% on projekti eeldus, mitte seadus. Tead täpset summa SKA kalkulaatorist, vali „Sisesta ise“.
-
-## Tagasiside leht (`/tagasiside/`, 10.10)
-
-Elukaare lõpus (tulemuse peatükis) on link lehele `/tagasiside/`. Leht on ratta eeskujul anonüümne: ei küsi nime ega e-posti ega saada sisestatud numbreid. Link kannab kaasa algpunkti (`?p=`) ja kanali (`?k=`).
-
-Mõõdame neli asja ja vaba kommentaari (kõige olulisem, seepärast suur kast lehe lõpus):
-
-1. Kas oskas algandmeid täita (jah / osaliselt / ei, osalise või eitava vastuse korral „mis segas“).
-2. Kas oskab 5–10 minuti pärast öelda, millise vanuseni tema raha jätkub (jah / umbes / ei, vanus numbrina).
-3. Kas nimetab vähemalt ühe asja, mida enne ei teadnud (jah / ei, „mis see oli“).
-4. Kas muudaks oma plaani või käitumist (jah / võib-olla / ei, „mida“).
-
-Vastused lähevad `/api/t` kaudu D1 tabelisse `tagasiside_vastused` (sama seanss asendab eelmise vastuse). E-posti-sarnased tekstid ja pikad numbrid maskitakse enne salvestamist. Tulemused: `/tulemused` (osa „Tagasiside“) ja `/tulemused-tagasiside.csv`. CSV-d on eraldi iga andmekogu kohta: `tulemused-tagasiside.csv`, `tulemused-ratas.csv`, `tulemused-plaan.csv`, `tulemused-meilid.csv`; `tulemused.csv` on ainult varasemate mängude vastused (arhiveeritud mängudel uusi vastuseid pole, seepärast võis see olla tühi). Test: `node tests/tagasiside.mjs <URL>`, valikuliselt `TULEMUSED_PAROOL=…` CSV-de kontrolliks.
+- Projekt: Mirko (repo omanik). Elukaare leht: Kadi Rosenthal. Arvutusmootori alus ja osa teste: Meelis Burget (repo [meelisb/tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik)). Kood ja testid on osaliselt tehtud Claude'iga (vt commit'ide `Co-Authored-By`).
+- Andmed ja allikad: Statistikaamet, Sotsiaalkindlustusamet, EMTA, Riigi Teataja, TulevaEE/onboarding-client (pensioniea arvutus, MIT litsents). Arhiivis on hääl TartuNLP Neurokõnest (Tartu Ülikool).
+- Häkatoni tulemuste varalised õigused kuuluvad Tulevale. Repos ei ole litsentsifaili: TBC.
