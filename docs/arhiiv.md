@@ -37,7 +37,7 @@ Sama otsust saab näidata kahes raamis. Arvutus on mõlemas identne, muutub ainu
 
 - **Panus** (vaikimisi): kasiino-kiht, koefitsiendid, LIVE-riba, võlts taimer ja nügimine. Lõpp paljastab iga võtte.
 - **Kingitus** (`?raam=kingitus`): ootamine on kingitus tulevasele minale. Mängija valib, mida tahaks pensionil teha. Protsendid koefitsientide asemel, LIVE-riba ja taimerit pole. Kõne tänab kingituse eest või ütleb ilma süüdistamata, et see ei jõudnud kohale (riiklik pension ei pärandu, II ja III sammas pärandub).
-- Mõlema raami lõpus on link teise raami. Valikuid ei loendata ega salvestata (andmete kogumine vajab otsuste logis otsust).
+- Mõlema raami lõpus on link teise raami. Valikuid ei loendata ega salvestata.
 
 ## Elu-kupong (`?raam=kupong`)
 

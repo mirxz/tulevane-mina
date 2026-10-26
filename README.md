@@ -110,25 +110,19 @@ Arendades: `npx wrangler dev` ühes aknas (leht on aadressil http://localhost:87
 
 Mida iga test kontrollib ja mida ta **ei** tõesta, on kirjas failis [tests/README.md](tests/README.md). GitHub Actions jooksutab `npm test` igal push'il ja pull requestil.
 
-## Töövoog ja reeglid
+## Kuidas muudatus avaldatakse
 
-1. **Otsus.** Mida muudame ja miks, kirjutatakse otsuste logisse. Kus Tuleva tiim seda logi hoiab: TBC (seni oli see üleandja Claude'i projekti dokument, mis ei ole avalik).
-2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/tagasiside`.
-3. **Push.** Haru läheb GitHubi. Automaatselt käivituvad:
-   - GitHub Actions (`.github/workflows/smoke.yml`): `wrangler deploy --dry-run` ja `npm test`;
-   - Cloudflare: eelvaate-URL `https://<haru>-mina.tulevane.workers.dev`.
-4. **Test.** Üks inimene, mitte muudatuse tegija, vaatab eelvaate telefonis läbi (kontrollnimekiri allpool).
-5. **Toodangusse.** Pull request → `main`, kui CI on roheline ja eelvaade üle vaadatud. Cloudflare avaldab mõne minutiga.
-6. **Märge.** Otsuste logis märgitakse, mis läks toodangusse ja millal.
+1. **Haru.** Muudatus tehakse eraldi harus (nimi näiteks `muudatus/<lühike-nimi>`) ja lükatakse GitHubi.
+2. **Automaatsed kontrollid.** GitHub Actions (`.github/workflows/smoke.yml`) jooksutab `wrangler deploy --dry-run` ja `npm test`. Cloudflare teeb harule eelvaate-aadressi `https://<haru>-mina.tulevane.workers.dev`.
+3. **Toodangusse.** Pull request `main`i, kui CI on roheline. Cloudflare avaldab `main`i mõne minutiga.
+4. **Tagasivõtmine.** Cloudflare → Workers & Pages → mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
 
-**Reeglid**
+**Reeglid, mida kood ja testid eeldavad**
 
-- `main` muutub ainult pull requesti kaudu.
-- Väliseid skripte võimalikult vähe. Lubatud: Google Fonts ning elukaares Bootstrap 5.3.3 (CSS) ja Chart.js 4.4.1 jsDelivr CDN-ist kindla versiooniga (testid suunavad need kohalikule `node_modules` koopiale). Uue välise skripti lisamine on otsus otsuste logis.
+- Väliseid skripte võimalikult vähe. Lubatud: Google Fonts ning elukaares Bootstrap 5.3.3 (CSS) ja Chart.js 4.4.1 jsDelivr CDN-ist kindla versiooniga (testid suunavad need kohalikule `node_modules` koopiale).
 - Ei analüütikateeke ega küpsiseid. Mõõtmine on anonüümne ja minimaalne, vt [ANALUUTIKA.md](ANALUUTIKA.md).
 - Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda `tests/reeglid.json` (väärtus, allikas, `kontrollitud`) ja vajadusel golden masterid.
 - Tuleva logo avalikul lehel ei kasutata; silt „prototüüp“ ja lahtiütlus jäävad alles. Seni kehtinud reegel; Tuleva võib selle muuta.
-- **Tagasivõtmine:** Cloudflare → Workers & Pages → mina → Deployments → eelmine versioon → Rollback. Või `git revert` ja uus pull request.
 
 ## Aadressid
 
@@ -230,7 +224,7 @@ Sait jookseb Cloudflare Workersina. Uue kontoga sammud:
 - **Domeen tulevanemina.ee** läheb 2026-10-26 üle Tuleva AS-ile. Mis domeeni küljes on (registreering, DNS-tsoon, Worker, andmebaas, e-post), mis muutub üleandmisel ja mis on veel kokku leppimata, on kirjas dokumendis `mirko-claud-skills/Tulevane Mina üleandmine Tuleva tiimile.md`. Samas dokumendis on kolme arvutusmootori võrdlus ning riikliku pensioni (I samba) arvutusloogika koos avatud kontrollidega.
 - **Mida see tähendab saidile:** Workeri custom domain töötab ainult sama Cloudflare'i konto tsooniga. Kui tsoon liigub uude kontosse, tuleb Worker seal uuesti avaldada (eelmine jaotis), muidu jääb sait ainult workers.dev aadressile. E-posti suunamine ja kutsekirjade saatja aadress tuleb uues kontos uuesti seadistada.
 - **Claude'i oskused:** kaustas `mirko-claud-skills/` on kaks `.skill` faili: `tulevane-mina-arvutuste-kontroll` (pensioniarvutuste kontrolli meetod ja seadusviidete tähised) ja `tulevane-mina-sait` (saidi hooldus, saladuste nimed, turvareeglid).
-- **Lahtised (TBC):** kas Tuleva võtab ainult domeeni või ka saidi; kes vastutab tagasiside andmete eest; kus otsuste logi elab; kes uuendab elutabeli ja kulude faile.
+- **Lahtised (TBC):** kas Tuleva võtab ainult domeeni või ka saidi; kes vastutab tagasiside andmete eest; kes uuendab elutabeli ja kulude faile.
 
 ## Arhiiv
 
