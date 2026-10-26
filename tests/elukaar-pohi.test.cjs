@@ -14,8 +14,11 @@ const Cx = { ...C, deferral: 2 };
 // Elutabel vastab Statistikaameti 2025 numbritele.
 assert.strictEqual(table.elada_jaanud.M[65], 16.33);
 assert.strictEqual(table.elada_jaanud.N[65], 21.43);
-assert.strictEqual(P.fundPensionTerm(table, 'M', 65), 16);
-assert.strictEqual(P.fundPensionTerm(table, 'N', 65), 21);
+// Fondipensioni periood on soost sõltumata (kogu rahvastik, veerg K): 65-aastaselt 19,31 → 19 a, nagu SKA ja Tuleva.
+assert.strictEqual(table.elada_jaanud.K[65], 19.31);
+assert.strictEqual(P.fundPensionTerm(table, 'M', 65), 19);
+assert.strictEqual(P.fundPensionTerm(table, 'N', 65), 19);
+assert.strictEqual(P.fundPensionTerm(table, 'X', 66), 19);
 // Ellujäämine: 65-aastasest mehest elab 81-aastaseks umbes 51%.
 assert.ok(Math.abs(P.survival(table, 'M', 65, 81) - 0.51) < 0.01);
 
@@ -23,6 +26,16 @@ assert.ok(Math.abs(P.survival(table, 'M', 65, 81) - 0.51) < 0.01);
 assert.strictEqual(P.pensionAge(1961).label, '65 a');
 assert.strictEqual(P.pensionAge(1962).label, '65 a 1 k');
 assert.ok(P.pensionAge(1970).label.startsWith('u '));
+// RPKS § 7 valem (TLV-87): kehtestatud 2027–2029, edasi prognoos „eluiga jääb viimase avaldatud aasta tasemele“ (nagu SKA).
+assert.strictEqual(P.pensionAge(1963).label, '65 a 3 k');
+assert.strictEqual(P.pensionAge(1964).label, '65 a 4 k');
+assert.deepStrictEqual([P.pensionAge(1990).label, P.pensionAge(1990).year], ['u 66 a', 2056], 'sünd 1990 → pensionile 2056 nagu SKA kalkulaatoris');
+for (let y = 2027; y < 2060; y++) assert.ok(P.pensionAgeMonthsIn(y) - P.pensionAgeMonthsIn(y - 1) <= 3, 'tõus kuni 3 kuud aastas: ' + y);
+{
+  const fs = require('fs'), src = fs.readFileSync(require('path').join(__dirname, '../public/data/elutabel.js'), 'utf-8');
+  const el = JSON.parse(src.slice(src.indexOf('{'), src.lastIndexOf('}') + 1)).eluiga65;
+  assert.deepStrictEqual(Object.fromEntries(Object.entries(P.LIFE_EXP_65).map(([k, v]) => [String(k), v])), el, 'pension.js LIFE_EXP_65 = elutabel.js eluiga65 (uuenda pärast scripts/fetch_elutabel.py)');
+}
 
 // Riiklik pension 2 aastat hiljem on 16,88% suurem ja enne seda null.
 const c = P.simulate(base, table, Cx);
@@ -32,7 +45,7 @@ assert.strictEqual(c.rows.find((x) => x.age === 65).i1, 0);
 // Väike vajadus: ühe lepinguga (B) lõpeb samba raha perioodi lõpus, igal aastal uuendades (D) mitte.
 const small = { ...base, needMonthly: 900 };
 const b = P.simulate(small, table, B), d = P.simulate(small, table, D);
-assert.ok(b.rows.find((x) => x.age === 85).i23 > 0 && b.rows.find((x) => x.age === 86).i23 === 0, 'B väljamakse lõpeb 86-aastaselt (21 a)');
+assert.ok(b.rows.find((x) => x.age === 83).i23 > 0 && b.rows.find((x) => x.age === 84).i23 === 0, 'B väljamakse lõpeb 84-aastaselt (19 a, soost sõltumata)');
 assert.ok(d.rows.find((x) => x.age === 100).i23 > 0, 'D maksab ka 100-aastaselt');
 
 // Ühine kulureegel: keegi ei kuluta üle vajaduse ega alla nulli.
@@ -142,6 +155,16 @@ assert.ok(Math.abs(a2.rows.find((x) => x.age === 70).i1 - 900 * 1.1688) < 0.01);
   // II ja III on eraldi lepingud: II B (üks leping) + III igal aastal annab teise tulemuse kui mõlemad ühe lepinguga.
   const both = (c3) => P.simulate({ ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', contract: c3 } }, table, B);
   assert.notDeepStrictEqual(both('once').rows.map((x) => x.i23), both('yearly').rows.map((x) => x.i23));
+}
+
+// III samba oma tootlus (realReturn3): mõjutab ainult eraldi III samba potti (i3); puudumisel sama mis II sambal.
+{
+  const sep = { ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', contract: 'yearly' } };
+  const same = P.simulate(sep, table, B), explicit = P.simulate({ ...sep, realReturn3: 0.02 }, table, B);
+  assert.deepStrictEqual(explicit.rows, same.rows, 'realReturn3 = realReturn: tulemus sama');
+  const hi = P.simulate({ ...sep, realReturn3: 0.04 }, table, B);
+  assert.deepStrictEqual(hi.rows.map((x) => x.i2), same.rows.map((x) => x.i2), 'III tootlus ei muuda II samba makseid');
+  assert.ok(hi.rows.find((x) => x.i3 > 0).i3 > same.rows.find((x) => x.i3 > 0).i3, 'kõrgem III tootlus: suurem III makse');
 }
 
 console.log('OK');

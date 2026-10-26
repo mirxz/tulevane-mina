@@ -3,27 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tulevane Mina · lugu</title>
-  <meta name="description" content="Sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
+  <title>Elukaar · Tulevane Mina</title>
+  <meta name="description" content="Elukaar: sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Tulevane Mina · kas raha jätkub?">
-  <meta property="og:description" content="Sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
+  <meta property="og:title" content="Elukaar · kas raha jätkub?">
+  <meta property="og:description" content="Elukaar: sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
   <meta property="og:image" content="https://mina.tulevane.workers.dev/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://mina.tulevane.workers.dev/og.png">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400..700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="../css/tuleva.css?v=20261010h" rel="stylesheet">
-  <link href="story.css?v=20261010h" rel="stylesheet">
+  <link href="../css/tuleva.css?v=20261017t" rel="stylesheet">
+  <link href="story.css?v=20261018a" rel="stylesheet">
 </head>
 <body>
   <main class="container py-4">
     <header class="mb-3">
       <h1 class="mb-1">Tulevane Mina</h1>
-      <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
+      <p class="lead text-secondary mb-0"><strong>Elukaar</strong>: sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
     </header>
 
     <!-- Eluteekond: navigeerimine etappide vahel -->
@@ -41,106 +41,212 @@
           <h2 id="h0" tabindex="-1">Kes sa oled ja mis sul juba on?</h2>
         </div>
       </div>
-      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb.</p>
-      <div class="row g-3 fields">
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="birthYear">Sünniaasta</label>
-          <input class="form-control" id="birthYear" type="number" inputmode="numeric" min="1930" max="2008" value="1980" aria-describedby="birthYearHint birthYearNote">
+      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb. Kõik summad on <strong>tänastes eurodes</strong>: arvutus arvestab hinnatõusu (2% aastas), nii et saad summasid võrrelda tänaste hindadega.</p>
+      <p class="prefill-note" id="prefillNote">Andmed on eeltäidetud riiklikest andmekogudest (nt rahvastikuregister, pensioniregister). Kontrolli üle ja paranda, kui vaja.</p>
+      <p class="progress-note" id="sinaProgress" aria-live="polite"></p>
+      <!-- Nimekiri: iga osa avaneb ja sulgub eraldi; kinni olles kokkuvõte. Väljad ja nende id-d on samad mis varem (story.js loeb neid). -->
+      <ul class="opt-list mb-4" id="sinaList">
+      <li data-sec="me">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">🙂</span><div><h3 class="opt-title" id="t-me">Sina</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="me" aria-controls="body-me"></button></div>
+        <div class="opt-body" id="body-me">
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="birthYear">Mis aastal oled sündinud?</label>
+          <input class="form-control is-prefilled" id="birthYear" type="number" inputmode="numeric" min="1930" max="2008" value="1980" data-need aria-describedby="birthYearHint">
           <div class="form-text" id="birthYearHint">Vahemikus 1930–2008.</div>
-          <div class="visually-hidden" id="birthYearNote" role="status"></div>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="sex">Sugu</label>
-          <select class="form-select" id="sex"><option value="N">Naine</option><option value="M">Mees</option></select>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="sex">Mis on sinu sugu?</label>
+          <select class="form-select is-prefilled" id="sex"><option value="N">Naine</option><option value="M">Mees</option><option value="X">Muu</option></select>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="pensionAgeYears">Pensioniiga</label>
+        </div>
+        </div>
+      </li>
+      <li data-sec="state">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">🏛️</span><div><h3 class="opt-title" id="t-state">Riiklik pension</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="state" aria-controls="body-state"></button></div>
+        <div class="opt-body" id="body-state">
+        <p class="form-text mt-0" id="p1Ska">Vajalikud andmed leiad <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">Sotsiaalkindlustusameti kalkulaatorist</a>. Kui olid ametnik enne 2013. a, lisa prognoosi ka avaliku teenistuse staaž.</p>
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="pensionAgeYears">Millal on sinu pensioniiga?</label>
           <select class="form-select" id="pensionAgeYears">
-            <option value="65">65 a</option><option value="66">66 a</option><option value="67">67 a</option><option value="68">68 a</option>
+            <option value="65">65 a</option><option value="66">66 a</option><option value="67">67 a</option><option value="68">68 a</option><option value="69">69 a</option><option value="70">70 a</option>
           </select>
-          <div class="form-text" id="paHint"></div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
-          <label class="form-label" for="p1Monthly">Riiklik pension</label>
-          <input class="form-control" id="p1Monthly" type="number" min="0" step="10" value="900" aria-describedby="p1Unit">
-          <div class="form-text"><span id="p1Unit">eurot kuus, enne tulumaksu.</span> Prognoosi leiad <a href="https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator" target="_blank" rel="noopener">Sotsiaalkindlustusameti kalkulaatorist</a></div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="p1Monthly">Kui suur on sinu riiklik pension?</label>
+          <input class="form-control" id="p1Monthly" type="number" min="0" step="10" value="" data-need aria-describedby="p1Unit">
+          <div class="form-text" id="p1Unit">eurot kuus, enne tulumaksu.</div>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="p2">II sammas praegu</label>
-          <input class="form-control" id="p2" type="number" min="0" step="1000" value="25000" aria-describedby="p2Unit">
-          <div class="form-text" id="p2Unit">eurot</div>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="p3">III sammas praegu</label>
-          <input class="form-control" id="p3" type="number" min="0" step="1000" value="5000" aria-describedby="p3Unit">
-          <div class="form-text" id="p3Unit">eurot</div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3" id="p3JoinedWrap">
-          <label class="form-label" for="p3Joined">III sambaga liitusin</label>
-          <select class="form-select" id="p3Joined" aria-describedby="p3JoinedHint"><option value="after" selected>2021 või hiljem</option><option value="before">enne 2021</option><option value="none">ma ei ole liitunud</option></select>
-          <div class="form-text" id="p3JoinedHint">Enne 2021 liitunul lisandub 55 a otsustuskoht.</div>
-        </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="grossMonthly">Brutopalk</label>
-          <input class="form-control" id="grossMonthly" type="number" min="0" step="100" value="2200" aria-describedby="grossUnit">
+      </li>
+      <li data-sec="p2">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">💼</span><div><h3 class="opt-title" id="t-p2" data-helpkey="pillars">Töö ja II sammas</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="p2" aria-controls="body-p2"></button></div>
+        <div class="opt-body" id="body-p2">
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="grossMonthly">Kui suur on sinu brutopalk?</label>
+          <input class="form-control" id="grossMonthly" type="number" min="0" step="100" value="" data-need aria-describedby="grossUnit">
           <div class="form-text" id="grossUnit">eurot kuus</div>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="p2Rate">II samba sissemakse</label>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="p2Rate">Kui palju maksad II sambasse?</label>
           <select class="form-select" id="p2Rate">
-            <option value="0">puudub</option><option value="0.02" selected>2%</option><option value="0.04">4%</option><option value="0.06">6%</option>
+            <option value="0">ei maksa</option><option value="0.02" selected>2% palgast</option><option value="0.04">4% palgast</option><option value="0.06">6% palgast</option>
           </select>
         </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="p3Monthly">III samba sissemakse</label>
-          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="0" aria-describedby="p3mUnit">
-          <div class="form-text" id="p3mUnit">eurot kuus</div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="p2">Kui palju on II sambas praegu?</label>
+          <input class="form-control" id="p2" type="number" min="0" step="1000" value="" data-need aria-describedby="p2Unit">
+          <div class="form-text" id="p2Unit">eurot</div>
         </div>
-        <div class="col-6 col-md-3" id="p3OpenWrap">
-          <label class="form-label" for="p3OpenAge">Avan III samba, vanus</label>
-          <input class="form-control" id="p3OpenAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3OpenYear">
-          <div class="form-text" id="p3OpenYear"></div>
-        </div>
-        <div class="col-6 col-md-3">
-          <label class="form-label" for="fundCur">Tootlus pärast inflatsiooni</label>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="fundCur">Millist tootlust eeldad II sambas pärast inflatsiooni?</label>
           <select class="form-select" id="fundCur"></select>
         </div>
+        </div>
+        </div>
+      </li>
+      <li data-sec="p3">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">🌳</span><div><h3 class="opt-title" id="t-p3">III sammas</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="p3" aria-controls="body-p3"></button></div>
+        <div class="opt-body" id="body-p3">
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6" id="p3JoinedWrap">
+          <label class="form-label" for="p3Joined">Kas oled III sambaga liitunud?</label>
+          <select class="form-select" id="p3Joined"><option value="after" selected>jah, 2021. a või hiljem</option><option value="before">jah, enne 2021. a</option><option value="none">ei ole liitunud</option></select>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="p3">Kui palju on III sambas praegu?</label>
+          <input class="form-control" id="p3" type="number" min="0" step="1000" value="" data-need aria-describedby="p3Unit">
+          <div class="form-text" id="p3Unit">eurot</div>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="p3Monthly">Kui palju maksad III sambasse kuus?</label>
+          <input class="form-control" id="p3Monthly" type="number" min="0" step="10" value="" data-need aria-describedby="p3mUnit">
+          <div class="form-text" id="p3mUnit">eurot kuus</div>
+        </div>
+        <div class="col-12 col-sm-6" id="p3OpenWrap">
+          <label class="form-label" for="p3OpenAge">Mis vanuses avad III samba?</label>
+          <input class="form-control" id="p3OpenAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3OpenYear">
+          <div class="form-text" id="p3OpenYear">Vanus, millal hakkad III sambasse maksma.</div>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="fund3Cur">Millist tootlust eeldad III sambas pärast inflatsiooni?</label>
+          <select class="form-select" id="fund3Cur"></select>
+        </div>
+        </div>
+        </div>
+      </li>
+      <li data-sec="kids" class="is-optional" id="kidsSet">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">👨‍👩‍👧</span><div><h3 class="opt-title" id="t-kids" data-helpkey="kids">Lapsed</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="kids" aria-controls="body-kids"></button></div>
+        <div class="opt-body" id="body-kids">
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6 d-none" id="kidsHasWrap"><!-- „+ Lisa lapsed“ / „Eemalda lapsed“ seab väärtuse; küsimust ei näidata -->
+          <label class="form-label" for="kidsHas">Kas oled kasvatanud lapsi vähemalt 8 aastat?</label>
+          <select class="form-select" id="kidsHas"><option value="no" selected>ei</option><option value="yes">jah</option></select>
+        </div>
+        </div>
+        <div class="row g-3 fields mt-0 d-none" id="kidsDetails">
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="kidsCount">Mitu last?</label>
+          <input class="form-control" id="kidsCount" type="number" inputmode="numeric" min="0" step="1" value="1" data-need>
+        </div>
+        <div class="col-12"><p class="form-text mt-0 mb-0" id="kidsBornHint">Sisesta iga lapse sünniaasta, ka tulevase lapse oma, näiteks 1989.</p></div>
+        <div class="col-12" id="kidsList" role="group" aria-label="Laste sünniajad"></div>
+        <div class="col-12 d-none" id="kidsMissingWrap"><div class="form-text mt-0" id="kidsMissing">Mõne lapse sünniaasta on puudu. Miks see loeb, vaata selgitusest „?“.</div></div>
+        <div class="col-12 d-none" id="kidsLateWrap"><div class="form-text mt-0" id="kidsLate"></div></div>
+        <div class="col-12 col-sm-6" id="kidsDisabledWrap">
+          <label class="form-label" for="kidsDisabled">Kas mõni laps on puudega?</label>
+          <select class="form-select" id="kidsDisabled"><option value="no" selected>ei</option><option value="yes">jah (keskmine, raske või sügav puue)</option></select>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="kidsEarlyWrap">
+          <label class="form-label" for="kidsEarlyUser">Kes kasutab varem pensionile mineku õigust?</label>
+          <select class="form-select" id="kidsEarlyUser"><option value="me" selected>mina</option><option value="other">teine vanem</option></select>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="kidsSupWrap">
+          <label class="form-label" for="kidsSupUser">Kes saab pensionilisa või II samba lisamakse?</label>
+          <select class="form-select" id="kidsSupUser"><option value="me" selected>mina</option><option value="other">teine vanem</option></select>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="kidsForecastWrap">
+          <label class="form-label" for="kidsInForecast">Kas riikliku pensioni prognoos sisaldab laste pensionilisa?</label>
+          <select class="form-select" id="kidsInForecast" aria-describedby="kidsForecastHint"><option value="unknown" selected>ei tea</option><option value="no">ei</option><option value="yes">jah</option></select>
+          <div class="form-text" id="kidsForecastHint">Kui lisasid Sotsiaalkindlustusameti kalkulaatoris „Pensionilisa“ alla oma lapsed, vali „jah“. Kui ei tea, ei lisa me seda.</div>
+        </div>
+        </div>
+        <div class="opt-actions"><button type="button" class="btn btn-link btn-sm px-0" id="removeKids" data-remove="kids">Eemalda lapsed</button></div>
+        </div>
+      </li>
+      <li data-sec="work" class="is-optional" id="workSet">
+        <div class="opt-row"><span class="opt-ico" aria-hidden="true">🛡️</span><div><h3 class="opt-title" id="t-work" data-helpkey="special">Tööga seotud erijuhud</h3><small class="opt-sum"></small></div><button type="button" class="btn btn-sm" data-toggle="work" aria-controls="body-work"></button></div>
+        <div class="opt-body" id="body-work">
+        <p class="small-muted mb-2" id="specialIntro">Kas mõni neist puudutab sind?</p>
+        <div class="special-checks mb-3" role="group" aria-labelledby="specialIntro">
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="cHazard"><label class="form-check-label" for="cHazard">Töötasin tervist kahjustaval tööl (nimekiri nr 1 või 2)</label></div>
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="cSp"><label class="form-check-label" for="cSp">Saan või hakkan saama eripensioni, ametipensioni või väljateenitud aastate pensioni (nt politsei, kaitsevägi, kohtunik, prokurör, õiguskantsler, vangla, lendur, lennujuht, meremees, lavakunstnik)</label></div>
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="cRescue"><label class="form-check-label" for="cRescue">Töötasin päästeteenistuses (vähemalt 10 aastat)</label></div>
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="cCivil"><label class="form-check-label" for="cCivil">Olin ametnik (avalikus teenistuses) enne 1. aprilli 2013. a vähemalt 10 aastat</label></div>
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="cOther"><label class="form-check-label" for="cOther">Muu erijuht (nt represseeritu, Tšernobõli avarii tagajärgede likvideerija)</label></div>
+        </div>
+        <div class="note mb-3 d-none" id="civilNote">Avaliku teenistuse staaži suurendus (avaliku teenistuse seadus § 113) arvestatakse riikliku pensioni prognoosis. Lülita Sotsiaalkindlustusameti kalkulaatoris sisse „Olen töötanud vähemalt 10 aastat avalikus teenistuses kuni 31.03.2018“ ja vali aastad, siis on suurendus sinu sisestatud summas. Päästjale seda suurendust ei kohaldata.</div>
+        <div class="note mb-3 d-none" id="otherNote">Neid erijuhte Elukaar ei arvuta. Küsi oma pensioni kohta <a href="https://sotsiaalkindlustusamet.ee" target="_blank" rel="noopener">Sotsiaalkindlustusametist</a>.</div>
+        <div class="row g-3 fields" id="hazardRow">
+        <div class="col-12 col-sm-6">
+          <label class="form-label" for="hazard">Millise nimekirja tööl töötasid?</label>
+          <select class="form-select" id="hazard" aria-describedby="hazardHint">
+            <option value="no" selected>ei</option>
+            <option value="list1">nimekiri nr 1</option>
+            <option value="list2">nimekiri nr 2</option>
+          </select>
+          <div class="form-text" id="hazardHint">Riigi kinnitatud nimekirja töö. Tingimused leiad selgitusest.</div>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="hazardYearsWrap">
+          <label class="form-label" for="hazardYears">Mitu aastat töötasid nimekirja nr 1 tööl?</label>
+          <input class="form-control" id="hazardYears" type="number" min="0" max="50" step="1" value="10" data-need aria-describedby="hazardYearsHint">
+          <div class="form-text" id="hazardYearsHint">Iga aasta lisab pensionile 3,1% aastahindest. Varem minekuks on vaja vähemalt 10 aastat.</div>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="undergroundWrap">
+          <label class="form-label" for="undergroundYears">Mitu aastat neist allmaatööl?</label>
+          <input class="form-control" id="undergroundYears" type="number" min="0" max="50" step="1" value="0" aria-describedby="undergroundHint">
+          <div class="form-text" id="undergroundHint">Nt kaevanduses maa all. Iga aasta lisab veel 21,9% aastahindest.</div>
+        </div>
+        </div>
+        <div class="row g-3 fields mt-0">
+        <div class="col-12 col-sm-6 d-none" id="rescueWrap">
+          <label class="form-label" for="rescueYears">Mitu aastat töötasid päästeteenistuses?</label>
+          <input class="form-control" id="rescueYears" type="number" inputmode="numeric" min="0" max="50" step="1" data-need aria-describedby="rescueHint">
+          <div class="form-text" id="rescueHint">Pensioni suurendus ja varem minek sõltuvad staažist. Täpsemalt selgituses.</div>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="spWrap">
+          <label class="form-label" for="spHas">Kas saad eripensioni?</label>
+          <select class="form-select" id="spHas" aria-describedby="spHasHint">
+            <option value="no" selected>ei</option>
+            <option value="yes">jah</option>
+          </select>
+          <div class="form-text" id="spHasHint">Saad või hakkad saama, nt kaitseväelane, politseinik, kohtunik, prokurör, päästja või väljateenitud aastate pension. <a href="https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid" target="_blank" rel="noopener">SKA eripensionid</a></div>
+        </div>
+        <div class="col-12 col-sm-6 d-none" id="spStartWrap">
+          <label class="form-label" for="spStartAge">Mis vanusest eripension algab? <span class="req">kohustuslik</span></label>
+          <input class="form-control" id="spStartAge" type="number" min="35" max="70" step="1" required aria-describedby="spStartUnit">
+          <div class="invalid-feedback">Sisesta vanus, millest eripension algab.</div>
+          <div class="form-text"><span id="spStartUnit">vanus (nt kaitseväelane 50, politseinik 55). Kui saad seda juba, pane vanus, millest see algas.</span></div>
+        </div>
+        </div>
+        <div class="opt-actions"><button type="button" class="btn btn-link btn-sm px-0" id="removeWork" data-remove="work">Eemalda erijuhud</button></div>
+        </div>
+      </li>
+      </ul>
+      <div class="note mb-3 d-none" id="soodusSpNote"></div>
+      <div class="row g-3 fields mb-3" id="soodusYearsWrap">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="soodusYears">Mitu aastat varem plaanid pensionile minna?</label>
+          <select class="form-select" id="soodusYears" aria-describedby="soodusYearsHint"></select>
+          <div class="form-text" id="soodusYearsHint">Laste, tervist kahjustava töö või päästeteenistuse eest varem minnes pensioni ei vähendata. Muidu vähendatakse eluks ajaks.</div>
+        </div>
       </div>
+      <div class="story-note mb-4 d-none" id="soodusSummary" aria-live="polite"></div>
       <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
 
-      <section class="faq mt-4" aria-labelledby="faqTitle">
-        <h3 class="h5 section-title" id="faqTitle">Korduma kippuvad küsimused</h3>
-        <details class="faq-item">
-          <summary class="fw-medium">Miks on oluline, millal III sambaga liitusin, ja kust ma seda näen?</summary>
-          <div class="faq-body">
-            <p>Sellest sõltub, mis vanusest saad III samba raha välja võtta soodsama maksuga.</p>
-            <ul>
-              <li><strong>Liitusid enne 2021:</strong> soodsam maks kehtib alates 55-aastaselt.</li>
-              <li><strong>Liitusid 2021 või hiljem:</strong> soodsam maks kehtib alates 60-aastaselt.</li>
-            </ul>
-            <p>Soodsam maks tähendab, et kogu raha korraga välja võttes on tulumaks 10% ja fondipensionina 0%. Enne seda vanust on tulumaks 22%. Kogumist peab olema vähemalt 5 aastat.</p>
-            <p class="mb-1"><strong>Kust näha, millal liitusid:</strong></p>
-            <ul class="mb-0">
-              <li>Pensionikeskuse e-teenuses (sisene ID-kaardi, Mobiil-ID või Smart-ID-ga): vaata, millal said esimesed III samba osakud. <a href="https://www.pensionikeskus.ee/" target="_blank" rel="noopener">Pensionikeskus</a></li>
-              <li>Oma panga või Tuleva kontol III samba ülevaates.</li>
-              <li>Kui sa ei tea, vali „2021 või hiljem“. Siis ei arvesta lugu soodustust, mida sul pole.</li>
-            </ul>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary class="fw-medium">Mida tähendab „tootlus pärast inflatsiooni“?</summary>
-          <div class="faq-body">
-            <p>See näitab, kui palju sinu raha ostujõud aastas päriselt kasvab, kui fondi kasvust lahutada hindade tõus ja fonditasud.</p>
-            <p><strong>Näide:</strong> fond kasvab aastas 6%, hinnad tõusevad 4%. Tootlus pärast inflatsiooni on siis umbes 2%: saad aasta pärast 2% rohkem osta kui täna.</p>
-            <ul>
-              <li><strong>0%:</strong> raha hoiab väärtust, aga ei kasva.</li>
-              <li><strong>2%:</strong> ettevaatlik eeldus.</li>
-              <li><strong>4%:</strong> optimistlik eeldus, pikaajaline aktsiafond madala tasuga.</li>
-            </ul>
-            <p class="mb-0">Seetõttu on kõik summad selles loos <strong>tänastes eurodes</strong>: saad neid võrrelda tänaste hindadega. Tootlus on eeldus, mitte lubadus.</p>
-          </div>
-        </details>
-      </section>
       <!-- Kasvu valikud on peidus: arvutus kasutab vaikeeeldusi (vt jalus). -->
       <div id="growthOpts" hidden>
       <h3 class="h5 section-title mt-4">Kuidas kogud edasi?</h3>
@@ -163,7 +269,7 @@
           <div class="col-6 col-md-3">
             <label class="form-label" for="switchAge">Vanus</label>
             <input class="form-control" id="switchAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="switchYear">
-            <div class="form-text" id="switchYear"></div>
+            <div class="form-text" id="switchYear">Vanus, millal vahetad fondi.</div>
           </div>
         </div>
         <div class="small-muted mt-2" id="switchNote" aria-live="polite"></div>
@@ -255,7 +361,62 @@
         <div class="chapter-art" aria-hidden="true">💼</div>
         <div>
           <p class="chapter-kicker" id="k3"></p>
-          <h2 id="h3" tabindex="-1">Tööaastad: kuidas oma pensioni kogud?</h2>
+          <h2 id="h3" tabindex="-1">Tööaastad: kas võtad samba raha varem välja?</h2>
+        </div>
+      </div>
+      <p class="intro-note mb-3" id="earlyIntro"></p>
+      <div id="p2EarlyPart">
+      <h3 class="h5 section-title">II sammas</h3>
+      <fieldset id="p2EarlySet" class="mb-3">
+        <legend class="form-label">Mida II samba rahaga enne pensioniiga teed?</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="p2Early" value="no" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätan kasvama</strong><small>Sissemaksed jätkuvad ja raha on kõige kauem tööl. Tavaline valik.</small></span></label>
+          <label class="choice"><input type="radio" name="p2Early" value="yes">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💸</span><strong>Võtan korraga välja</strong><small id="p2EarlyTxt">22% tulumaksuga, ainult üks kord. Sinu ja riigi sissemaksed lõpevad.</small></span></label>
+        </div>
+      </fieldset>
+      <div id="p2EarlyMore" class="d-none">
+        <div class="row g-3 fields mb-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label" for="p2EarlyAge">Vanus väljavõtmisel</label>
+            <input class="form-control" id="p2EarlyAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p2EarlyAgeHint">
+            <div class="form-text" id="p2EarlyAgeHint"></div>
+          </div>
+          <fieldset class="col-12 col-sm-6 col-md-4">
+            <legend class="form-label">Kas liitud II sambaga uuesti?</legend>
+            <div class="form-check"><input class="form-check-input" type="radio" name="p2EarlyRejoin" id="p2Rejoin0" value="no" checked><label class="form-check-label" for="p2Rejoin0">Ei liitu</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="p2EarlyRejoin" id="p2Rejoin1" value="yes"><label class="form-check-label" for="p2Rejoin1">Liitun 5 aasta pärast (algab nullist)</label></div>
+          </fieldset>
+          <fieldset class="col-12 col-sm-6 col-md-4">
+            <legend class="form-label">Mida väljavõetud rahaga teed?</legend>
+            <div class="form-check"><input class="form-check-input" type="radio" name="p2EarlyUse" id="p2Use0" value="spend" checked><label class="form-check-label" for="p2Use0">Kasutan kohe ära</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="p2EarlyUse" id="p2Use1" value="save"><label class="form-check-label" for="p2Use1">Panen hoiusele pensioniks</label></div>
+          </fieldset>
+        </div>
+        <div class="story-note" id="p2EarlyNote" aria-live="polite"></div>
+      </div>
+      </div>
+      <div id="p3EarlyPart" class="mt-4 d-none">
+        <h3 class="h5 section-title">III sammas</h3>
+        <fieldset class="mb-3">
+          <legend class="form-label">Mida III samba rahaga enne soodusvanust teed?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="p3Early" value="no" checked>
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätan kasvama</strong><small>Soodusvanusest on maks väiksem. Tavaline valik.</small></span></label>
+            <label class="choice"><input type="radio" name="p3Early" value="yes">
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💸</span><strong>Võtan korraga välja</strong><small id="p3EarlyTxt"></small></span></label>
+          </div>
+        </fieldset>
+        <div id="p3EarlyMore" class="d-none">
+          <div class="row g-3 fields mb-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="p3EarlyAge">Vanus väljavõtmisel</label>
+              <input class="form-control" id="p3EarlyAge" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="p3EarlyAgeHint">
+              <div class="form-text" id="p3EarlyAgeHint"></div>
+            </div>
+          </div>
+          <div class="story-note" id="p3EarlyNote" aria-live="polite"></div>
         </div>
       </div>
     </section>
@@ -289,12 +450,13 @@
           <div class="faq-body">
             <p>Fondipension tähendab, et võtad III samba raha välja osamaksetena, näiteks iga kuu. Raha, mida veel välja ei võtnud, jääb fondi ja kasvab edasi.</p>
             <ul>
-              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg, on väljamaksed <strong>tulumaksuvabad</strong>.</li>
+              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg Statistikaameti andmetel, on väljamaksed <strong>tulumaksuvabad</strong>.</li><li>Kui soovid raha jagada pikema aja peale, sõlmi igal aastal uus leping (maksuvaba) või võta raha välja osade kaupa (10% tulumaks).</li>
               <li>Fondis olev raha läheb pärijatele.</li>
             </ul>
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
           </div>
         </details>
+        <div class="kkk-fond"></div>
       </section>
     </section>
 
@@ -310,28 +472,29 @@
       <p class="intro-note" id="p60Txt"></p>
       <h3 class="h5 section-title">II sammas</h3>
       <div id="p2At60Note" class="note mb-3 d-none" role="status"></div>
-      <fieldset class="mb-4" id="p2At60Set">
+      <fieldset class="mb-2" id="p2At60Set">
         <legend class="visually-hidden">II samba väljamakse viis</legend>
         <div class="choices">
           <label class="choice"><input type="radio" name="payout" value="grow" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätkan kasvatamist</strong><small>Ei võta midagi välja. Raha jääb fondi kasvama ja pensionieas võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätkan kasvatamist</strong><small>Ei võta midagi välja. Raha jääb fondi kasvama; pensionieas võtad vajadusel osa välja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="payout" value="fund">
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
           <label class="choice"><input type="radio" name="payout" value="lump">
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>II sammas ühekordselt välja, 10% tulumaks. Raha on hoiusel ja kasutad seda vajaduse järgi.</small></span></label>
         </div>
       </fieldset>
+      <p class="small-muted mb-4" id="p2WorkTip"><strong>Kui töötad veel</strong> (ka ootetoetuse või eripensioni kõrvalt), kaalu II samba väljamaksetega ootamist: väljamakse avalduse järel lõpevad mõne kuu pärast sinu ja riigi sissemaksed, ka riigi 4%. III sambasse võid maksta edasi.</p>
       <h3 class="h5 section-title">III sammas</h3>
       <div id="p3At60Note" class="note d-none"></div>
       <fieldset id="p3At60Set">
         <legend class="visually-hidden">III samba väljamakse viis</legend>
         <div class="choices">
           <label class="choice"><input type="radio" name="p3pa" value="grow" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätkan kasvatamist</strong><small>Raha jääb fondi. Pensionieas võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätkan kasvatamist</strong><small>Raha jääb fondi kasvama; pensionieas võtad vajadusel osa välja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="p3pa" value="fund">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse elada jäänud aastate peale. Ülejäänud raha kasvab edasi.</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Alustad nüüd igakuise maksuvaba väljamaksega elada jäänud aastate peale, ka töötamise ajal. Ülejäänud raha kasvab edasi.</small></span></label>
           <label class="choice"><input type="radio" name="p3pa" value="lump">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>III sammas ühekordselt välja pensionieas, 10% tulumaks. Raha on hoiusel.</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>Võtad III samba nüüd ühekordselt välja, 10% tulumaks. Raha on hoiusel.</small></span></label>
         </div>
       </fieldset>
       <section class="faq mt-4" aria-labelledby="faq60Title">
@@ -341,12 +504,13 @@
           <div class="faq-body">
             <p>Fondipension tähendab, et võtad II või III samba raha välja osamaksetena, näiteks iga kuu. Raha, mida veel välja ei võtnud, jääb fondi ja kasvab edasi.</p>
             <ul>
-              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg, on väljamaksed <strong>tulumaksuvabad</strong>.</li>
+              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg Statistikaameti andmetel, on väljamaksed <strong>tulumaksuvabad</strong>.</li><li>Kui soovid raha jagada pikema aja peale, sõlmi igal aastal uus leping (maksuvaba) või võta raha välja osade kaupa (10% tulumaks).</li>
               <li>Fondis olev raha läheb pärijatele.</li>
             </ul>
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
           </div>
         </details>
+        <div class="kkk-fond"></div>
       </section>
     </section>
 
@@ -359,20 +523,89 @@
           <h2 id="h6" tabindex="-1">Pensioniiga</h2>
         </div>
       </div>
-      <h3 class="h5 section-title" id="deferTitle">Millal võtad riikliku pensioni?</h3>
-      <p class="intro-note">Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks. Vahepealsed aastad elad II ja III samba rahast. Seda nimetatakse paindlikuks pensioniks.</p>
-      <div id="deferLocked" class="note mb-3 d-none"><span id="deferLockedTxt"></span> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda väljamakse viisi</button></div>
+      <div id="rescueBasisWrap" class="d-none mb-3">
+        <h3 class="h5 section-title" id="rescueBasisTitle">Ootetoetus või laste eest pension?</h3>
+        <p class="small-muted mb-2" id="rescueBasisHint">Ootetoetus ei ole pension: laste pensionilisa lisandub alles vanaduspensionile. Kui kasvatad lapsi üksi, on laste eest pension sageli kasulikum.</p>
+        <fieldset id="rescueBasisSet" aria-labelledby="rescueBasisTitle" aria-describedby="rescueBasisHint">
+          <div class="choices">
+            <label class="choice" id="rbMix"><input type="radio" name="rescueBasis" value="mix" checked>
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🔄</span><strong>Mõlemad järjest</strong><small id="rbMixTxt"></small></span></label>
+            <label class="choice"><input type="radio" name="rescueBasis" value="pension">
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🏛️</span><strong>Laste eest pension</strong><small id="rbPensionTxt"></small></span></label>
+            <label class="choice"><input type="radio" name="rescueBasis" value="toetus">
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🛡️</span><strong>Ainult ootetoetus</strong><small id="rbToetusTxt"></small></span></label>
+          </div>
+        </fieldset>
+        <p class="small-muted mt-2 mb-0" id="rbCompareLink">Täpsemad arvutused kõigi variantide kohta, ka teise vanemaga pere kohta, on allpool: <a href="#rbCompareItem">korduma kippuvad küsimused</a>.</p>
+      </div>
+      <p class="intro-note d-none" id="soodusNote"></p>
+      <div id="soodusWorkWrap">
+        <fieldset id="soodusWorkSet" class="mb-3">
+          <legend class="h5 section-title">Kas töötad pensioni ajal edasi?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="soodusWork" value="no" checked>
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌿</span><strong>Ei tööta</strong><small>Elad pensionist ja sammastest. II sambasse uusi sissemakseid ei tule, raha kasvab fondis edasi.</small></span></label>
+            <label class="choice"><input type="radio" name="soodusWork" value="yes">
+              <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💼</span><strong>Töötan edasi</strong><small>Palk katab kulud. Riiklik pension, mida samal ajal saad, kogub hoiusele (seda ei saa II sambasse panna); II ja III samba sissemaksed jätkuvad. Iga tööaasta tõstab pensioni.</small><small class="fw-medium" id="soodusAccrualTxt"></small></span></label>
+          </div>
+        </fieldset>
+        <div class="mb-3 d-none" id="workUntilWrap" style="max-width: 16rem">
+          <label class="form-label fw-medium" for="workUntil">Töötan kuni</label>
+          <select class="form-select" id="workUntil" aria-describedby="workUntilHint"></select>
+          <div class="form-text" id="workUntilHint">Selle vanuseni katab kulud palk, II ja III sissemaksed jätkuvad. Samba väljamaksed algavad töö lõppedes.</div>
+        </div>
+        <fieldset id="p3AfterSet" class="mb-3 d-none">
+          <legend class="h6 text-navy">Kas III samba sissemakse muutub?</legend>
+          <p class="small-muted mb-2">Pensionil on sissetulek väiksem. Sissemakse tuleb sinu pensionist kuni <span id="p3AfterUntil"></span>. eluaastani.</p>
+          <div class="choices choices-sm">
+            <label class="choice"><input type="radio" name="p3AfterMode" value="same" checked>
+              <span class="choice-body"><strong>Jääb samaks</strong><small id="p3AfterSameTxt"></small></span></label>
+            <label class="choice"><input type="radio" name="p3AfterMode" value="change">
+              <span class="choice-body"><strong>Muutub</strong><small>Sisesta uus summa (0 = lõpetan)</small></span></label>
+          </div>
+          <div class="mt-2 d-none" id="p3AfterWrap" style="max-width: 16rem">
+            <label class="form-label" for="p3After">Uus III samba sissemakse <span class="req">kohustuslik</span></label>
+            <input class="form-control" id="p3After" type="number" min="0" step="10" required aria-describedby="p3AfterUnit">
+            <div class="invalid-feedback">Sisesta summa (0 = lõpetan).</div>
+            <div class="form-text" id="p3AfterUnit">eurot kuus</div>
+          </div>
+        </fieldset>
+      </div>
+      <div id="fpChoiceWrap" class="mb-4 d-none">
+        <h3 class="h5 section-title">Eripension või vanaduspension?</h3>
+        <p class="intro-note" id="fpChoiceIntro"></p>
+        <fieldset id="fpChoiceSet">
+          <legend class="visually-hidden">Kumba pensioni valid?</legend>
+          <div class="choices" id="fpChoices"></div>
+        </fieldset>
+        <p class="small-muted mt-2 mb-0 d-none" id="spCompareLink">Täpsem võrdlus, ka teise vanemaga pere kohta, on allpool: <a href="#spCompareItem">korduma kippuvad küsimused</a>.</p>
+      </div>
+      <h3 class="h5 section-title" id="deferTitle">Kuidas võtad riikliku pensioni?</h3>
+      <p class="intro-note" id="deferIntro">Võid võtta kohe täissumma, pool või lükata edasi. Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks, pool pensioni tõstab pool sellest. Vahepealsed aastad elad palgast või II ja III samba rahast. Seda nimetatakse paindlikuks pensioniks.</p>
+      <div id="deferLocked" class="note mb-3 d-none"><span id="deferLockedTxt"></span> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0"><span id="deferLockedBtn">Muuda eripensioni</span><span class="visually-hidden"> sinu andmetes</span></button></div>
       <fieldset id="deferSet">
-        <legend class="visually-hidden">Millal võtad riikliku pensioni?</legend>
-        <div class="choices choices-sm" id="deferChoices"></div>
+        <legend class="visually-hidden">Kuidas võtad riikliku pensioni?</legend>
+        <div class="choices" id="p1ModeChoices">
+          <label class="choice"><input type="radio" name="p1Mode" value="full" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🏛️</span><strong>Kohe täissumma</strong><small id="p1FullTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="p1Mode" value="half">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌓</span><strong>Pool</strong><small id="p1HalfTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="p1Mode" value="defer">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">⏳</span><strong>Lükkan edasi</strong><small id="p1DeferTxt"></small></span></label>
+        </div>
+        <fieldset id="deferYearsWrap" class="mt-3 d-none">
+          <legend class="h6 text-navy" id="deferYearsLegend">Mitu aastat lükkad edasi?</legend>
+          <div class="choices choices-sm" id="deferChoices"></div>
+          <p class="small-muted mt-2 mb-0" id="deferWorkNote"></p>
+        </fieldset>
       </fieldset>
       <h3 class="h5 section-title mt-4" id="paPillarsTitle">Kuidas hakkad samba raha kasutama?</h3>
       <fieldset id="payoutPaSet" class="mb-4 d-none">
         <legend class="h6 text-navy">II sammas</legend>
-        <p class="small-muted mb-2">Jätkasid 60-aastaselt II samba kasvatamist. Nüüd, pensionieas, otsustad.</p>
+        <p class="small-muted mb-2">Eelmises sammus jätkasid II samba kasvatamist. Nüüd, pensionieas, otsustad.</p>
         <div class="choices">
           <label class="choice"><input type="radio" name="payoutPa" value="grow" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi</strong><small>Raha jääb fondi. Võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi, võtan vajadusel välja</strong><small>Raha jääb fondi kasvama. Kui kuus raha puudu jääb, võtad selle osa välja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="payoutPa" value="fund">
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
           <label class="choice"><input type="radio" name="payoutPa" value="lump">
@@ -382,10 +615,10 @@
       <div id="paIINote" class="note mb-3 d-none"></div>
       <fieldset id="p3PaSet" class="mb-2 d-none">
         <legend class="h6 text-navy">III sammas</legend>
-        <p class="small-muted mb-2">Jätkasid 60-aastaselt III samba kasvatamist. Nüüd, pensionieas, otsustad.</p>
+        <p class="small-muted mb-2">Eelmises sammus jätkasid III samba kasvatamist. Nüüd, pensionieas, otsustad.</p>
         <div class="choices">
           <label class="choice"><input type="radio" name="p3paPa" value="grow" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi</strong><small>Raha jääb fondi. Võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Kasvatan edasi, võtan vajadusel välja</strong><small>Raha jääb fondi kasvama. Kui kuus raha puudu jääb, võtad selle osa välja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="p3paPa" value="fund">
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse. Ülejäänud raha kasvab fondis edasi.</small></span></label>
           <label class="choice"><input type="radio" name="p3paPa" value="lump">
@@ -393,6 +626,30 @@
         </div>
       </fieldset>
       <div id="paIIINote" class="note mb-2 d-none"></div>
+      <section class="faq mt-4" id="faq65" aria-labelledby="faq65Title">
+        <h3 class="h5 section-title" id="faq65Title">Korduma kippuvad küsimused</h3>
+        <details class="faq-item d-none" id="rbCompareItem">
+          <summary class="fw-medium">Ootetoetus või laste eest pension: kumb annab rohkem?</summary>
+          <div class="faq-body" id="rbCompare"></div>
+        </details>
+        <details class="faq-item d-none" id="spCompareItem">
+          <summary class="fw-medium">Eripension või laste eest pension: kumb annab rohkem?</summary>
+          <div class="faq-body" id="spCompare"></div>
+        </details>
+        <details class="faq-item faq-ah">
+          <summary class="fw-medium">Mis on aastahinne ja staažiaasta?</summary>
+          <div class="faq-body">
+            <p>Riiklik pension arvutatakse ühikutes. Iga ühik annab sama summa: alates 1.04.2026 on see 10,48 € kuus.</p>
+            <ul>
+              <li><strong>Aastahinne</strong> näitab, kui palju sinu eest ühel aastal sotsiaalmaksu maksti. Eesti keskmise palga eest saad ühe aasta jooksul 1 aastahinde, poole väiksema palga eest 0,5. Aastahindeid kogutakse alates 1999. aastast.</li>
+              <li><strong>Staažiaasta</strong> on tööaasta kuni 1998. aastani. Iga staažiaasta annab sama palju kui 1 aastahinne, palgast sõltumata.</li>
+            </ul>
+            <p>Näiteks laste eest saadud 3,5 aastahinnet annavad 3,5 × 10,48 € ≈ 37 € kuus. Kaks staažiaastat annavad 2 × 10,48 € ≈ 21 € kuus.</p>
+            <p class="mb-0 small-muted">Allikas: <a href="https://www.riigiteataja.ee/akt/RPKS" target="_blank" rel="noopener">Riikliku pensionikindlustuse seadus § 11, § 12, § 28</a> (kontrollitud 26.10.2026).</p>
+          </div>
+        </details>
+        <div class="kkk-fond"></div>
+      </section>
     </section>
 
     <!-- 7. 66+ -->
@@ -404,23 +661,42 @@
           <h2 id="h7" tabindex="-1">Pensionipõlv: kuidas fondipension kestab?</h2>
         </div>
       </div>
+      <div id="fpChoicePaWrap" class="mb-4 d-none">
+        <h3 class="h5 section-title" id="fpChoicePaTitle">Pensionieas uuesti: eripension või vanaduspension?</h3>
+        <p class="intro-note" id="fpChoicePaIntro"></p>
+        <fieldset id="fpChoicePaSet" aria-labelledby="fpChoicePaTitle">
+          <div class="choices" id="fpChoicesPa"></div>
+        </fieldset>
+      </div>
+      <!-- Fondipensioni algus eraldi II ja III sambale (kumbki on eraldi leping); näidatakse ainult kasvava samba oma. -->
+      <div class="row g-3 mb-2">
+        <div id="fundFromWrap" class="col-12 col-sm-6 d-none">
+          <label class="form-label fw-medium" for="fundFrom">Mis vanusest hakkad II sambast fondipensioni võtma?</label>
+          <select class="form-select" id="fundFrom" aria-describedby="fundFromHint"></select>
+        </div>
+        <div id="fundFrom3Wrap" class="col-12 col-sm-6 d-none">
+          <label class="form-label fw-medium" for="fundFrom3">Mis vanusest hakkad III sambast fondipensioni võtma?</label>
+          <select class="form-select" id="fundFrom3" aria-describedby="fundFromHint"></select>
+        </div>
+      </div>
+      <div class="form-text mb-4" id="fundFromHint">„Kasvatan edasi“: raha kasvab fondis ja võtad vajadusel välja nii palju, kui kuus puudu jääb (10% tulumaks). Fondipensioni alates valid lepingu: üks või igal aastal uus. Näiteks võid II sambast võtta fondipensioni kohe ja III samba jätta hilisemaks.</div>
       <div id="contractLocked" class="note mb-3 d-none"></div>
       <fieldset id="contractSet">
         <legend class="visually-hidden" id="contractLegend">II samba fondipensioni leping</legend>
         <div class="choices">
-          <label class="choice"><input type="radio" name="contract" value="once" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">📜</span><strong>Üks leping</strong><small>Maksuvaba väljamakse elada jäänud aastate peale. Leping lõpeb perioodi lõpus ja siis on raha otsas.</small></span></label>
-          <label class="choice"><input type="radio" name="contract" value="yearly">
+          <label class="choice"><input type="radio" name="contract" value="yearly" checked>
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">♻️</span><strong>Uus leping igal aastal</strong><small>Ei saa kunagi otsa, aga väga kõrges eas on kuumakse väiksem.</small></span></label>
+          <label class="choice"><input type="radio" name="contract" value="once">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">📜</span><strong>Üks leping</strong><small>Maksuvaba väljamakse elada jäänud aastate peale. Leping lõpeb perioodi lõpus ja siis on raha otsas.</small></span></label>
         </div>
       </fieldset>
       <fieldset id="contract3Set" class="mt-3">
         <legend class="form-label" id="contract3Legend">III samba fondipensioni leping</legend>
         <div class="choices">
-          <label class="choice"><input type="radio" name="contract3" value="once" checked>
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">📜</span><strong>Üks leping</strong><small>Maksuvaba väljamakse elada jäänud aastate peale. Leping lõpeb perioodi lõpus ja siis on raha otsas.</small></span></label>
-          <label class="choice"><input type="radio" name="contract3" value="yearly">
+          <label class="choice"><input type="radio" name="contract3" value="yearly" checked>
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">♻️</span><strong>Uus leping igal aastal</strong><small>Ei saa kunagi otsa, aga väga kõrges eas on kuumakse väiksem.</small></span></label>
+          <label class="choice"><input type="radio" name="contract3" value="once">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">📜</span><strong>Üks leping</strong><small>Maksuvaba väljamakse elada jäänud aastate peale. Leping lõpeb perioodi lõpus ja siis on raha otsas.</small></span></label>
         </div>
       </fieldset>
     </section>
@@ -455,8 +731,56 @@
       </details>
     </section>
 
-    <!-- 9. Tulemus -->
-    <section class="chapter card card-calculator p-4" data-step="9" data-label="Tulemus" data-icon="🏁" aria-labelledby="h9">
+    <!-- 9. Eripension: nähtav ainult eripensioniga, teekonnal oma vanuse kohal (infograafik: „Eripensioni samm tuleb oma vanuse kohale“). -->
+    <section class="chapter card card-calculator p-4" data-step="9" data-label="Eripension" data-icon="🛡️" aria-labelledby="hSp">
+      <div class="chapter-head">
+        <div class="chapter-art" aria-hidden="true">🛡️</div>
+        <div>
+          <p class="chapter-kicker" id="kSp"></p>
+          <h2 id="hSp" tabindex="-1">Eripension algab</h2>
+        </div>
+      </div>
+      <p class="intro-note" id="spIntro"></p>
+      <h3 class="h5 section-title">Mis saab pensionieas?</h3>
+      <p id="spPaTxt"></p>
+      <div class="mb-4" style="max-width: 20rem">
+        <label class="form-label fw-medium" for="spMonthly"><span id="spMonthlyLabel">Eripensioni suurus</span> <span class="req">kohustuslik</span></label>
+        <input class="form-control" id="spMonthly" type="number" min="0" step="10" required aria-describedby="spUnit">
+        <div class="invalid-feedback">Sisesta eripensioni suurus.</div>
+        <div class="form-text" id="spUnit">eurot kuus, enne tulumaksu. <span id="spCalcHint">Kui see on tulevikus, arvuta ise: kaitseväel ja politseil 50% ametipalgast 20 teenistusaasta eest, iga lisaaasta +2,5%, kuni 75%.</span></div>
+      </div>
+      <div id="spPastNote" class="note mb-3 d-none"></div>
+      <fieldset id="spWorkSet" class="mb-3">
+        <legend class="h5 section-title">Kas töötad eripensioni ajal edasi?</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="spWork" value="yes" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💼</span><strong>Töötan edasi muul kutsealal</strong><small>Palk ja eripension koos. II sambasse laekub palgalt edasi (sh riigi 4%).</small><small class="fw-medium" id="spIIYes"></small></span></label>
+          <label class="choice"><input type="radio" name="spWork" value="no">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌿</span><strong>Ei tööta</strong><small>Elad eripensionist. II samba sissemaksed lõpevad, III sambasse saad ise edasi maksta.</small><small class="fw-medium" id="spIINo"></small></span></label>
+        </div>
+      </fieldset>
+      <fieldset id="spPaySet" class="mb-3">
+        <legend class="h6 text-navy">Kas brutopalk on sama, mis praegu?</legend>
+        <p class="small-muted mb-2">Palgast sõltub, kui palju II sambasse laekub. Mida varem eripension algab, seda rohkem see pensionieas loeb.</p>
+        <div class="choices choices-sm">
+          <label class="choice"><input type="radio" name="spPay" value="same" checked>
+            <span class="choice-body"><strong>Brutopalk jääb samaks</strong><small id="spPaySameTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="spPay" value="change">
+            <span class="choice-body"><strong>Brutopalk muutub</strong><small>Sisesta uus palk</small></span></label>
+        </div>
+        <div class="mt-2 d-none" id="spGrossWrap" style="max-width: 16rem">
+          <label class="form-label" for="spGross">Uus brutopalk <span class="req">kohustuslik</span></label>
+          <input class="form-control" id="spGross" type="number" min="0" step="50" required aria-describedby="spGrossUnit">
+          <div class="invalid-feedback">Sisesta uus brutopalk.</div>
+          <div class="form-text" id="spGrossUnit">eurot kuus, alates eripensioni algusest</div>
+        </div>
+      </fieldset>
+      <div class="note mb-3" id="spSameJobNote">Samas ametis töötamise ajal eripensioni ei maksta. Pane eripensioni alguseks vanus, mil ametist lahkud. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda algusvanust<span class="visually-hidden"> sinu andmetes</span></button></div>
+      <p class="small-muted mb-0">Eripensioni ei saa edasi lükata, varem võtta, peatada ega pooles mahus võtta. II ja III sammas avanevad samadel vanustel mis kõigil. Laste pensionilisa eripensionile ei lisata.</p>
+    </section>
+
+    <!-- 10. Tulemus -->
+    <section class="chapter card card-calculator p-4" data-step="10" data-label="Tulemus" data-icon="🏁" aria-labelledby="h9">
       <div class="chapter-head">
         <div class="chapter-art" aria-hidden="true">🏁</div>
         <div>
@@ -466,12 +790,19 @@
       </div>
       <div class="answer mb-3" id="answer" aria-live="polite"></div>
       <div id="actionWarn" class="note mb-3 d-none" role="status"></div>
+      <div id="surplusTip" class="note mb-3 d-none" role="status"></div>
       <div class="row g-2 mb-3" id="metrics"></div>
       <figure class="chart-figure mb-3" aria-labelledby="chartTitle">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
           <h3 class="h6 mb-0" id="chartTitle">Sissetulek ja kulud vanuse järgi</h3>
-          <button type="button" class="btn btn-outline-primary btn-sm" id="chartToggle" aria-expanded="false" aria-controls="chartTableWrap">Näita tabelina</button>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="d-flex align-items-center" id="nominalRow"><!-- lüliti; olek ka sõnaga (sees/väljas), mitte ainult kuju ja värviga -->
+              <div class="form-check form-switch mb-0 nominal-switch"><input class="form-check-input" type="checkbox" role="switch" id="nominalToggle"><label class="form-check-label" for="nominalToggle">Tuleviku hindades: <strong id="nominalState">väljas</strong></label></div>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="chartToggle" aria-expanded="false" aria-controls="chartTableWrap">Näita tabelina</button>
+          </div>
         </div>
+        <p class="small-muted mb-2" id="moneyNote" aria-live="polite">Summad on tänastes eurodes.</p>
         <ul class="chart-summary list-unstyled" id="chartSummary"></ul>
         <details class="chart-explain mb-3" id="chartExplainWrap">
           <summary class="fw-medium">Selgitus: kuidas graafikut lugeda</summary>
@@ -483,13 +814,9 @@
 
       <div id="legacy" class="mt-4"></div>
 
-      <h3 class="h5 mt-4">Sinu otsuste kaart</h3>
-      <p class="small-muted">Siin on näha, millal iga otsus sinu jaoks avaneb ja kui suur on maks. Reeglid: Pensionikeskus ja Sotsiaalkindlustusamet, 2026.</p>
-      <ul class="timeline mb-2" id="decisionMap"></ul>
-
-      <h3 class="h5 mt-4">Sinu lugu lühidalt</h3>
-      <p class="small-muted">Muuda ükskõik millist valikut ja tulemus arvutatakse uuesti.</p>
-      <ul class="recap" id="recap"></ul>
+      <h3 class="h5 mt-4">Sinu otsused</h3>
+      <p class="small-muted">Iga otsuse juures on, millal see avaneb ja mis maksuga. Muuda ükskõik millist valikut: vastus arvutatakse kohe uuesti. Reeglid: Pensionikeskus ja Sotsiaalkindlustusamet, 2026.</p>
+      <div id="recap"></div>
 
       <details class="mt-4">
         <summary class="fw-medium">Võrdle kõiki väljamakse teid</summary>
@@ -509,8 +836,9 @@
     <div class="story-nav d-flex justify-content-between align-items-center gap-2 mt-3">
       <button type="button" class="btn btn-outline-primary" id="backBtn">← Tagasi</button>
       <span class="small-muted" id="stepCount" aria-live="polite"></span>
-      <button type="button" class="btn btn-primary" id="nextBtn">Edasi →</button>
+      <button type="button" class="btn btn-primary" id="nextBtn" aria-describedby="nextHint">Edasi →</button>
     </div>
+    <p class="small-muted text-end mt-1 mb-0" id="nextHint" aria-live="polite"></p>
 
     <!-- Jooksev kokkuvõte -->
     <aside class="pot-bar mt-3" aria-label="Jooksev kokkuvõte" id="potBar"></aside>
@@ -520,13 +848,22 @@
       <p class="small-muted"><a href="/tagasiside/" id="tagasisideLink2">Anna tagasisidet</a> · anonüümne, umbes kaks minutit. <a href="/privaatsus/">Privaatsus</a></p>
     </footer>
   </main>
+  <!-- Selgitused („?“): lauaarvutis külgpaneel, mobiilis modaal. showModal() annab klaviatuurilõksu, inertse tausta ja Esc-sulgemise. -->
+  <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+    <div class="help-head">
+      <h2 class="h5 mb-0" id="helpTitle" tabindex="-1"></h2>
+      <button type="button" class="help-close" id="helpClose"><span class="visually-hidden">Sulge selgitus</span></button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/mootmine.js?v=20261011a"></script>
-  <script src="../data/elutabel.js?v=20261010h"></script>
-  <script src="../data/kulud.js?v=20261010h"></script>
-  <script src="profiilid.js?v=20261010h"></script>
-  <script src="pension.js?v=20261012e"></script>
-  <script src="story.js?v=20261012e"></script>
+  <script src="../data/elutabel.js?v=20261019a"></script>
+  <script src="../data/kulud.js?v=20261019a"></script>
+  <script src="profiilid.js?v=20261019a"></script>
+  <script src="pension.js?v=20261019c"></script>
+  <script src="abi.js?v=20261019d"></script>
+  <script src="story.js?v=20261019d"></script>
 </body>
 </html>

@@ -1,10 +1,161 @@
 {
  "_selgitus": "Meie teadmine konstandid: väärtus + allikas + millal viimati üle vaadatud. Test tests/elukaar-reeglid.test.cjs kontrollib, et mootor kasutab täpselt neid. Kui reegel muutub (nt maksuvaba tulu 776 €), muuda siin allikas ja kuupäev ning mootor koos.",
- "tulumaks": { "vaartus": 0.22, "allikas": "EMTA: tulumaksumäär 22% (2026)", "url": "https://www.emta.ee/", "kontrollitud": "2026-10-10", "kommentaar": "Riiklikule pensionile ja 22% määraga väljamaksetele." },
- "pensionari_maksuvaba_tulu_kuus": { "vaartus": 776, "allikas": "EMTA: pensionäri maksuvaba tulu (SKA kalkulaatoris sama)", "url": "https://www.emta.ee/", "kontrollitud": "2026-10-10", "kommentaar": "Mudel eeldab, et 776 € jääb tänastes eurodes konstantseks." },
- "lyhike_valjamakse_maks": { "vaartus": 0.10, "allikas": "Pensionikeskus / EMTA: ühekordse või lühiajalise fondipensioni väljamakse 10% (pensioniea aastal ja kuni 5 a enne)", "url": "https://www.pensionikeskus.ee/", "kontrollitud": "2026-10-10", "kommentaar": "Pensionikeskus rakendab kasutamata maksuvaba tulu 10%-sele väljamaksele." },
- "fondipensioni_lepingud": { "eraldi": true, "allikas": "Pensionikeskus: II samba tähtajaline pension ja täiendav (III samba) fondipension on eraldi lepingud, kumbki on oma valik", "url": "https://www.pensionikeskus.ee/", "kontrollitud": "2026-10-10", "kommentaar": "Kadi Rosenthal kontrollis 10.10.2026 (ELUKAAR_MUUDATUSED_2026-10-11.md). Mootor: II lepingut juhib scenario.contract (B, C), III oma p3Sep.contract." },
- "iii_samba_soodusiga": { "enne_2021": 55, "alates_2021": 60, "allikas": "Pensionikeskus: III samba soodusmaksustatud väljamakse iga", "url": "https://www.pensionikeskus.ee/", "kontrollitud": "2026-10-10" },
- "edasilykkamine": { "tabel": { "0": 0, "1": 0.0793, "2": 0.1688, "3": 0.2701, "4": 0.385, "5": 0.5157 }, "allikas": "SKA pensionikalkulaator (riikliku pensioni edasilükkamise tõus)", "url": "https://www.sotsiaalkindlustusamet.ee/", "kontrollitud": "2026-10-10", "kommentaar": "TEADA OLEV ERISUS: projekti kirjelduses on '0,9% iga kuu' (≈ 10,8% aastas lihtsalt), tabelis on 7,93% esimese aasta kohta. Tabel on see, mida mootor kasutab; allikas tuleb enne tõsist avaldamist üle kontrollida." },
- "edasilykkamise_maksimum_aastad": { "vaartus": 5, "allikas": "SKA: riikliku pensioni saab edasi lükata kuni 5 aastat", "url": "https://www.sotsiaalkindlustusamet.ee/", "kontrollitud": "2026-10-10" }
+ "tulumaks": {
+  "vaartus": 0.22,
+  "allikas": "EMTA: tulumaksumäär 22% (2026)",
+  "url": "https://www.emta.ee/",
+  "kontrollitud": "2026-10-10",
+  "kommentaar": "Riiklikule pensionile ja 22% määraga väljamaksetele."
+ },
+ "pensionari_maksuvaba_tulu_kuus": {
+  "vaartus": 776,
+  "allikas": "EMTA: pensionäri maksuvaba tulu (SKA kalkulaatoris sama)",
+  "url": "https://www.emta.ee/",
+  "kontrollitud": "2026-10-10",
+  "kommentaar": "Mudel eeldab, et 776 € jääb tänastes eurodes konstantseks."
+ },
+ "lyhike_valjamakse_maks": {
+  "vaartus": 0.1,
+  "allikas": "Pensionikeskus / EMTA: ühekordse või lühiajalise fondipensioni väljamakse 10% (pensioniea aastal ja kuni 5 a enne)",
+  "url": "https://www.pensionikeskus.ee/",
+  "kontrollitud": "2026-10-10",
+  "kommentaar": "Pensionikeskus rakendab kasutamata maksuvaba tulu 10%-sele väljamaksele."
+ },
+ "fondipensioni_lepingud": {
+  "eraldi": true,
+  "allikas": "Pensionikeskus: II samba tähtajaline pension ja täiendav (III samba) fondipension on eraldi lepingud, kumbki on oma valik",
+  "url": "https://www.pensionikeskus.ee/",
+  "kontrollitud": "2026-10-10",
+  "kommentaar": "Kadi Rosenthal kontrollis 10.10.2026 (ELUKAAR_MUUDATUSED_2026-10-11.md). Mootor: II lepingut juhib scenario.contract (B, C), III oma p3Sep.contract."
+ },
+ "iii_samba_soodusiga": {
+  "enne_2021": 55,
+  "alates_2021": 60,
+  "allikas": "Pensionikeskus: III samba soodusmaksustatud väljamakse iga",
+  "url": "https://www.pensionikeskus.ee/",
+  "kontrollitud": "2026-10-10"
+ },
+ "edasilykkamine": {
+  "tabel": {
+   "0": 0,
+   "1": 0.0793,
+   "2": 0.1688,
+   "3": 0.2701,
+   "4": 0.385,
+   "5": 0.5157
+  },
+  "allikas": "SKA pensionikalkulaator (riikliku pensioni edasilükkamise tõus)",
+  "url": "https://www.sotsiaalkindlustusamet.ee/",
+  "kontrollitud": "2026-10-10",
+  "kommentaar": "TEADA OLEV ERISUS: projekti kirjelduses on '0,9% iga kuu' (≈ 10,8% aastas lihtsalt), tabelis on 7,93% esimese aasta kohta. Tabel on see, mida mootor kasutab; allikas tuleb enne tõsist avaldamist üle kontrollida. SKA iseteeninduse pensionikalkulaator 16.10.2026: +7,93/16,88/27,01/38,5/51,57%, varem −7,17/−13,78/−19,88/−25,5/−30,67%."
+ },
+ "edasilykkamise_maksimum_aastad": {
+  "vaartus": 5,
+  "allikas": "SKA: riikliku pensioni saab edasi lükata kuni 5 aastat",
+  "url": "https://www.sotsiaalkindlustusamet.ee/",
+  "kontrollitud": "2026-10-10"
+ },
+ "yldine_maksuvaba_tulu_kuus": {
+  "vaartus": 700,
+  "allikas": "EMTA: soodustingimustel vanaduspensioni saajal kuni vanaduspensioniea aastani üldine maksuvaba tulu kuni 700 € kuus (2026), sõltumata sissetulekust",
+  "url": "https://emta.ee/eraklient/maksud-ja-tasumine/maksusoodustused/maksuvaba-tulu-vanaduspensionieas",
+  "kontrollitud": "2026-10-15",
+  "kommentaar": "Mootor: GENERAL_ALLOWANCE. Soodustusega pensionil ja eripensionil enne tavalist pensioniiga, kui ei tööta (töötades kasutab selle palk)."
+ },
+ "ii_samba_avanemine": {
+  "vaartus": 5,
+  "allikas": "Pensionikeskus: II sambast saab pensionile jääda kuni 5 aastat enne vanaduspensioniiga (sünniaasta järgi); erand ainult täielik puuduv töövõime",
+  "url": "https://www.pensionikeskus.ee/ii-sammas/valjamaksed/",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Soodustingimustel pension ega eripension II sammast varem ei ava. Mootor: open2 = max(pensionile minek, pa − 5)."
+ },
+ "aastahinne": {
+  "vaartus": 10.477,
+  "allikas": "SKA: pensioni indekseerimine, aastahinne 10,477 € alates 1.04.2026 (ingliskeelne leht, uuendatud 01.04.2026, kirjutab aastaks ekslikult 2025)",
+  "url": "https://www.sotsiaalkindlustusamet.ee/en/pension-and-benefits/pension-amount/pension-indexation",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Mootor: AASTAHINNE, workAccrual (RPKS § 12, § 13¹, § 25)."
+ },
+ "laste_ii_samba_sissemakse_kuus": {
+  "tabel": {
+   "2026": 76.12,
+   "2027": 80.76
+  },
+  "allikas": "SKA: Perehüvitiste määrad ja maksmine (kogumispensioni täiendavad sissemaksed, 4% Eesti keskmisest sotsiaalmaksuga maksustatavast kuutulust); KoPS § 10, PHS § 40 lg 2",
+  "url": "https://sotsiaalkindlustusamet.ee/perehuvitised-ja-muud-toetused/perehuvitiste-ulevaade/perehuvitiste-maarad-ja-maksmine",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Uueneb igal aastal (SKA avaldab järgmise aasta summa). Kuni lapse 3-aastaseks saamiseni, ühele vanemale, kes on II sambas."
+ },
+ "laste_pensionilisa_aastahinnetes": {
+  "enne_2013": 3.5,
+  "ilma_ii_sambata_2013_kuni_2021_08": 3.5,
+  "vanem_syndinud_enne": 1983,
+  "ilma_ii_sambata_alates_2021_09": 3.5,
+  "allikas": "RPKS § 24 lg 1¹ (1981–2012 sündinud laps 3,5 aastahinnet, enne 1981 1,5 + staaž, p 2–3: 3,5; SKA laste kasvatamise leht nimetab piiriks 1991, summa sama) ja § 28 lg 2 p 12 (2 a staaži lapse kohta)",
+  "url": "https://www.riigiteataja.ee/akt/RPKS",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "Enne 1981 sündinud lapse eest 1,5 lisa + 2 a staaži = 3,5 ühikut. Lg 6 osaline lisa (< 36 kuud riigi II samba lisamakseid) on mootoris: childSupplement, k.iiMonths (TLV-88)."
+ },
+ "tuleva_eeldused": {
+  "palga_kasv": 0.03,
+  "inflatsioon": 0.02,
+  "iii_makse_indekseeritud": false,
+  "allikas": "Tuleva kogumiskalkulaator: SALARY_GROWTH 3%, vaikimisi inflatsioon 2% (EKP eesmärk), III samba makse konstantne (TulevaEE/onboarding-client pensionCalculator/calculation.ts)",
+  "url": "https://github.com/TulevaEE/onboarding-client",
+  "kontrollitud": "2026-10-26",
+  "kommentaar": "TLV-86. Elukaare UI kasutab neid vaikimisi; mootor ilma sisendita mitte."
+ },
+ "paindlik_varem": {
+  "tabel": {
+   "0": 0,
+   "1": 0.0717,
+   "2": 0.1378,
+   "3": 0.1988,
+   "4": 0.255,
+   "5": 0.3067
+  },
+  "allikas": "SKA iseteeninduse pensionikalkulaator, paindlik pension (riikliku pensioni vähendus varem minnes, eluks ajaks)",
+  "url": "https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator",
+  "kontrollitud": "2026-10-17",
+  "kommentaar": "Kadi andmetel 3 a varem: 664 € = (865 − 3 × 12,2) × (1 − 19,88%)."
+ },
+ "paaste_suurendus": {
+  "tabel": {
+   "10": 0.1,
+   "16": 0.2,
+   "21": 0.25,
+   "26": 0.4,
+   "31": 0.5
+  },
+  "allikas": "Päästeteenistuse seadus § 18 lg 2 ja 5 (Riigi Teataja, kehtiv 01.10.2026): staaži alumine piir → suurendus; § 18 kehtib kuni 28.02.2043",
+  "url": "https://www.riigiteataja.ee/akt/106072023069?leiaKehtiv",
+  "kontrollitud": "2026-10-17",
+  "kehtib_kuni": "2043-02-28"
+ },
+ "paaste_ootetoetus": {
+  "staaz_vahemalt": 15,
+  "aastat_enne_pensioniiga": 5,
+  "allikas": "Päästeteenistuse seadus § 19 (Riigi Teataja, kehtiv 01.10.2026): toetus = vanaduspension koos erisustega, ei maksta päästjana töötamisel",
+  "url": "https://www.riigiteataja.ee/akt/106072023069?leiaKehtiv",
+  "kontrollitud": "2026-10-17"
+ },
+ "ametniku_suurendus": {
+  "tabel": {
+   "10": 0.1,
+   "16": 0.2,
+   "21": 0.25,
+   "26": 0.4,
+   "31": 0.5
+  },
+  "allikas": "Avaliku teenistuse seadus § 113 lg 2, 3 ja 7 (Riigi Teataja, kehtiv 01.10.2026): üleminekusäte enne 01.04.2013 staaži täitnutele; päästeteenistujale ei kohaldata (PäästeTS § 18 lg 3)",
+  "url": "https://www.riigiteataja.ee/akt/ATS?leiaKehtiv",
+  "kontrollitud": "2026-10-17"
+ },
+ "keskmine_vanaduspension_kuus": {
+  "vaartus": 860.23,
+  "allikas": "Vabariigi Valitsus / ERR: keskmine vanaduspension (44 a staaži) pärast 1.04.2026 indekseerimist 860,23 € (enne 817,25 €)",
+  "url": "https://www.err.ee/1609943744/keskmine-vanaduspension-touseb-aprillist-860-eurole",
+  "kontrollitud": "2026-10-17",
+  "kommentaar": "Mootor: AVG_OLD_AGE_PENSION. Ainult võrdlustabeli teise vanema näide (tema andmeid Elukaar ei küsi). Uueneb igal aprillil."
+ }
 }

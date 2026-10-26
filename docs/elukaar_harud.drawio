@@ -1,0 +1,905 @@
+<mxfile host="app.diagrams.net" pages="7">
+  <diagram id="p1" name="1 Teekond">
+    <mxGraphModel dx="1062" dy="598" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="Teekond" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_a" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" value="Avaleht: eelprofiil (?p=) või nullist" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_s0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Samm 0 „Sina“: sünniaasta, sugu, pensioniiga, riiklik pension, palk, II ja III sammas, lapsed, erijuhud" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_s3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Samm 3: II ja/või III samba varane väljavõtt (kui sammas on ja tavaline väljamakse pole veel käes)" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_d55" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="III sambaga liitusid enne 2021?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_s55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="55 a: III samba valik" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_dsp" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Eripension: jah?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ssp" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Eripensioni samm oma vanuse kohal (enne 55, 55…pa−5, pa−5…pa või enne pa)" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_dso" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Lähed soodustusega üle 5 a varem (ret &lt; pa−5)?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_spa1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Pensionile minek ENNE II samba sammu" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_s60" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="pa−5 (nt 60 a): II ja III samba väljamakse" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_spa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Pensionile minek: pa või soodustusega varem" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="n_s66" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="66+ / fondipensioni algus: leping" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sk" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Kulud: üksi/paaris, kulupakett" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="n_st" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Tulemus: kas raha jätkub elu lõpuni?" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s0" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_s0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_d55" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_d55" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s55" value="jah, III pole varem välja võetud">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_d55" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_dsp" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_s55" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_dsp" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_dsp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ssp" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_dsp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_dso" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_ssp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_dso" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_dso" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_spa1" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_dso" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s60" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_spa1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s60" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n_s60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_spa" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="n_s60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" value="pensionil juba">
+          <mxGeometry relative="1" x="0.0385" y="40" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="520" y="818" />
+              <mxPoint x="520" y="1050" />
+            </Array>
+            <mxPoint x="509.9999999999998" y="819.9999999999998" as="sourcePoint" />
+            <mxPoint x="480" y="1050" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n_spa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_s66" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n_s66" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_sk" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="n_sk" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_st" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p2" name="2 Varem pensionile">
+    <mxGraphModel grid="1" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="Varem pensionile" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_i1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Lapsed (≥ 8 a kasvatatud, arv, puue, õigust kasutab mina/teine)" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_i2" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Tervist kahjustav töö: nimekiri 1 või 2" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_i3" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Päästeteenistuse staaž" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_i4" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Eripension: jah/ei" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_k" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Laste õigus: mina?" vertex="1">
+          <mxGeometry height="96" width="210" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_k0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="puue: 5 a; ≥ 5 last: 5 a; 4: 3 a; 3: 1 a; muidu 0" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_h" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="nimekiri 1: 10 a; nimekiri 2: 5 a" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_r" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Staaž ≥ 15 a?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_r5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="ootetoetus: 5 a" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_rb" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Nii laste kui päästja õigus?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_rbv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Vali: mõlemad järjest (kui laste aastaid vähem) / laste eest pension / ainult ootetoetus" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_max" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Varem mineku õigus = suurim kolmest (aastad ei liitu)" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sp0" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Eripension ja õigus = 0?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_spn" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="Varem vanaduspensioni ei küsita: eripension katab" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Mitu aastat varem: 0 / 1…õigus vähendamata / üle õiguse kuni 5 a paindlik (−7,17…−30,67%)" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_res" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Pensionile minek = pensioniiga − valitud aastad" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_lock" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="Kui varem: edasilükkamine ja pool pensioni lukus" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_i1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_k" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_k" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_k0" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_i2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_h" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_i3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_r" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_r" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_r5" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_k0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_max" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_h" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_max" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_r5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_rb" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_rb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_rbv" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_rb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_max" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_rbv" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_max" value="">
+          <mxGeometry relative="1" x="0.2513" as="geometry">
+            <Array as="points">
+              <mxPoint x="470" y="578" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_i4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" value="">
+          <mxGeometry relative="1" x="-0.0799" as="geometry">
+            <Array as="points">
+              <mxPoint x="808.4" y="40" />
+              <mxPoint x="260" y="40" />
+              <mxPoint x="260" y="575" />
+            </Array>
+            <mxPoint x="808.4000000000003" y="85" as="sourcePoint" />
+            <mxPoint x="300.00000000000045" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n_max" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_sp0" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="n_sp0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_spn" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n_sp0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_sel" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n_sel" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_res" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="n_res" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_lock" value="aastaid &gt; 0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="1040" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p3" name="3 Lapsed">
+    <mxGraphModel dx="1743" dy="981" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="Lapsed" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_k" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Oled kasvatanud lapsi ≥ 8 a?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_no" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="Laste mõju pole" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_in" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Laste arv, iga lapse sünniaasta (2021+ ka kuu), puue" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_eu" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Varem mineku õigust kasutab mina?" vertex="1">
+          <mxGeometry height="96" width="210" x="20" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ey" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Varem pensionile 1/3/5 a (vt leht 2)" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_su" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Pensionilisa või II samba lisamakset saab mina?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Laps enne 2013: +3,5 aastahinnet" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Laps 2013–08.2021: vanem sündinud &lt; 1983 ja II sammast pole?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b2y" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="+3,5 aastahinnet" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b3" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Laps 09.2021+: II sammas?" vertex="1">
+          <mxGeometry height="96" width="210" x="770" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b3n" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="+3,5 aastahinnet (osaliselt, kui II sambas &lt; 36 kuud)" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_b3y" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Riik maksab II sambasse (76,12 € kuus 2026)" vertex="1">
+          <mxGeometry height="76" width="210" x="1020" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_fc" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="SKA prognoos sisaldab pensionilisa?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_f1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="jah: juba riiklikus pensionis" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_f2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="ei: lisame pensionile" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_f3" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="ei tea: ei lisa" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_k" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_no" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_k" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_in" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_in" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_eu" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="375" y="290" />
+              <mxPoint x="190" y="290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_in" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_su" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_eu" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ey" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_su" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b1" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_su" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b2" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_su" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b3" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_b2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b2y" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_b3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b3n" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_b3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_b3y" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_b1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_fc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n_b2y" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_fc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="n_b3n" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_fc" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="875" y="630" />
+              <mxPoint x="375" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n_fc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_f1" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n_fc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_f2" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="n_fc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_f3" value="ei tea">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p4" name="4 II sammas">
+    <mxGraphModel grid="1" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="II sammas" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_h" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="II sammas &gt; 0 või sissemakse &gt; 0?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_no" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="Valikud lukus: „II sambas ei ole kogutud midagi“" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ve" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Samm 3, enne pa−5: jätan kasvama / võtan korraga välja (KoPS § 43¹)" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_vet" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="22% maks, ainult üks kord (alates 01.11.2026). Sissemaksed lõpevad. Raha kulutan või hoiusele. Ei liitu: 60 a ja pensioniea II valikut pole. Liitun 5 a pärast: uus II sammas nullist" vertex="1">
+          <mxGeometry height="110" width="210" x="1050" y="46" as="geometry" />
+        </mxCell>
+        <mxCell id="n_v60" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="pa−5 (nt 60 a): kasvatan / fondipension / korraga välja" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_lump" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Korraga välja (10% maks), raha hoiusel; lepingut pole. Stsenaarium A" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_fund" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Fondipension: leping üks kord / igal aastal (66+ samm)" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_same" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Pensionile minek = pa−5?" vertex="1">
+          <mxGeometry height="96" width="210" x="520" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_vpa" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Pensionieas: kasvatan / fondipension / korraga välja" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ff" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Fondipensioni algus: „ei hakka“ või vanus" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_grow" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Kasvab edasi, võtad välja vajaduse järgi (10%). GROW" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_con" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Leping üks kord (B) / igal aastal (D)" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_c" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Edasilükatud riiklikuga: stsenaarium C" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_h" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_no" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_h" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_v60" value="jah">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="625" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_h" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ve" value="enne pa−5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="625" y="70" />
+              <mxPoint x="625" y="98" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_ve" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_v60" value="kasvama">
+          <mxGeometry relative="1" x="0.0411" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="800" y="140" />
+              <mxPoint x="625" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_ve" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_vet" value="korraga välja">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_v60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_lump" value="korraga">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_v60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_fund" value="fondipension">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_v60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_same" value="kasvatan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_same" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_vpa" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_same" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ff" value="jah: ei küsita uuesti">
+          <mxGeometry relative="1" x="0.0517" y="50" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="740" y="348" />
+              <mxPoint x="740" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_vpa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ff" value="kasvatan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_vpa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_fund" value="fondipension">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n_ff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_grow" value="ei hakka">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="n_ff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_con" value="vanus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n_fund" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_con" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n_con" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_c" value="kui riiklik edasi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p5" name="5 III sammas">
+    <mxGraphModel grid="1" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="III sammas" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_j" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="III sambaga liitusid?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_none" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Ei ole: „Avan III samba, vanus“" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_aft" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="2021 või hiljem: 55 a sammu pole" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_bef" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" value="Enne 2021: 55 a samm (kui III pole 3. sammus välja võetud)" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_e3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Samm 3, enne soodusvanust: jätan kasvama / võtan korraga välja (22%), vanus sisestusväljas" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_e3t" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Kogu III korraga, 22%. Raha kasutatakse ära. Edasised sissemaksed kogunevad pensioniks. 55 a sammu ei tule" vertex="1">
+          <mxGeometry height="76" width="210" x="1020" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_has" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="III sammas &gt; 0 või sissemakse &gt; 0?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_nl" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" value="Valikud lukus: „III sambas ei ole kogutud midagi“" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_v55" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="55 a: jätan kasvama / fondipension (kui juba lubatud) / korraga välja (10% või 22%)" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_v60" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="pa−5: kasvatan / fondipension / korraga välja" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_done" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Valik tehtud 55 a, hiljem ainult märkus ja link muutmiseks" vertex="1">
+          <mxGeometry height="76" width="210" x="770" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_vpa" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Pensionieas: kasvatan / fondipension / korraga välja (kui 60 a „kasvatan“ ja vanus erineb)" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ff" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Fondipensioni algus (ühine II sambaga)" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_c3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="III samba leping üks kord / igal aastal" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_af" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Lähed varem, ei tööta, sissemakse &gt; 0?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="n_afv" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Sissemakse jääb samaks / muutub kuni pa" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_j" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_e3" value="on III raha">
+          <mxGeometry relative="1" x="0.2857" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="625" y="108" />
+              <mxPoint x="625" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_e3t" value="korraga välja">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_bef" value="kasvama">
+          <mxGeometry relative="1" x="0.0889" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_j" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_none" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_j" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_aft" value="2021+">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_j" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_bef" value="enne 2021">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_none" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_has" value="">
+          <mxGeometry relative="1" x="-0.109" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="218" />
+              <mxPoint x="260" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_aft" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_has" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_bef" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_v55" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_has" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_nl" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_has" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_v60" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_v55" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_v60" value="kasvama">
+          <mxGeometry relative="1" x="0.0526" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="338" />
+              <mxPoint x="500" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n_v55" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_done" value="fond / välja">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="n_v60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_vpa" value="kasvatan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n_v60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_c3" value="fondipension">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n_vpa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ff" value="kasvatan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="n_vpa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_c3" value="fondipension">
+          <mxGeometry relative="1" x="-0.2952" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="n_ff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_c3" value="vanus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="n_c3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_af" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="n_af" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_afv" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="1290" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p6" name="6 Riiklik ja eripension">
+    <mxGraphModel grid="1" gridSize="10" page="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Riiklik ja eripension" style="text;html=1;fontSize=20;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="20" y="0" width="600" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sp" value="Eripension jah ja summa &gt; 0?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="60" width="210" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="n_fp" value="Pensionile minnes: jätkan eripensioniga / lähen üle vanaduspensionile (suurem märgitud)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="180" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_fpa" value="Pensionieas uuesti: eripension / vanaduspension (tööaastad tõstavad)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_dl" value="Eripension või varem pensionile?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="180" width="210" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="n_lk" value="Edasilükkamine ja pool pensioni lukus, põhjus + link" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="300" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_p1" value="Riiklik: täis kohe / pool 1–5 a / edasi 1–5 a (+7,93…+51,57%)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="770" y="300" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_w" value="Töötad pensioni ajal edasi? ei / jah → kuni vanuseni" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="420" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_wa" value="Iga tööaasta tõstab pensioni (palga järgi)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="540" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ssp" value="Eripensioni samm" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="420" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_past" value="Eripension algas juba?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="540" width="210" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="n_pl" value="Valikud tehtud ja lukus" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="660" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sw" value="Töötad eripensioni ajal? jah / ei; palk sama / muutub" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="660" width="210" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" value="jah" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_sp" target="n_fp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="kui jätkasid eripensioniga" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_fp" target="n_fpa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="ei" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_sp" target="n_dl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_fp" target="n_dl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="jah" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_dl" target="n_lk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="ei" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_dl" target="n_p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_lk" target="n_w">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_p1" target="n_w">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="jah" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_w" target="n_wa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_ssp" target="n_past">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="jah" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_past" target="n_pl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="ei" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="n_past" target="n_sw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" value="Elukaare samm" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="60" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" value="Sisend (1. vaade)" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="110" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" value="Tingimus koodis" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="160" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" value="Kasutaja valik" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="210" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" value="Lukus / peidus" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="260" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" value="Tulemus arvutuses" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="310" width="150" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p7" name="7 Kulud ja tulemus">
+    <mxGraphModel dx="1593" dy="897" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="Kulud ja tulemus" vertex="1">
+          <mxGeometry height="36" width="600" x="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n_hh" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Pensionil elan: üksi / paaris" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n_pk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Kulupakett: kokkuhoidlik / optimaalne / mugav" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" value="Muuda kulusid ükshaaval (jääb paketi juurde)" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sc" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Sinu stsenaarium samba ja riikliku valikutest" vertex="1">
+          <mxGeometry height="96" width="210" x="20" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sA" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="A korraga välja; B üks leping; C edasilükkamine; D leping igal aastal; GROW kasvatan" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_r" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Kas raha jätkub elu lõpuni: vastus, mõõdikud, graafik/tabel" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="n_sh" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="Raha lõpeb enne elu lõppu?" vertex="1">
+          <mxGeometry height="96" width="210" x="270" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="n_wn" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Hoiatus + soovitus, mida proovida" vertex="1">
+          <mxGeometry height="76" width="210" x="520" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_cmp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Võrdlus A, B, C (kui edasilükkamine lubatud), D, GROW" vertex="1">
+          <mxGeometry height="76" width="210" x="20" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="n_out" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;" value="Pärand, otsuste kaart, kokkuvõte; laadi alla MD/PDF; tagasiside" vertex="1">
+          <mxGeometry height="76" width="210" x="270" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="n_hh" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_pk" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n_pk" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_ed" value="valikuline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="n_pk" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_r" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="n_ed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_r" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n_sc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_sA" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="n_sA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_r" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="n_r" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_sh" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="n_sh" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_wn" value="jah">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="n_r" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_cmp" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="n_sh" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_out" value="ei">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n_wn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_out" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n_cmp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;" target="n_out" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg0" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=11;" value="Elukaare samm" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;size=0.08;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="Sisend (1. vaade)" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Tingimus koodis" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=11;" value="Kasutaja valik" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" parent="1" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#555555;fontSize=11;" value="Lukus / peidus" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="lg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" value="Tulemus arvutuses" vertex="1">
+          <mxGeometry height="40" width="150" x="790" y="310" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

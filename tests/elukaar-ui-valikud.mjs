@@ -64,9 +64,9 @@ await go(7);
 s = await q("#contractSet"); let s3 = await q("#contract3Set");
 check(s && !s.hidden && !s.disabled, "II fondipension: II lepingu valik on nähtav ja aktiivne");
 check(s3 && !s3.hidden && !s3.disabled, "III fondipension: III lepingu valik on nähtav ja aktiivne");
-check(await checked("contract3") === "once", "III samba vaikevalik on „Üks leping“");
+check(await checked("contract3") === "yearly", "III samba vaikevalik on „Uus leping igal aastal“ (Kadi 24.10)");
 await go(await lastStep());
-check(/III samba fondipension ühe lepinguga/.test((await q("#recap")).text), "kokkuvõte näitab III lepingut");
+check(/III samba fondipension uue lepinguga igal aastal/.test((await q("#recap")).text), "kokkuvõte näitab III lepingut");
 
 // 4. Ainult III fondipensionina (II kasvab): ainult III lepingu valik.
 await setup(base, { p3plan: "fund", payout: "grow" });
@@ -89,10 +89,10 @@ check(/ühe lepinguga/.test((await q("#recap")).text), "edasilükkamine: kasutaj
 await go(6); await page.evaluate(() => { const el = document.querySelector('input[name=defer][value="0"]'); if (el) { el.checked = true; el.dispatchEvent(new Event("change", { bubbles: true })); } });
 check(await checked("contract") === "once", "kasutaja valik „Üks leping“ jääb pärast edasilükkamise muutmist");
 
-// 6. Ilma edasilükkamiseta fondipension: vaikimisi üks leping (B), nagu varem.
+// 6. Ilma edasilükkamiseta fondipension: vaikimisi uus leping igal aastal (Kadi 24.10).
 await setup(base, { payout: "fund" });
 await go(7);
-check(await checked("contract") === "once", "ilma edasilükkamiseta on vaikimisi „Üks leping“");
+check(await checked("contract") === "yearly", "vaikimisi „Uus leping igal aastal“, ka ilma edasilükkamiseta");
 
 check(errs.length === 0, "lehe vead: " + errs.join("; "));
 await browser.close();

@@ -84,7 +84,8 @@ let rows;
 try { rows = { seansid: sql("SELECT * FROM mina_seansid"), loendur: sql("SELECT * FROM mina_loendur"), tag: sql("SELECT * FROM tagasiside_vastused WHERE allikas = '" + kanal + "'"), meil: sql("SELECT * FROM ratas_meilid") }; }
 catch (e) { check(false, "kohaliku andmebaasi lugemine ebaõnnestus: " + e.message.slice(0, 120)); }
 if (rows) {
-  const tekstid = [...rows.seansid, ...rows.loendur].flatMap((r) => Object.values(r)).filter((v) => typeof v === "string").join("|");
+  // Juhuslik seansi tunnus (UUID) võib kogemata sisaldada märgi numbrit (nt …c987650): see pole sisestatud väärtus, jätame välja.
+  const tekstid = [...rows.seansid, ...rows.loendur].flatMap((r) => Object.entries(r).filter(([k]) => k !== "sid").map(([, v]) => v)).filter((v) => typeof v === "string").join("|");
   for (const v of Object.values(MARK)) check(!tekstid.includes(v), "mõõtmise tabelite tekstiväljades pole sisestatud väärtust " + v);
   const oma = rows.seansid.filter((s) => s.k === kanal);
   check(oma.length === 1, "meie seansist on täpselt üks kokkuvõtterida (" + oma.length + ")");

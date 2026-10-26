@@ -115,7 +115,8 @@ for (const input of cases.slice(0, 120).filter((x) => P.CURRENT_YEAR - x.birthYe
   const s = P.simulate({ ...input, needMonthly: 1, p1Monthly: 0 }, T, D);
   const pa = P.retirementYears(input);
   const a = s.rows.find((x) => x.age === pa), b = s.rows.find((x) => x.age === pa + 1);
-  if (a && b && a.i2 > 1) check(b.i2 <= a.i2 * 1.001 + 1e-9 && b.i2 >= a.i2 * 0.9, label(input, 'D') + ': fondipension ' + pa + ' → ' + (pa + 1) + ' ei hüppa (' + a.i2.toFixed(1) + ' → ' + b.i2.toFixed(1) + ')');
+  // Lubatud kasv on fondi tootlus (1 + r): leping igal aastal → makse = vara / elada jäänud aastad (ümardatud).
+  if (a && b && a.i2 > 1) check(b.i2 <= a.i2 * (1 + input.realReturn) * 1.001 + 1e-9 && b.i2 >= a.i2 * 0.9, label(input, 'D') + ': fondipension ' + pa + ' → ' + (pa + 1) + ' ei hüppa (' + a.i2.toFixed(1) + ' → ' + b.i2.toFixed(1) + ')');
 }
 
 console.log(passed + ' kontrolli läbis, ' + failures.length + ' kukkus läbi.');
