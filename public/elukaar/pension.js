@@ -18,6 +18,22 @@
   const DEFERRAL_INCREASE = { 0: 0, 1: 0.0793, 2: 0.1688, 3: 0.2701, 4: 0.385, 5: 0.5157 };
   // Paindlik pension varem (SKA 2026, kalkulaator 17.10.2026): vähendus eluks ajaks, aastat enne pensioniiga → osa.
   const EARLY_DECREASE = { 0: 0, 1: 0.0717, 2: 0.1378, 3: 0.1988, 4: 0.255, 5: 0.3067 };
+  // Päästeteenistuse seadus (Riigi Teataja, kehtiv 01.10.2026):
+  // § 18 lg 2: vanaduspensioni suurendus 10–15 a +10%, 16–20 a +20%, 21–25 a +25%, 26–30 a +40%, üle 30 a +50%;
+  //   lg 5: makstakse pärast päästeteenistusest lahkumist; § 18 kehtib kuni 28.02.2043 → pensionile mineku aasta (pensionYear) ≤ 2042.
+  // § 19: vähemalt 15 a staažiga päästja võib jääda kuni 5 a enne pensioniiga pensioni ootele; toetus = vanaduspension koos suurendusega.
+  const RESCUE_LAST_YEAR = 2042;
+  // Avaliku teenistuse seadus § 113 (Riigi Teataja, kehtiv 01.10.2026): üleminekusäte. Vanaduspensioni suurendus sama tabeliga
+  // (10–15 a +10% … üle 30 a +50%) neile, kellel oli vajalik teenistusstaaž enne ATS jõustumist (01.04.2013) või kes jätkasid
+  // soodustingimustel (staaž kuni 2018). Päästeteenistujale ATS § 113 ei kohaldata (PäästeTS § 18 lg 3), seega päästja staažiga ei liitu.
+  // Keskmine vanaduspension (44 a staaži) alates 1.04.2026 (Vabariigi Valitsus / ERR): võrdlustabelis teise vanema näide.
+  const AVG_OLD_AGE_PENSION = 860.23;
+  function civilIncrease(years) { return rescueIncrease(years); }
+  function rescueIncrease(years, pensionYear) {
+    if (pensionYear !== undefined && pensionYear > RESCUE_LAST_YEAR) return 0;
+    const y = Math.floor(years || 0);
+    return y > 30 ? 0.5 : y >= 26 ? 0.4 : y >= 21 ? 0.25 : y >= 16 ? 0.2 : y >= 10 ? 0.1 : 0;
+  }
 
   const TAX_SHORT = 0.10; // ühekordne, osaline ja lühike fondipension pensioniea lähedal
   // Tulumaks pensionieas (EMTA ja SKA, 2026): 22% tulumaks; vanaduspensioniealisel on maksuvaba tulu 776 € kuus (9312 € aastas),
@@ -168,12 +184,25 @@
     const kidsY = earlyUser !== 'me' ? 0 : k.disabled ? 5 : n >= 5 ? 5 : n === 4 ? 3 : n === 3 ? 1 : 0;
     // Tingimuste täitmise (staaž, nimekirja aastad) eest vastutab inimene ise; mootor ei kontrolli (UI hoiatab).
     const hazardY = input.hazard === 'list1' ? 10 : input.hazard === 'list2' ? 5 : 0;
-    return Math.max(kidsY, hazardY);
+    // PäästeTS § 19 ootetoetus; input.rescueBasis 'pension' = ootetoetust ei võta, lähed laste eest varem pensionile.
+    const rescueY = (input.rescueYears || 0) >= 15 && input.rescueBasis !== 'pension' ? 5 : 0;
+    return Math.max(kidsY, hazardY, rescueY);
+  }
+
+  // Päästja ootetoetuse lõpp (vanus, TLV-105). Toetus ei ole pension: laste pensionilisa seda ei suurenda [inferred, SKA kirjas].
+  // input.rescueBasis: 'toetus' = toetus kuni pensionieani; 'mix' (vaikimisi, kui laste õigus on sinul) = toetus kuni laste
+  // eest varem pensionile minekuni, siis vanaduspension koos laste lisaga; 'pension' = toetust ei võta (earlyYears ilma selleta).
+  function rescueUntil(input) {
+    if ((input.rescueYears || 0) < 15 || input.rescueBasis === 'pension') return null;
+    const kidsY = earlyYears({ kids: input.kids });
+    const pa = retirementYears(input);
+    return input.rescueBasis !== 'toetus' && kidsY > 0 ? pa - kidsY : pa;
   }
 
   // Laste pensionilisa kuus (RPKS § 24 lg 1¹ ja § 28 lg 2 p 12, kontrollitud 16.10.2026; laps kasvatatud ≥ 8 a):
-  // - enne 2013 sündinud laps (SKA): 1991–2012 sündinul 3,5 aastahinnet; enne 1991 sündinul 1,5 aastahinnet + 2 aastat staaži
-  //   (§ 28 lg 2 p 12; staažiaasta = 1 aastahinne, § 12). Kokku mõlemal 3,5, 1991 piir muudab ainult viisi.
+  // - enne 2013 sündinud laps (RPKS § 24 lg 1¹ p 1 ja 1¹, Riigi Teataja 01.10.2026): 1,5 aastahinnet + 31.12.1980–2012 sündinul
+  //   veel 2 aastahinnet; varem sündinul 2 aastat staaži (§ 28; staažiaasta = 1 aastahinne, § 12). Kokku kõigil 3,5.
+  //   (SKA leht nimetab staaži piiriks 1991; summa on sama.)
   // - 2013–08.2021 sündinud laps: 3,5 aastahinnet ainult enne 1983 sündinud vanemale, kes ei ole II sambas (p 2).
   // - 09.2021+ sündinud laps: 3,5 aastahinnet, kui vanem ei ole lapse 3 esimesel aastal II sambas (p 3; mudel: II sammast pole).
   // - 2013+ ja II sammas: lisa pole, riik maksab II sambasse (childPillar2). Lg 6: alla 36 kuu lisamakseid → osaline lisa (allpool).
@@ -291,8 +320,12 @@
     // Paindlik pension varem (input.flexEarly aastat, ilma soodustuseta): soodus annab aja, vähendus kehtib eluks ajaks.
     // SKA kontroll 17.10.2026: (865 − 3 × 12,2) × (1 − 19,88%) = 664 €.
     const flexEarly = soodus > 0 ? Math.min(5, Math.max(0, input.flexEarly || 0)) : 0;
-    const p1Factor = (1 + DEFERRAL_INCREASE[deferral] + DEFERRAL_INCREASE[half] / 2) * (1 - EARLY_DECREASE[flexEarly]);
+    const p1Factor = (1 + DEFERRAL_INCREASE[deferral] + DEFERRAL_INCREASE[half] / 2) * (1 - EARLY_DECREASE[flexEarly]) * (1 + ((input.rescueYears || 0) > 0 ? rescueIncrease(input.rescueYears, input.birthYear + ret) : civilIncrease(input.civilYears)));
     const p1Full = p1Base * p1Factor; // enne tulumaksu
+    // Ootetoetuse ajal (ret … toetusEnd) laste pensionilisa ei maksta, ka siis, kui SKA prognoos selle juba sisaldab.
+    const toetusEnd = flexEarly > 0 ? null : rescueUntil(input);
+    const kidsInP1 = kidsApplied || (kidsMonthly > 0 && (input.kids || {}).inForecast === 'yes') ? kidsMonthly : 0;
+    const toetusYear = Math.max(0, p1Full - kidsInP1 * 12 * p1Factor);
     // Töötamine pensioni ajal (input.workOn kuni input.workUntil): palk katab kulud, riiklik pension läheb hoiusele,
     // II ja III sissemaksed jätkuvad, samba väljamaksed algavad töö lõppedes. Soodustusega pensionil on vana nimi
     // input.soodusWork (töö lõpp vaikimisi tavaline pensioniiga); muidu vaikimisi 1 aasta pärast pensionile minekut.
@@ -307,12 +340,20 @@
     // Vaikimisi suurem; võrdse summa korral jätkub eripension (uut rida ei teki).
     const choice = input.firstPillarChoice;
     const spPaid = spYear > 0 && (choice === 'special' ? true : choice === 'oldAge' ? false : spYear >= p1Full);
+    // Teine otsustuskoht tavalises pensionieas (input.firstPillarChoicePa): kui varem (soodustusega) jätkasid eripensioniga,
+    // on vanaduspension pensionieas suurem pensioni ajal töötatud aastate võrra; vaikimisi suurem kahest. Vanaduspensionilt
+    // eripensionile tagasi mudel ei lähe.
+    const p1AtPa = p1Full + accrualYear * workedBefore(pa) * p1Factor;
+    const choicePa = input.firstPillarChoicePa;
+    const spPaidPa = spPaid && ret < pa ? (choicePa === 'special' ? true : choicePa === 'oldAge' ? false : spYear >= p1AtPa) : spPaid;
+    const spPaidAt = (age) => (age >= pa ? spPaidPa : spPaid);
     const p1Year = spPaid ? 0 : p1Full;
+    const p1At = (age) => (spPaidAt(age) ? 0 : toetusEnd !== null && age < toetusEnd ? toetusYear : p1Full);
     const taxOn = input.incomeTax !== false;
     const allowance = taxOn ? PENSIONER_ALLOWANCE : 0;
     const needYear = need * 12;
     // Eripension aastas vanuse järgi: enne pensioniiga valitud vanusest, pensionieas ainult siis, kui see on suurem.
-    const spAt = (age) => (age < spStart ? 0 : age < p1Start ? spYear : spPaid ? spYear : 0);
+    const spAt = (age) => (age < spStart ? 0 : age < p1Start ? spYear : spPaidAt(age) ? spYear : 0);
     // Eripensioni ajal: töötad edasi muul kutsealal (palk, vajadusel uus palk spGross)?
     const working = input.spWork !== false && (input.spGross !== undefined ? input.spGross : input.grossMonthly) > 0;
     // Üldine maksuvaba tulu enne tavalist pensioniiga: kui ei tööta (eripensioni ajal tööga kasutab selle palk).
@@ -342,7 +383,7 @@
     // Ühekordne väljavõte tehakse siis, kui sammas avaneb. Maksuvaba tulu arvestatakse ainult pensionieas (enne seda konservatiivselt 0).
     const firstRetAge = Math.max(open2, startAge); // II samba (ühise poti) ühekordse väljavõtu aasta
     const lump3Age = Math.max(open3, startAge); // eraldi III samba ühekordse väljavõtu aasta
-    let allowAtPa = firstRetAge >= pa ? Math.max(0, allowance - (firstRetAge >= p1Start ? (firstRetAge < ret + half ? p1Base / 2 : p1Year) : 0) - spAt(firstRetAge)) : 0;
+    let allowAtPa = firstRetAge >= pa ? Math.max(0, allowance - (firstRetAge >= p1Start ? (firstRetAge < ret + half ? p1Base / 2 : p1At(firstRetAge)) : 0) - spAt(firstRetAge)) : 0;
     const lumpNet = (gross) => {
       const used = Math.min(allowAtPa, gross);
       allowAtPa -= used;
@@ -367,7 +408,7 @@
       if (scenario.id === 'A' && age === firstRetAge) { deposit += lumpOut(fund); fund = 0; }
       if (sep && sep.mode === 'lump' && age === lump3Age) { deposit += lumpOut(fund3); fund3 = 0; }
       const fundStart = fund + fund3, depositStart = deposit;
-      const i1gross = age >= p1Start ? (age < ret + half ? p1Base / 2 : p1Year) + (spPaid ? 0 : accrualYear * workedBefore(age) * (age < ret + half ? 1 : p1Factor)) : 0;
+      const i1gross = age >= p1Start ? (age < ret + half ? p1Base / 2 : p1At(age)) + (spPaidAt(age) ? 0 : accrualYear * workedBefore(age) * (age < ret + half ? 1 : p1Factor)) : 0;
       const work = age >= ret && age < workEnd;
       const ispg = spAt(age);
       // Maksuvaba tulu: pensionieas pensionäri oma, enne seda üldine (kui ei tööta). Korraga on ainult üks I samba pension.
@@ -456,9 +497,14 @@
     const res = summarize(rows, input, table, ret, p1Start, currentAge);
     res.ordinaryPensionAge = pa; // tavaline pensioniiga (pensionStartAge on soodustusega pensionile minek)
     res.childSupplement = kidsMonthly > 0 ? { monthly: kidsMonthly, applied: kidsApplied } : null;
+    // Ootetoetus (päästeasutus maksab): vanus, millest alates maksab vanaduspensioni SKA, ja toetuse summa kuus.
+    res.rescueAllowance = toetusEnd !== null && toetusEnd > ret ? { from: ret, until: toetusEnd, monthly: toetusYear / 12, pension: p1Year / 12 } : null;
     res.hazardSupplement = hazardMonthly > 0 ? hazardMonthly : null;
     // Eripensioni ja vanaduspensioni võrdlus tulemuse selgituseks („Pensionieas makstakse sulle suurem kahest“).
-    res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge', larger: spYear >= p1Full ? 'special' : 'oldAge' } : null;
+    res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge', larger: spYear >= p1Full ? 'special' : 'oldAge',
+      // Pensionieas uuesti (ainult kui varem jätkasid eripensioniga): vanaduspension koos pensioni ajal töötatud aastatega.
+      // Näidatakse ainult siis, kui midagi muutub: töö tõstis vanaduspensioni või see on suurem (varem valiti väiksem).
+      atPa: spPaid && ret < pa && (p1AtPa > p1Full + 0.5 * 12 || p1AtPa > spYear) ? { age: pa, oldAge: p1AtPa / 12, paid: spPaidPa ? 'special' : 'oldAge', larger: spYear >= p1AtPa ? 'special' : 'oldAge' } : null } : null;
     return res;
   }
 
@@ -469,7 +515,7 @@
     return {
       deferral: sp
         ? { open: false, reason: 'Eripensionile paindliku pensioni reeglid ei kehti: eripensioni ei saa edasi lükata, varem võtta ega peatada.' }
-        : soodus ? { open: false, reason: 'Soodustingimustel vanaduspensioni (lapsed, tervist kahjustav töö) ei saa edasi lükata.' }
+        : soodus ? { open: false, reason: (input.flexEarly || 0) > 0 ? 'Lähed paindliku pensioniga varem, seega pensioni edasi lükata ega pooleks võtta ei saa.' : 'Lähed pensionile varem soodustusega (lapsed, tervist kahjustav töö või päästeteenistus). Siis ei saa pensioni edasi lükata ega pooleks võtta.' }
         : { open: true, reason: '' },
       p2: (input.p2 || 0) > 0 || (input.p2Rate || 0) > 0
         ? { open: true, reason: '' } : { open: false, reason: 'II sammast ei ole.' },
@@ -539,7 +585,7 @@
     { id: 'D', name: 'Leping igal aastal uuesti', short: 'Maksuvaba fondipension, mille lepingu sõlmid igal aastal uuesti. Ei saa otsa, aga väheneb vanas eas.' },
   ];
 
-  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, EARLY_DECREASE, SCENARIOS, pensionAge, pensionAgeMonthsIn, LIFE_EXP_65, retirementYears, specialStart, earlyYears, childSupplement, childPillar2, hazardSupplement, CHILD_II_MONTHLY, yearlyContribution, wageFactor, p3Factor, WAGE_GROWTH, INFLATION, survival, horizonAge, fundPensionTerm, INCOME_TAX, PENSIONER_ALLOWANCE, GENERAL_ALLOWANCE, AASTAHINNE, workAccrual, decisionMap, options, simulate, sustainableNeed, bestDeferral };
+  const api = { CURRENT_YEAR, rescueUntil, AVG_OLD_AGE_PENSION, DEFERRAL_INCREASE, EARLY_DECREASE, rescueIncrease, RESCUE_LAST_YEAR, civilIncrease, SCENARIOS, pensionAge, pensionAgeMonthsIn, LIFE_EXP_65, retirementYears, specialStart, earlyYears, childSupplement, childPillar2, hazardSupplement, CHILD_II_MONTHLY, yearlyContribution, wageFactor, p3Factor, WAGE_GROWTH, INFLATION, survival, horizonAge, fundPensionTerm, INCOME_TAX, PENSIONER_ALLOWANCE, GENERAL_ALLOWANCE, AASTAHINNE, workAccrual, decisionMap, options, simulate, sustainableNeed, bestDeferral };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Pension = api;
 })(typeof window !== 'undefined' ? window : globalThis);

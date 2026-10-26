@@ -49,4 +49,50 @@ for (const [name, inp, sc, ska] of cases) {
 }
 // Laste eest varem (SKA 853 / 829 / 805 €) ja pensionilisa (939 €) on tests/elukaar-lapsed.test.cjs.
 
+// Päästeteenistuse seadus (Riigi Teataja 01.10.2026): § 18 suurendus kuni 28.02.2043, § 19 ootetoetus kuni 5 a varem (staaž ≥ 15 a).
+{
+  const early = { ...base, birthYear: 1975, soodus: 0 }; // pension u 2041 (≤ 2042) → suurendus kehtib
+  const s = P.simulate({ ...early, rescueYears: 20 }, T, { id: 'B' }), s0 = P.simulate(early, T, { id: 'B' });
+  const r = (x) => x.rows.find((y) => y.age === x.p1StartAge).i1g;
+  assert.ok(Math.abs(r(s) / r(s0) - 1.2) < 1e-9, 'päästja 20 a, pension ≤ 2042: +20% (' + r(s).toFixed(1) + ' vs ' + r(s0).toFixed(1) + ')');
+  const late = P.simulate({ ...base, soodus: 0, rescueYears: 20 }, T, { id: 'B' });
+  assert.ok(Math.abs(late.rows.find((y) => y.age === late.p1StartAge).i1g - 865) <= 1, 'päästja, pension 2056: suurendust pole (§ 18 kehtib kuni 2043)');
+  const wait = P.simulate({ ...base, rescueYears: 15 }, T, { id: 'B' });
+  assert.strictEqual(wait.p1StartAge, wait.ordinaryPensionAge - 5, 'staaž 15 a: pensioni ootel 5 a varem');
+  assert.strictEqual(P.earlyYears({ rescueYears: 14 }), 0, 'staaž 14 a: ootetoetust pole');
+  assert.strictEqual(P.rescueIncrease(9), 0); assert.strictEqual(P.rescueIncrease(31), 0.5); assert.strictEqual(P.rescueIncrease(30), 0.4);
+  passed += 7;
+}
+// ATS § 113: ametniku teenistusstaaž (enne 2013) → +10…50%, aastapiirita; päästjal ei liitu (PäästeTS § 18 lg 3).
+{
+  const r = (x) => x.rows.find((y) => y.age === x.p1StartAge).i1g;
+  const c = P.simulate({ ...base, soodus: 0, civilYears: 20 }, T, { id: 'B' }), c0 = P.simulate({ ...base, soodus: 0 }, T, { id: 'B' });
+  assert.ok(Math.abs(r(c) / r(c0) - 1.2) < 1e-9, 'ametnik 20 a: +20%');
+  const both = P.simulate({ ...base, birthYear: 1975, soodus: 0, civilYears: 30, rescueYears: 12 }, T, { id: 'B' }), b0 = P.simulate({ ...base, birthYear: 1975, soodus: 0 }, T, { id: 'B' });
+  assert.ok(Math.abs(r(both) / r(b0) - 1.1) < 1e-9, 'päästja + ametnik: ainult päästja suurendus (+10%)');
+  passed += 2;
+}
+// Ootetoetus või laste eest pension (TLV-105): toetus ei ole pension, laste pensionilisa seda ei suurenda.
+{
+  const kids = { b2012: 4, earlyUser: 'me', supUser: 'me', inForecast: 'no' }; // 4 last: 3 a varem, lisa 4 × 3,5 aastahinnet
+  const fam = { ...base, birthYear: 1975, rescueYears: 20, kids };
+  const pa = P.retirementYears(fam), sup = P.childSupplement(fam);
+  const i1 = (x, age) => x.rows.find((y) => y.age === age).i1g;
+  const mix = P.simulate(fam, T, { id: 'B' }); // vaikimisi: toetus 2 a, siis laste eest pension
+  assert.strictEqual(mix.pensionStartAge, pa - 5, 'mix: toetus algab 5 a varem');
+  assert.deepStrictEqual([mix.rescueAllowance.from, mix.rescueAllowance.until], [pa - 5, pa - 3], 'mix: toetus kuni laste eest pensionini');
+  assert.ok(Math.abs(i1(mix, pa - 3) - i1(mix, pa - 4) - sup * 1.2) < 1e-6, 'mix: laste lisa (× päästja 1,2) alles pensionist');
+  const toetus = P.simulate({ ...fam, rescueBasis: 'toetus' }, T, { id: 'B' });
+  assert.strictEqual(toetus.rescueAllowance.until, pa, 'toetus: kuni pensionieani');
+  assert.ok(Math.abs(i1(toetus, pa - 1) - i1(mix, pa - 4)) < 1e-6 && Math.abs(i1(toetus, pa) - i1(mix, pa)) < 1e-6, 'toetus: lisa alles pensionieas');
+  const pens = P.simulate({ ...fam, rescueBasis: 'pension' }, T, { id: 'B' });
+  assert.strictEqual(pens.pensionStartAge, pa - 3, 'pension: ainult laste eest 3 a varem');
+  assert.strictEqual(pens.rescueAllowance, null);
+  // Töötad 2 a kauem (u 12,2 € aastas × päästja 1,2), seega pension on veidi suurem kui mix'i puhul.
+  assert.ok(Math.abs(i1(pens, pa - 3) - i1(mix, pa - 3) - 2 * P.workAccrual(4000, true, true) * 1.2) < 1e-6, 'pension: 2 tööaastat rohkem');
+  // Laste õigus teisel vanemal: ainult toetus kuni pensionieani.
+  const other = P.simulate({ ...fam, kids: { ...kids, earlyUser: 'other' } }, T, { id: 'B' });
+  assert.strictEqual(other.rescueAllowance.until, pa, 'laste õigus teisel vanemal: toetus kuni pensionieani');
+  passed += 9;
+}
 console.log('SKA võrdlus: ' + passed + ' kontrolli läbis');

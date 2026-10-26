@@ -97,7 +97,7 @@ for (const [name, vp] of [["töölaud", { width: 1280, height: 900 }], ["mobiil"
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 600 } }); await ctx.addInitScript(() => { window.__ELUKAAR_TEST = true; });
   const page = await ctx.newPage(); await page.goto(url + "/elukaar/"); await page.waitForFunction(() => window.__elukaar);
-  await page.click('[data-help="kids"]');
+  await page.click('[data-help="special"]');
   const sc = await page.evaluate(() => { const d = document.getElementById("helpDialog"), b = document.getElementById("helpBody"); return { page: getComputedStyle(document.documentElement).overflow, dlg: getComputedStyle(d).overflowY === "clip", body: b.scrollHeight > b.clientHeight && getComputedStyle(b).overflowY === "auto" }; });
   for (let i = 0; i < 6; i++) await page.keyboard.press("Shift+Tab");
   check(await page.evaluate(() => document.getElementById("helpDialog").scrollTop === 0), "külgpaneel: Tab ei keri paneeli ennast (pealkiri jääb paigale)");

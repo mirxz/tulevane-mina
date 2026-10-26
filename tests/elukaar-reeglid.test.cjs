@@ -19,8 +19,11 @@ check(P.INCOME_TAX === R.tulumaks.vaartus, 'tulumaks mootoris ≠ reeglites');
 check(P.PENSIONER_ALLOWANCE === R.pensionari_maksuvaba_tulu_kuus.vaartus * 12, 'maksuvaba tulu mootoris ≠ reeglites');
 check(P.GENERAL_ALLOWANCE === R.yldine_maksuvaba_tulu_kuus.vaartus * 12, 'üldine maksuvaba tulu mootoris ≠ reeglites');
 check(P.AASTAHINNE === R.aastahinne.vaartus, 'aastahinne mootoris ≠ reeglites');
+check(P.AVG_OLD_AGE_PENSION === R.keskmine_vanaduspension_kuus.vaartus, 'keskmine vanaduspension mootoris ≠ reeglites');
 check(JSON.stringify(P.DEFERRAL_INCREASE) === JSON.stringify(R.edasilykkamine.tabel), 'edasilükkamise tabel mootoris ≠ reeglites');
 check(JSON.stringify(P.EARLY_DECREASE) === JSON.stringify(R.paindlik_varem.tabel), 'paindliku varem vähendus mootoris ≠ reeglites');
+for (const [y, v] of Object.entries(R.ametniku_suurendus.tabel)) { check(P.civilIncrease(+y) === v && P.civilIncrease(+y - 1) < v, 'ametniku suurendus ' + y + ' a'); }
+for (const [y, v] of Object.entries(R.paaste_suurendus.tabel)) { check(P.rescueIncrease(+y) === v && P.rescueIncrease(+y - 1) < v, 'päästeteenistuse suurendus ' + y + ' a'); }
 check(JSON.stringify(Object.fromEntries(Object.entries(P.CHILD_II_MONTHLY).map(([y, v]) => [String(y), v]))) === JSON.stringify(R.laste_ii_samba_sissemakse_kuus.tabel), 'laste II samba sissemakse mootoris ≠ reeglites');
 check(Math.abs(P.childSupplement({ birthYear: 1960, p2: 0, p2Rate: 0, kids: { b1991: 1, user: 'me' } }) - R.laste_pensionilisa_aastahinnetes.enne_2013 * P.AASTAHINNE) < 1e-9, 'pensionilisa enne 2013 ≠ reeglites');
 check(P.WAGE_GROWTH === R.tuleva_eeldused.palga_kasv && P.INFLATION === R.tuleva_eeldused.inflatsioon, 'Tuleva eeldused mootoris ≠ reeglites');

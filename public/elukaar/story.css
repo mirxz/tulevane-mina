@@ -424,3 +424,11 @@ html.scroll-locked { overflow: hidden; }
 .help-btn:focus-visible .ico-help { box-shadow: 0 0 0 0.25rem rgba(0, 108, 230, 0.25); }
 .help-btn:focus-visible .ico { box-shadow: none; }
 @media (forced-colors: active) { .help-btn .h-ring { fill: Canvas; stroke: ButtonText; } .help-btn .h-q { fill: ButtonText; } }
+
+/* Sama vanus kahel sammul: täpsustus („sambad“, „pension“) sildi all väiksemalt, ei kattu mobiilis. */
+.path-sub { display: block; font-size: 0.875rem; line-height: 1.15; }
+.note-list { padding-left: 1.2rem; }
+.note-list li + li { margin-top: 0.35rem; }
+
+/* Märgid („suurem“, „kõige rohkem“) vähemalt 14 px nagu muu tekst (Bootstrapi vaikimisi 0,75em = 12 px). */
+.chapter .badge { font-size: 0.875rem; }

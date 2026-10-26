@@ -78,7 +78,7 @@ for (const [sp, p1] of [[1500, 1200], [800, 1200], [1200, 1200], [1000, 0]]) {
 }
 // Kokkuvõttes on eripensioni ja riikliku pensioni võrdlus.
 const cmp = P.simulate({ ...base, p1Monthly: 1200, spMonthly: 800, spStartAge: 55 }, T, E);
-assert.deepStrictEqual(cmp.firstPillar, { special: 800, oldAge: 1200, paid: 'oldAge', larger: 'oldAge' });
+assert.deepStrictEqual(cmp.firstPillar, { special: 800, oldAge: 1200, paid: 'oldAge', larger: 'oldAge', atPa: null });
 assert.strictEqual(P.simulate(base, T, E).firstPillar, null);
 
 // 4. Edasilükkamine ei kehti: C koos edasilükkamisega arvutab nagu ilma (riiklik pension algab pensioniast, ilma +%-ta).
@@ -121,5 +121,21 @@ assert.ok(near(row(asP1, pa).spend, row(asSp, pa).spend, 1e-6));
   assert.deepStrictEqual(pick(undefined).rows, pick('oldAge').rows, 'vaikimisi suurem');
   assert.strictEqual(pick('special').firstPillar.larger, 'oldAge');
   assert.ok(P.sustainableNeed({ ...inp, firstPillarChoice: 'special' }, T, E) <= P.sustainableNeed(inp, T, E), 'väiksem valik ei anna paremat tulemust');
+}
+// Teine otsustuskoht pensionieas: varem (lapsed 5 a) eripension, töö pensioni ajal tõstab vanaduspensioni.
+{
+  const kidsSp = { ...base, birthYear: 1975, sex: 'N', p1Monthly: 900, grossMonthly: 4000, p2Rate: 0.06, spMonthly: 1050, spStartAge: 50,
+    kids: { b2012: 5, earlyUser: 'me', supUser: 'me', inForecast: 'no' } };
+  const paK = P.retirementYears(kidsSp);
+  const idle = P.simulate(kidsSp, T, E);
+  assert.strictEqual(idle.firstPillar.paid, 'special', 'varem: eripension suurem');
+  assert.strictEqual(idle.firstPillar.atPa, null, 'ilma tööta pensionieas midagi ei muutu');
+  const work = P.simulate({ ...kidsSp, workOn: true }, T, E);
+  const atPa = work.firstPillar.atPa;
+  assert.ok(atPa && atPa.age === paK && atPa.larger === 'oldAge' && atPa.paid === 'oldAge', 'töö: pensionieas vanaduspension suurem ja valitud');
+  assert.ok(near(atPa.oldAge - work.firstPillar.oldAge, 5 * P.workAccrual(4000, true, true)), '5 tööaastat lisandub');
+  assert.ok(row(work, paK - 1).ispg > 0 && row(work, paK).ispg === 0 && near(row(work, paK).i1g, atPa.oldAge), 'pensionieas eripension → vanaduspension');
+  const keep = P.simulate({ ...kidsSp, workOn: true, firstPillarChoicePa: 'special' }, T, E);
+  assert.ok(near(row(keep, paK).ispg, 1050) && row(keep, paK).i1g === 0, 'valik eripension pensionieas jääb');
 }
 console.log('Eripension OK');

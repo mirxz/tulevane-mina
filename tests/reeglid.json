@@ -118,5 +118,44 @@
   "url": "https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator",
   "kontrollitud": "2026-10-17",
   "kommentaar": "Kadi andmetel 3 a varem: 664 € = (865 − 3 × 12,2) × (1 − 19,88%)."
+ },
+ "paaste_suurendus": {
+  "tabel": {
+   "10": 0.1,
+   "16": 0.2,
+   "21": 0.25,
+   "26": 0.4,
+   "31": 0.5
+  },
+  "allikas": "Päästeteenistuse seadus § 18 lg 2 ja 5 (Riigi Teataja, kehtiv 01.10.2026): staaži alumine piir → suurendus; § 18 kehtib kuni 28.02.2043",
+  "url": "https://www.riigiteataja.ee/akt/106072023069?leiaKehtiv",
+  "kontrollitud": "2026-10-17",
+  "kehtib_kuni": "2043-02-28"
+ },
+ "paaste_ootetoetus": {
+  "staaz_vahemalt": 15,
+  "aastat_enne_pensioniiga": 5,
+  "allikas": "Päästeteenistuse seadus § 19 (Riigi Teataja, kehtiv 01.10.2026): toetus = vanaduspension koos erisustega, ei maksta päästjana töötamisel",
+  "url": "https://www.riigiteataja.ee/akt/106072023069?leiaKehtiv",
+  "kontrollitud": "2026-10-17"
+ },
+ "ametniku_suurendus": {
+  "tabel": {
+   "10": 0.1,
+   "16": 0.2,
+   "21": 0.25,
+   "26": 0.4,
+   "31": 0.5
+  },
+  "allikas": "Avaliku teenistuse seadus § 113 lg 2, 3 ja 7 (Riigi Teataja, kehtiv 01.10.2026): üleminekusäte enne 01.04.2013 staaži täitnutele; päästeteenistujale ei kohaldata (PäästeTS § 18 lg 3)",
+  "url": "https://www.riigiteataja.ee/akt/ATS?leiaKehtiv",
+  "kontrollitud": "2026-10-17"
+ },
+ "keskmine_vanaduspension_kuus": {
+  "vaartus": 860.23,
+  "allikas": "Vabariigi Valitsus / ERR: keskmine vanaduspension (44 a staaži) pärast 1.04.2026 indekseerimist 860,23 € (enne 817,25 €)",
+  "url": "https://www.err.ee/1609943744/keskmine-vanaduspension-touseb-aprillist-860-eurole",
+  "kontrollitud": "2026-10-17",
+  "kommentaar": "Mootor: AVG_OLD_AGE_PENSION. Ainult võrdlustabeli teise vanema näide (tema andmeid Elukaar ei küsi). Uueneb igal aprillil."
  }
 }

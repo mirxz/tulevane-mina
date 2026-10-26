@@ -20,7 +20,8 @@
     },
     pensionAge: {
       title: 'Kuidas pensioniiga määratakse?',
-      html: '<p><strong>Seadus (RPKS § 7, alates 2027. a):</strong> pensioniiga on 65 aastat, millele liidetakse 65-aastaste eeldatava eluea muutus. Võrreldakse viie aasta keskmist eluiga (4–8 aastat varem) baasperioodiga 2018–2022. Pensioniiga leitakse kuu täpsusega, see võib tõusta kõige rohkem 3 kuud aastas ja minister kehtestab selle kaks aastat ette.</p>' +
+      html: '<p><strong>Elukaar arvutab sinu pensioniea ise</strong> sünniaasta järgi ja täidab välja „Pensioniiga“. Muuda seda ainult siis, kui tahad arvutada teise vanusega või kui Sotsiaalkindlustusameti kalkulaator näitab sulle muud aastat.</p>' +
+        '<p><strong>Seadus (RPKS § 7, alates 2027. a):</strong> pensioniiga on 65 aastat, millele liidetakse 65-aastaste eeldatava eluea muutus. Võrreldakse viie aasta keskmist eluiga (4–8 aastat varem) baasperioodiga 2018–2022. Pensioniiga leitakse kuu täpsusega, see võib tõusta kõige rohkem 3 kuud aastas ja minister kehtestab selle kaks aastat ette.</p>' +
         '<p>Pensioniiga kehtib <strong>kalendriaasta järgi</strong>: sinu pensioniiga on see, mis kehtib aastal, mil sa sellesse vanusesse jõuad.</p>' +
         '<table class="table table-sm"><thead><tr><th scope="col">Aasta</th><th scope="col">Pensioniiga</th></tr></thead><tbody>' +
         '<tr><th scope="row">2026. a</th><td>65 a</td></tr><tr><th scope="row">2027. a</th><td>65 a 1 k (kehtestatud)</td></tr>' +
@@ -37,6 +38,7 @@
       html: '<p>Riiklik vanaduspension (I sammas) on enamikule pensionäridest peamine sissetulek. Selle suurus mõjutab toimetulekut pensionieas kõige rohkem. Siin ei ole arvestatud sinu muid sääste.</p>' +
         '<p><strong>Kust võtta summa:</strong> ' + a(SKA_SELF + 'self-service/pension-calculator', 'SKA iseteeninduse pensionikalkulaator') + ', osa <strong>„Prognoosimine“</strong>:</p>' +
         '<ol><li>Lülita sisse „Arvesta kogunenud pensioni andmeid“ ja sisesta oma brutopalk, II samba sissemakse ja III samba sissemakse.</li>' +
+        '<li>Kui olid ametnik enne 2013. a, lülita sisse „Olen töötanud vähemalt 10 aastat avalikus teenistuses kuni 31.03.2018“ ja vali aastad. Laste pensionilisa võid lisada või jätta: Elukaar küsib laste juures üle, kas prognoos selle sisaldab.</li>' +
         '<li>Vali „Pensionile jäämine“ alt <strong>„Vanaduspension“</strong> (mitte laste eest varem ega paindlik pension, need arvestab Elukaar ise).</li>' +
         '<li>Ava „Prognoosi tulemus“ juures detailandmed ja võta rida <strong>„I sammas“</strong>. See on summa enne tulumaksu, tänastes eurodes.</li></ol>' +
         '<p><strong>Ära võta:</strong></p><ul>' +
@@ -51,6 +53,61 @@
         '<p><strong>Tundub palga kohta väike?</strong> Alates 2021. a sõltub riiklik pension palgast vähem (ühendosa). II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. Seetõttu võib vanem inimene, kellel on palju tööaastaid enne 1999. a, saada suuremat riiklikku pensioni kui noorem ja suurema palgaga inimene. Noorema riikliku pensioni kõrvale tuleb II samba raha.</p>' +
         '<p>Pensioni indekseeritakse igal aastal 1. aprillist. Arvutus on tänastes eurodes, seega kasv pärast hinnatõusu jääb välja.</p>',
     },
+    special: {
+      title: 'Millised tööga seotud erijuhud pensioni mõjutavad?',
+      html: '<p>Märgi need, mis sind puudutavad. Iga linnuke avab oma küsimused, teised jäävad peitu.</p>' +
+        '<table class="table table-sm"><thead><tr><th scope="col">Erijuht</th><th scope="col">Mida annab</th><th scope="col">Koos teistega</th></tr></thead><tbody>' +
+        '<tr><th scope="row">Tervist kahjustav töö</th><td>varem pensionile vähendamata (nimekiri nr 1: 10 a, nr 2: 5 a), nimekiri nr 1 lisa</td><td>varem mineku aastad lastega ei liitu: kehtib suurem</td></tr>' +
+        '<tr><th scope="row">Eripension, ametipension või väljateenitud aastate pension</th><td>eraldi pension enne pensioniiga</td><td>pensionieas valid ühe: eripension või vanaduspension (tavaliselt suurema)</td></tr>' +
+        '<tr><th scope="row">Päästeteenistus</th><td>pensioni ootel kuni 5 a varem (staaž ≥ 15 a), vanaduspension +10 … +50% (kuni 2043. a)</td><td>liitub lastega; kui on ka eripension, valid pensionieas ühe</td></tr>' +
+        '<tr><th scope="row">Ametnik enne 2013. a</th><td>vanaduspension +10 … +50% teenistusstaaži järgi (üleminekusäte); lisa see Sotsiaalkindlustusameti prognoosi</td><td>päästeteenistuse suurendusega ei liitu</td></tr>' +
+        '<tr><th scope="row">Muu (represseeritu jt)</th><td>Elukaar ei arvuta</td><td>küsi Sotsiaalkindlustusametist</td></tr></tbody></table>' +
+        '<p><strong>Korraga makstakse ainult ühte riiklikku pensioni.</strong> Kui sul on õigus mitmele, pead valima, kumba kasutad. Valik võib vanusega muutuda.</p>' +
+        '<p><strong>Pead valima ühe:</strong></p><ul>' +
+        '<li><strong>Eripension ja vanaduspension:</strong> enne pensioniiga saad eripensioni. Pensionieas valid, kumba saad: tavaliselt valitakse suurem. Elukaar valib vaikimisi suurema, aga saad ise valida.</li>' +
+        '<li><strong>Eripension ja tervist kahjustava töö eest varem vanaduspension:</strong> kui mõlemad on võimalikud samas vanuses, valid ühe. Põlevkivi kaevandamine ja töötlemine võib anda õiguse kummalegi.</li>' +
+        '<li><strong>Päästeteenistuse suurendusega vanaduspension ja eripension:</strong> pensionieas valid ühe, tavaliselt suurema.</li></ul>' +
+        '<p><strong>Kehtivad koos:</strong></p><ul>' +
+        '<li>Laste soodustused (varem pensionile, pensionilisa) liituvad kõigiga. Laste ja tervist kahjustava töö eest varem mineku aastad aga ei liitu: kehtib see, mis annab rohkem aastaid.</li>' +
+        '<li>Nimekirja nr 1 lisa ja päästeteenistuse suurendus lisanduvad vanaduspensionile, mitte eripensionile.</li>' +
+        '<li>II ja III sammas liituvad alati: neid saad iga riikliku pensioni kõrvale.</li></ul>' +
+        '<p class="mb-0">Kui sul on mitu erijuhtu korraga, kontrolli oma õigusi Sotsiaalkindlustusametist.</p>',
+    },
+    rescue: {
+      title: 'Mida annab päästeteenistus pensionile?',
+      html: '<p>Päästeteenistuse seadus annab kaks soodustust:</p>' +
+        '<p><strong>1. Varem töölt ära:</strong> kui päästeteenistuse staaž on vähemalt 15 aastat, võid lõpetada töö kuni 5 aastat enne pensioniiga. Kuni pensionieani maksab päästeasutus sulle toetust, mis on sama suur kui sinu vanaduspension koos suurendusega. Seaduses on selle nimi <strong>„vanaduspensioni ootel oleva päästeteenistuja toetus“</strong>. Toetust ei maksta, kui töötad edasi päästjana. Pensionieas maksab vanaduspensioni edasi Sotsiaalkindlustusamet. Elukaar eeldab ettevaatlikult, et toetuselt sotsiaalmaksu ei maksta, seega ilma palgatööta II sambasse sissemakseid ei tule.</p>' +
+        '<p><strong>2. Vanaduspensioni suurendus</strong> päästeteenistuse staaži järgi:</p>' +
+        '<table class="table table-sm"><thead><tr><th scope="col">Staaž</th><th scope="col">Suurendus</th></tr></thead><tbody>' +
+        '<tr><th scope="row">10–15 a</th><td>+10%</td></tr><tr><th scope="row">16–20 a</th><td>+20%</td></tr><tr><th scope="row">21–25 a</th><td>+25%</td></tr>' +
+        '<tr><th scope="row">26–30 a</th><td>+40%</td></tr><tr><th scope="row">üle 30 a</th><td>+50%</td></tr></tbody></table>' +
+        '<p>Suurendatud pensioni makstakse pärast päästeteenistusest lahkumist. <strong>Suurenduse säte kehtib 28.02.2043. a-ni</strong>: kes läheb pensionile hiljem, seda seaduse praeguse teksti järgi ei saa.</p>' +
+        '<p>Kui saad ka eripensioni (väljateenitud aastate pensioni), valid pensionieas, kumba saad: tavaliselt suurema. Staaži tõendab Päästeamet.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/106072023069?leiaKehtiv', 'päästeteenistuse seadus § 18 ja § 19') + ' (kehtiv sõnastus 01.10.2026, kontrollitud 17.10.2026).</p>',
+    },
+    rescueBasis: {
+      title: 'Ootetoetus või laste eest pension?',
+      html: '<p>Kui sul on õigus nii päästja ootetoetusele kui ka laste eest varem pensionile, saad korraga ühte: ootetoetust ei maksta, kui saad juba riiklikku pensioni.</p>' +
+        '<p><strong>Ootetoetus ei ole pension.</strong> Seda maksab päästeasutus vanaduspensioni suuruses (koos päästja suurendusega). Laste pensionilisa on vanaduspensioni osa, mida maksab Sotsiaalkindlustusamet. Seepärast arvestab Elukaar ettevaatlikult: ootetoetusele laste lisa ei lisandu, see algab koos vanaduspensioniga.</p>' +
+        '<p><strong>II sammas ootetoetuse ajal:</strong> Elukaar eeldab samuti ettevaatlikult, et ootetoetuselt sotsiaalmaksu ei maksta. Kui sa ei tööta, II sambasse sissemakseid (sinu 2–6% ja riigi 4%) ei tule. Raha kasvab fondis edasi.</p>' +
+        '<ul><li><strong>Kasvatad lapsi üksi:</strong> laste õigused (varem minek ja pensionilisa) jäävad sulle. Laste eest pension annab kohe ka pensionilisa.</li>' +
+        '<li><strong>Partneriga:</strong> otsustate koos. Sina võid võtta ootetoetuse ja teine vanem kasutab laste eest varem pensionile mineku õigust. Selle valid laste juures: „Varem pensionile mineku õigust kasutab“.</li>' +
+        '<li><strong>Mõlemad järjest:</strong> kui lapsed annavad näiteks 3 a varem, saad 2 a ootetoetust ja siis 3 a enne pensioniiga laste eest vanaduspensioni koos laste lisaga.</li></ul>' +
+        '<p class="mb-0">Võrdle tulemust: Elukaar arvutab valitud variandi ja näitab, millal toetus lõpeb ja pension algab.</p>',
+    },
+    civil: {
+      title: 'Kes saab ametniku teenistusstaaži eest pensioni suurendust?',
+      html: '<p>Avaliku teenistuse seaduse § 113 on <strong>üleminekusäte</strong>. Vanaduspensioni suurendust saavad:</p><ul>' +
+        '<li>need, kellele seda maksti juba enne 1. aprilli 2013. a;</li>' +
+        '<li>need, kellel oli 1. aprilliks 2013. a vajalik teenistusstaaž vana avaliku teenistuse seaduse järgi;</li>' +
+        '<li>need, kes jätkasid soodustingimustel teenistust: nende staaži arvestati veel 5 aastat, kuni 2018. a.</li></ul>' +
+        '<p>Hiljem ametnikuks saanud seda suurendust ei saa.</p>' +
+        '<table class="table table-sm"><thead><tr><th scope="col">Teenistusstaaž</th><th scope="col">Suurendus</th></tr></thead><tbody>' +
+        '<tr><th scope="row">10–15 a</th><td>+10%</td></tr><tr><th scope="row">16–20 a</th><td>+20%</td></tr><tr><th scope="row">21–25 a</th><td>+25%</td></tr>' +
+        '<tr><th scope="row">26–30 a</th><td>+40%</td></tr><tr><th scope="row">üle 30 a</th><td>+50%</td></tr></tbody></table>' +
+        '<p>Päästeteenistujale seda ei kohaldata: päästjal on oma suurendus (päästeteenistuse seadus). Kas sul on õigus, ütleb Sotsiaalkindlustusamet.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/ATS?leiaKehtiv', 'avaliku teenistuse seadus § 113') + ' (kehtiv sõnastus 01.10.2026, kontrollitud 17.10.2026).</p>',
+    },
     kids: {
       title: 'Kuidas lapsed pensioni mõjutavad?',
       html: '<p>Lapse kasvatamine (vähemalt 8 aastat) annab kaks eraldi õigust. Üks vanem võib kasutada <strong>mõlemat õigust kõigi laste eest</strong>, aga õigused võib ka vanemate vahel jagada. Vanemad lepivad kirjalikult kokku, kokkuleppe puudumisel jagatakse õigus võrdselt.</p>' +
@@ -61,13 +118,13 @@
         '<p><strong>Võid edasi töötada.</strong> Kuni sa II sambast raha välja ei võta, laekuvad sinna riikliku pensioni kõrvalt edasi sinu ja riigi sissemaksed. Kui esitad II samba väljamakse avalduse (ka fondipensioni), lõpevad sissemaksed mõne kuu pärast: 31. augustil, 31. detsembril või 30. aprillil, olenevalt avalduse ajast. Elukaares vasta pensionile mineku sammus (teekonnal sinu pensionile mineku vanus, nt „63 a“) küsimusele „Kas töötad pensioni ajal edasi?“: „Töötan edasi“. Siis algavad II samba väljamaksed töö lõppedes.</p>' +
         '<p class="small-muted">Allikas: ' + a('https://www.pensionikeskus.ee/ii-sammas/valjamaksed/', 'Pensionikeskus: II samba väljamaksed') + ' (kontrollitud 16.10.2026).</p>' +
         '<p><strong>2. Pensionilisa:</strong></p><ul>' +
-        '<li>enne 1991. a sündinud laps: 1,5 aastahinnet + 2 aastat staaži (staažiaasta on sama väärt kui aastahinne), kokku 3,5</li>' +
-        '<li>1991.–2012. a sündinud laps: 3,5 aastahinnet</li>' +
-        '<li>2013. a või hiljem sündinud laps: riik maksab ühe vanema II sambasse 4% Eesti keskmisest kuutulust (2026. a: 76,12 €, 2027. a: 80,76 € kuus) kuni lapse 3-aastaseks saamiseni. Kui lisamakseid tehti alla 36 kuu (nt liitusid II sambaga hiljem), saad ülejäänud kuude eest osa pensionilisast: näiteks 12 kuud lisamakseid annab 2/3 lisast (RPKS § 24 lg 6).</li>' +
+        '<li>1981.–2012. a sündinud laps: 3,5 aastahinnet (1,5 + 2)</li>' +
+        '<li>enne 1981. a sündinud laps: 1,5 aastahinnet + 2 aastat staaži (staažiaasta on sama väärt kui aastahinne), kokku samuti 3,5</li>' +
+        '<li>2013. a või hiljem sündinud laps: riik maksab ühe vanema II sambasse 4% Eesti keskmisest kuutulust (2026. a: 76,12 €, 2027. a: 80,76 € kuus) kuni lapse 3-aastaseks saamiseni. Kui lisamakseid tehti alla 36 kuu (nt liitusid II sambaga hiljem), saad ülejäänud kuude eest osa pensionilisast: näiteks 12 kuud lisamakseid annab 2/3 lisast (RPKS § 24 lg 6). Üle 3-aastase lapse real on väli „Riigi lisamakse II sambasse (kuud)“: see on eeltäidetud (II sambas 36, muidu 0). Muuda, kui lapse esimesel 3 aastal muutus sinu II samba olek, näiteks liitusid hiljem, lahkusid või peatasid maksed.</li>' +
         '<li>ilma II sambata 3,5 aastahinnet:<ul><li>2013. a – aug 2021. a sündinud lapse eest, kui oled ise sündinud enne 1983. a;</li><li>sept 2021. a või hiljem sündinud lapse eest, kui sa ei olnud lapse esimesel kolmel aastal II sambas.</li></ul></li></ul>' +
         '<p>Aastahinne on alates 1.04.2026 10,48 € kuus. Näiteks kaks 1991.–2012. a sündinud last annavad u 73 € kuus.</p>' +
         '<p>Eripensionile lisa ei lisata. Kui eripensionär läheb pensionieas üle vanaduspensionile, lisandub lisa sellele.</p>' +
-        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'SKA: laste kasvatamine ja pension') + ', ' + a('https://www.riigiteataja.ee/akt/RPKS', 'RPKS § 24 ja § 28') + ', ' + a('https://www.riigiteataja.ee/akt/KoPS', 'KoPS § 10') + ' (kontrollitud 16.10.2026).</p>',
+        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'SKA: laste kasvatamine ja pension') + ', ' + a('https://www.riigiteataja.ee/akt/RPKS?leiaKehtiv', 'RPKS § 24 lg 1¹ ja § 28') + ', ' + a('https://www.riigiteataja.ee/akt/KoPS', 'KoPS § 10') + ' (kontrollitud 16.10.2026).</p>',
     },
     kidsWho: {
       title: 'Keda loetakse lapse kasvatajaks?',
@@ -91,7 +148,7 @@
         '<p><strong>Kust nimekirju näha:</strong> Vabariigi Valitsuse 16.07.1992 määrus nr 206 „Soodustingimustel vanaduspensionile õigust andvate tootmisalade, tööde, kutsealade ja ametikohtade loetelude kinnitamine“ (' + a('https://www.riigiteataja.ee/akt/24317', 'Riigi Teataja') + ', kehtib kuni 31.12.2030). Nimekirjad on tootmisalade kaupa, näiteks kaevandamine, keemiatööstus, metallitöötlus ja kiirgusega töö. Nimekirja rakendatakse rangelt: kui sinu ametit seal pole, õigust ei teki. Kas sinu töö loeb, ütleb Sotsiaalkindlustusamet.</p>' +
         '<p>Elukaar tingimusi ei kontrolli: eeldame, et tead oma staaži. Kas sul on õigus, ütleb Sotsiaalkindlustusamet.</p>' +
         '<p>Kui sul on ka lastega soodustus: kui on mõlemad, kehtib see, mis annab rohkem aastaid varem; aastad ei liitu.</p>' +
-        '<p><strong>Põlevkivi kaevandamine ja töötlemine</strong> võib anda õiguse kas siia (varem vanaduspensionile) või väljateenitud aastate pensionile (vt „Eripension“). Need on kaks eri seadust ja korraga makstakse ühte; SKA ütleb, kumb sulle kehtib ja kumb on suurem.</p>' +
+        '<p><strong>Põlevkivi kaevandamine ja töötlemine</strong> võib anda õiguse kas siia (varem vanaduspensionile) või väljateenitud aastate pensionile (vt „Eripension“). Need on kaks eri seadust ja korraga makstakse ühte: valid ise, Sotsiaalkindlustusamet ütleb, kumb on suurem.</p>' +
         '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/types-pensions/old-age-pension-under-favourable-conditions', 'SKA: soodustingimustel vanaduspension') + ', ' + a('https://www.riigiteataja.ee/akt/SVPS', 'Soodustingimustel vanaduspensionide seadus (SVPS) § 1') + ', ' + a('https://www.riigiteataja.ee/akt/24317', 'nimekirjad nr 1 ja 2 (VV määrus nr 206)') + ' (kontrollitud 16.10.2026).</p>',
     },
     sp: {
@@ -101,7 +158,7 @@
         '<li><strong>Väljateenitud aastate pension:</strong> nt piloot, meremees, balletiartist, päästja, vanglaametnik.</li></ul>' +
         '<p><strong>Uutele töötajatele ametipensioni enam ei teki.</strong> Õigus on neil, kes olid ametis tähtpäeval: kohtunik 1.7.2013, kaitsevägi, politsei ja prokuratuur 31.12.2019, päästja ja vanglaametnik 30.6.2022.</p>' +
         '<p><strong>Väljateenitud aastate pensioni</strong> staaži arvestatakse ametites, kus nõutav staaž on 10 või 12,5 aastat, kuni 31.12.2030 ja ametites, kus see on 15–25 aastat, kuni 31.12.2036. Põlevkivi kaevandamisel, töötlemisel ja rikastamisel kuni 31.12.2049.</p>' +
-        '<p><strong>Erinevus tervist kahjustavast tööst:</strong> väljateenitud aastate pension on eraldi pension, mida makstakse ametis töövõime vähenemise tõttu enne pensioniiga. Tervist kahjustav töö (soodustingimustel pension) on tavaline vanaduspension varem. Mõlemal on põlevkivi erand kuni 2049. a, aga korraga makstakse ühte.</p>' +
+        '<p><strong>Erinevus tervist kahjustavast tööst:</strong> väljateenitud aastate pension on eraldi pension, mida makstakse ametis töövõime vähenemise tõttu enne pensioniiga. Tervist kahjustav töö (soodustingimustel pension) on tavaline vanaduspension varem. Mõlemal on põlevkivi erand kuni 2049. a, aga korraga makstakse ühte: valid ise.</p>' +
         '<p><strong>Kui suur see on:</strong> kaitseväel ja politseil 50% ametipalgast 20 teenistusaasta eest ja iga lisaaasta +2,5%, kokku kuni 75%. Määratud eripensioni näed ' + a(SKA_SELF, 'SKA iseteeninduses') + '; tulevase summa arvuta ise selle reegli järgi.</p>' +
         '<p><strong>Kahte riiklikku pensioni korraga ei maksta.</strong> Kui jõuad pensioniikka (või lastega soodustuse vanusesse), saad valida suurema: eripension või vanaduspension. Eripensioni ei saa edasi lükata, varem võtta ega peatada.</p>' +
         '<p class="small-muted mb-0">Allikad: ' + a(SKA + '/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid', 'SKA eripensionid') + ' (väljateenitud aastate pension ja tähtajad kontrollitud 16.10.2026); ametipensionide tähtpäevad: ametite seadused [secondary, tiimi kokkuvõte 14.10.2026].</p>',
@@ -109,6 +166,7 @@
     spStart: {
       title: 'Miks on eripensioni algus oluline?',
       html: '<p>Eripension võib alata palju varem kui pensioniiga, näiteks kaitseväelasel 50-aastaselt. Sellest vanusest saad lisasissetulekut.</p>' +
+        '<p><strong>Kehtivad vana süsteemi reeglid.</strong> Paljud eripensionid on üleminekusätted: neid saavad need, kes asusid ametisse või täitsid tingimused enne seaduse muudatust. Hiljem alustanutele kehtivad tavalised pensionireeglid. Kas sul on õigus, mis vanusest ja millise valemiga, ütleb sinu asutus või Sotsiaalkindlustusamet. Elukaar eeldab, et tead oma eripensioni summat ja algusvanust.</p>' +
         '<ul><li><strong>Töö muul erialal ei ole takistus:</strong> saad palka ja eripensioni korraga. II sambasse laekub palgalt edasi.</li>' +
         '<li><strong>Samas ametis</strong> (või sellega võrdsustatud ametis) töötamise ajal eripensioni ei maksta (nt politseinik, kaitseväelane, päästja, vanglaametnik, kohtunik, prokurör). Pane alguseks vanus, mil ametist lahkud. Näiteks kaitseväe eripensioni ei maksta politseis töötamise ajal ja politsei eripensioni ei maksta kaitseväe tegevteenistuse ajal.</li>' +
         '<li>Kui saad eripensioni juba, pane vanus, millest see algas. Varasemad sissemaksed on sinu II ja III samba tänases summas juba sees.</li></ul>' +
