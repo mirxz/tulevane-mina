@@ -41,6 +41,31 @@ Sait on ühe failina mäng pluss väike Cloudflare Worker, mis teenindab ainult 
 
 **Mudel (lihtsustatud):** SKA paindliku pensioni kordajad; suremus Gompertzi seadusega (b = 0,1), kalibreeritud Eurostati 2023 järelejäänud elueale 65-aastaselt; pensioniiga 65 + 1,5 kuud iga sünniaasta kohta alates 1962; ilma indekseerimise, maksude ja diskonteerimiseta. Pensioniea reegel erineb Tuleva ja Meelise mootorist, vt järgmine jaotus.
 
+## Arvutusloogika: I sammas (riiklik pension)
+
+Lisatud 2026-10-26. Koodi vastuvõtja peab teadma, mida mudel teeb ja mis on kontrollimata. See ei ole juriidiline hinnang.
+
+**Kus kood on:** täisvalem (baasosa, staaž, aastakoefitsiendid) on arhiivi kalkulaatoris `public/arhiiv/kalkulaator/riiklik.js` (andmed `public/arhiiv/kalkulaator/andmed/kihid.js`) ja plaani mudeli funktsioonis `plaan()` failis `public/arhiiv/plaan/mudel.js`. Elukaare leht (`public/elukaar/pension.js`) arvutab riikliku pensioni juurdekasvu töötades samade aastahinde ja osakute reeglitega.
+
+- **Valem:** pension = 399,24 + 10,477 · (staaž + koefitsient). Ühendosa = (kindlustusosak + solidaarosak) / 2 × aastahind (RPKS § 11 lg 1 p 4 ja lg 1²).
+- **Kindlustusosak** = palk / keskmine brutokuupalk (RPKS § 12 lg 1). **Solidaarosak** = palk / töötasu alammäär, kuni 1,0; II sambaga liitunul 0,8 (RPKS § 13¹ lg 2, 6, 7).
+- **Ümberarvutus** igal 1. aprillil (RPKS § 25 lg 1 p 1). Aastahind 10,477 € alates 2026-04-01.
+- **Edasilükatud pension:** kordaja kogu pensionile (RPKS § 11¹ lg 1 ja 5). **Paindlik pension:** varem 1–5 aastat staaži 20–40 aasta järgi, hiljem vähemalt 15 aasta staažiga (RPKS § 9¹).
+- **Mudeli eeldused:** indekseerimine 80% reaalpalga kasvust (vaikimisi 1,5% reaalselt, projekti eeldus); palk ja riiklik pension on Elukaare lehel reaalselt konstantsed; mudel ei arvesta hooldust ega tervist.
+
+### Kontrollimata (TBC)
+
+- Pensioniea väärtused 2027–2029 (ministri määrus kaks aastat ette): kood arvutab need RPKS § 7 ja § 7¹ valemiga ja märgib tulemuseks 65 a 1 k (2027), 65 a 3 k (2028) ja 65 a 4 k (2029), kontrollituna 2026-10-26; sõltumatu kinnitus määrusest: TBC.
+- 80% kindlustusosak II sambaga liitunul (järeldub sotsiaalmaksuseadusest, mida ei kontrollitud): TBC.
+- Edasilükkamise protsendid (ministri määrus, RPKS § 11¹ lg 3): TBC.
+- Aastahind 10,477 €: ainult SKA ja ERR järgi, kinnita Vabariigi Valitsuse 2026. aasta indeksi korraldusest (RPKS § 26 lg 5¹): TBC.
+- Keskmine brutokuupalk 2 092 € (Statistikaamet PA103) ja töötasu alammäär 946 € (Vabariigi Valitsuse määrus nr 36): TBC.
+- Sõltumatu kontroll puudub: valemit ei ole võrreldud SKA kalkulaatoriga (3–5 välist näidet): TBC.
+- Prototüüp ei küsi paindliku pensioni staažinõuet (20–40 a); see on eeldus, mida tekst peab nimetama.
+- Kogumispensionide seaduse 2027-01-01 jõustuv redaktsioon on lugemata; viited kontrollida enne avalikustamist.
+
+Allikafailid (väide-hinnang-viide tabel, kolme mootori võrdlus 12 profiilil, mudeli kirjeldus) on üleandja projektimärkmetes ega ole selles repos: TBC, kas ja millal need Tulevale antakse. Selle dokumendi jaotised „Arvutusmootorite võrdlus“ ja „Seadusviidete kontroll“ on nende kokkuvõte.
+
 ## Arvutusmootorite võrdlus: Mirko, Meelis ja Tuleva
 
 Megakalkulaatori praegune mootor ületab alla 65-aastaste kapitali 65-aastaselt 15–22%, sest kasv loetakse kaks korda; Tuleva enda kogumisloogika ja Mirko mootor annavad joondatud sisenditel euro täpsusega sama vastuse. Võrdlus tehti 2026-10-10 kolme sõltumatu koodibaasiga 12 profiilil (harness `valid/vordlus.mjs`); profiilide tabelit siia ei kopeeri.
@@ -71,7 +96,7 @@ Vahetada megakalkulaatori mootor Meelise viimase versiooni vastu pärast tema ki
 Viited kontrolliti 2026-10-12 Riigi Teataja tervikteksti vastu (kogumispensionide seadus kehtivusega 2025-06-01 kuni 2026-12-31, tulumaksuseadus ja riikliku pensionikindlustuse seadus kehtivusega 2026-10-01 kuni 2026-12-31). Kogumispensionide seaduse 2027-01-01 redaktsiooni ei ole loetud. See ei ole juriidiline hinnang.
 
 - **Parandatud viited:** III samba vanusepiir on pensioniiga miinus 5 aastat (KoPS § 63 lg 3), 55 aastat kehtib ainult neile, kes omandasid osakuid enne 2021 (§ 72⁷ lg 2); 10% maks eeldab lisaks viit aastat esmasest omandamisest (TuMS § 21 lg 3 p 1). Esimene väljamakse ei lõpeta II samba sissemakseid kohe, vaid 30. aprillil, 31. augustil või 31. detsembril (KoPS § 7 lg 3).
-- **Kontrollimata (`[unverified]`):** pensioniea väärtused 2027–2029, edasilükatud pensioni protsendid (ministri määrus), kindlustusosaku 80%, keskmine brutokuupalk ja sotsiaalmaksuseaduse neli punkti. Aastahind 10,477 € on `[secondary]` (SKA, ERR) ja vajab Vabariigi Valitsuse 2026. aasta indeksi korraldust.
+- **Kontrollimata (`[unverified]`; täpsemalt jaotises „Arvutusloogika: I sammas“):** pensioniea väärtused 2027–2029 (hilisem kontroll koodis, vt sealt), edasilükatud pensioni protsendid (ministri määrus), kindlustusosaku 80%, keskmine brutokuupalk ja sotsiaalmaksuseaduse neli punkti. Aastahind 10,477 € on `[secondary]` (SKA, ERR) ja vajab Vabariigi Valitsuse 2026. aasta indeksi korraldust.
 - **Tähised:** `[verified]` = seaduse tekst loetud, `[secondary]` = ainult EMTA, SKA või ajakirjanduse leht, `[unverified]` = ei õnnestunud kontrollida.
 
 ## Disainisüsteemi allikad
@@ -90,6 +115,7 @@ Prototüübi disaini tokenid (värvid, kirjatüübid, nupu kaal) on võetud Tule
 - [ ] Kes teavitab TartuNLP-d, et sait kasutab nende avalikku häälteenust? TBC
 - [ ] Millise pensioniea reegli järgi mootorid joondatakse (leid 2)? TBC
 - [ ] Kes vahetab megakalkulaatori mootori ja kes räägib Meelisega ajastuse kinnitamise (leid 1)? TBC
+- [ ] Kes kontrollib I samba arvutusloogika avatud punktid (jaotis „Kontrollimata“) enne avalikustamist? TBC
 - [ ] Kas Mirko repo fondipensioni parandus läks live'i ja kas harness `valid/vordlus.mjs` antakse Tulevale? TBC
 
 ## Kaasasolevad oskused ja allikad
