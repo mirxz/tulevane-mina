@@ -33,8 +33,10 @@
       html: '<p>Riiklik vanaduspension (I sammas) on enamikule pensionäridest peamine sissetulek. Selle suurus mõjutab toimetulekut pensionieas kõige rohkem. Siin ei ole arvestatud sinu muid sääste.</p>' +
         '<p><strong>Kuidas see kujuneb:</strong></p><ul>' +
         '<li><strong>Baasosa:</strong> kõigil sama.</li>' +
-        '<li><strong>Staažiosa:</strong> tööaastad kuni 1998.</li>' +
-        '<li><strong>Kindlustusosa ja ühendosa:</strong> alates 1999 sinu eest makstud sotsiaalmaksu järgi. II sambaga liitunul on kindlustusosa väiksem, sest osa sotsiaalmaksust läheb II sambasse.</li></ul>' +
+        '<li><strong>Staažiosa:</strong> tööaastad kuni 1998. Iga aasta annab sama palju, palk ei loe.</li>' +
+        '<li><strong>Kindlustusosa (1999–2020):</strong> sinu eest makstud sotsiaalmaksu järgi. Kahekordne palk annab kaks korda rohkem.</li>' +
+        '<li><strong>Ühendosa (alates 2021):</strong> pool palga järgi, pool kõigile võrdselt. Kahekordne palk annab umbes 1,5 korda rohkem.</li></ul>' +
+        '<p>II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. Seetõttu võib vanem inimene, kellel on palju tööaastaid enne 1999, saada suuremat riiklikku pensioni kui noorem ja suurema palgaga inimene. Noorema riikliku pensioni kõrvale tuleb II samba raha.</p>' +
         '<p>Pensioni indekseeritakse igal aastal 1. aprillist. Arvutus on tänastes eurodes, seega kasv pärast hinnatõusu jääb välja.</p>' +
         '<p><strong>Kust võtta summa:</strong> ' + a(SKA_SELF + 'self-service/pension-calculator', 'SKA iseteeninduse pensionikalkulaator') + ', osa <strong>„Prognoosimine“</strong>:</p>' +
         '<ol><li>Lülita sisse „Arvesta kogunenud pensioni andmeid“ ja sisesta oma brutopalk, II samba sissemakse ja III samba sissemakse.</li>' +

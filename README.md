@@ -2,7 +2,16 @@
 
 Tuleva häkatoni 2026 prototüüp: pane pensioniaastad panuseks, ratas veeretab su elu läbi suremusstatistika ja tulevane sina helistab. Lõpuks näitab mäng kõiki elusid ja paljastab kasiinovõtted.
 
-Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index.js` (`/api/tts`), mis loeb tulevase mina kõne ette eesti häälega. Andmebaasi pole, mäng ei salvesta midagi ega kogu isikuandmeid.
+Lehed on kaustas `public/` (avaleht, elukaar `/elukaar/`, arhiveeritud prototüübid `/arhiiv/`). Cloudflare Worker `src/index.js` serveerib neid ja teeb väikesed liidesed:
+
+| Liides | Mida teeb |
+| --- | --- |
+| `/api/tts` | loeb tulevase mina kõne ette eesti häälega |
+| `/api/e` | anonüümne mõõtmine (avaleht, elukaar, tagasiside), vt [ANALUUTIKA.md](ANALUUTIKA.md) |
+| `/api/t` | tagasiside lehe `/tagasiside/` vastused |
+| `/api/r`, `/api/p`, `/api/s`, `/api/mang/tuba` | arhiveeritud prototüüpide (ratas, plaan, kasiino, lauamäng) vastused |
+
+Vastused ja mõõtmine lähevad Cloudflare D1 andmebaasi `mina-tagasiside`. Kasutaja sisestatud arve ega isikuandmeid ei salvestata (testid kontrollivad, vt `tests/privaatsus.mjs`).
 
 ## Aadressid
 
@@ -32,7 +41,7 @@ Mäng on üks fail: `public/index.html`. Lisaks on üks väike liides `src/index
 ## Reeglid
 
 - `main` muutub ainult pull requesti kaudu: roheline suitsutest + keegi on eelvaate telefonis läbi mänginud.
-- Mäng on üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts. Server teeb ainult `/api/tts`.
+- Mäng on üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts. Serveri liidesed on ainult need, mis on loetletud lehe alguses.
 - Ei analüütikateeke ega küpsiseid. Mõõdame ainult anonüümselt ja minimaalselt, vt [ANALUUTIKA.md](ANALUUTIKA.md); mõõtmise muutmine käib selle põhimõtete järgi.
 - Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda ka testi oodatud väärtust (`tests/smoke.mjs`) ja allikaviidet lehe jaluses.
 - Tuleva logo avalikul lehel ei kasuta. Silt „prototüüp“ ja lahtiütlus jäävad alles.
@@ -128,6 +137,11 @@ npx wrangler dev            # http://localhost:8787 (mäng + /api/tts)
 npm test                    # teises aknas
 ```
 
+- **Wrangler** on Cloudflare'i käsureatööriist (`package.json` arendussõltuvus, seadistus `wrangler.jsonc`). `wrangler dev` käivitab sama Workeri sinu arvutis: lehed, `/api/*` liidesed, ümbersuunamised ja kohaliku D1 andmebaasi (kaust `.wrangler/`).
+- **Port 8787 peab olema vaba.** Kui seal jookseb mõni muu server (nt `python -m http.server 8787`), ei käivitu wrangler ja brauseritestid kukuvad vigadega 501 või TimeoutError. Kontroll: `lsof -i :8787`.
+- **Teine port:** `npx wrangler dev --port 8788` ja anna testile aadress, nt `node tests/smoke.mjs http://127.0.0.1:8788`. `npm test` kasutab alati porti 8787.
+- Testide täpsem kirjeldus: [tests/README.md](tests/README.md).
+
 ## Ühekordne seadistus
 
 1. **GitHub:** repo on [mirxz/tulevane-mina](https://github.com/mirxz/tulevane-mina) (privaatne kuni pühapäevase demoni) ja lisa sinna selle kausta failid, näiteks GitHub Desktopis: *Add existing repository* → *Publish*.
@@ -137,8 +151,8 @@ npm test                    # teises aknas
    - Deploy command: `npx wrangler deploy`.
    - Production branch: `main`. Luba *non-production branch builds* (eelvaated).
 3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
-5. **Prototüübi parool (valikuline):** samas kohas *Secret* nimega `PROTO_VOTI`. Kui see on seatud, küsib sait parooli; ilma selleta on sait avatud.
 4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
+5. **Prototüübi parool (valikuline):** samas kohas *Secret* nimega `PROTO_VOTI`. Kui see on seatud, küsib sait parooli; ilma selleta on sait avatud.
 
 ## Allikad
 
