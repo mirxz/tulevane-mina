@@ -24,8 +24,8 @@ assert.strictEqual(P.earlyYears(K({ b1991: 2, b2013: 2 })), 3, 'sünniaeg ei loe
 assert.strictEqual(P.earlyYears(K({ b2012: 5, user: 'other' })), 0, 'teine vanem kasutab');
 // 2. Tervist kahjustav töö eraldi; suurem kahest.
 assert.strictEqual(P.earlyYears({ ...base, hazard: 'list1' }), 10);
-// Nimekiri nr 1: tingimuste eest vastutab inimene; mootor ei piira (alla 10 a: UI hoiatab), lisa arvutatakse aastate järgi.
-assert.strictEqual(P.earlyYears({ ...base, hazard: 'list1', hazardYears: 5 }), 10, 'nimekiri nr 1, 5 a → mootor ei piira');
+// Nimekiri nr 1: alla 10 a nimekirja tööd → varem ei lähe (SVPS § 1, Kadi 24.10); lisa arvutatakse aastate järgi.
+assert.strictEqual(P.earlyYears({ ...base, hazard: 'list1', hazardYears: 5 }), 0, 'nimekiri nr 1, 5 a → varem ei lähe');
 assert.ok(near(P.hazardSupplement({ hazard: 'list1', hazardYears: 5, undergroundYears: 0 }), P.AASTAHINNE * 0.031 * 5), 'nimekiri nr 1, 5 a → lisa 5 aasta eest');
 assert.strictEqual(P.earlyYears({ ...base, hazard: 'list2' }), 5);
 assert.strictEqual(P.earlyYears({ ...K({ b2012: 3 }), hazard: 'list2' }), 5);
@@ -41,6 +41,10 @@ assert.ok(near(P.childSupplement(K({ b2012: 2 })), 7 * A), '1991–2012: 3,5 aas
 assert.ok(near(P.childSupplement(K({ b2013: 2 })), 0), '2013+ II sambaga: sissemaksed II sambasse, lisa pole');
 assert.ok(near(P.childSupplement({ ...K({ b2013: 2 }), p2: 0, p2Rate: 0 }), 7 * A), '2013–08.2021 ilma II sambata, vanem sünd 1966 (< 1983): 3,5 aastahinnet');
 assert.ok(near(P.childSupplement({ ...K({ b2013: 2 }), birthYear: 1983, p2: 0, p2Rate: 0 }), 0), '2013–08.2021 ilma II sambata, vanem sünd 1983: lisa pole (RPKS § 24 lg 1¹ p 2)');
+// Lapse kaupa vastus (Elukaar küsib enne 1983 sündinud vanemalt: kas olid lapse 3 esimesel aastal II sambas): b2013noII.
+assert.ok(near(P.childSupplement(K({ b2013: 2, b2013noII: 1 })), 3.5 * A), '2013–08.2021: üks laps ilma II sambata → üks lisa, ka kui täna oled II sambas');
+assert.ok(near(P.childSupplement({ ...K({ b2013: 2, b2013noII: 0 }), p2: 0, p2Rate: 0 }), 0), '2013–08.2021: olid II sambas (täna pole) → lisa pole');
+assert.ok(near(P.childSupplement({ ...K({ b2013: 2, b2013noII: 2 }), birthYear: 1983 }), 0), 'vanem sünd 1983+: vastust ei kasutata, lisa pole');
 assert.ok(near(P.childSupplement({ ...K({ b2021: 2 }), birthYear: 1990, p2: 0, p2Rate: 0 }), 7 * A), '09.2021+ ilma II sambata: 3,5 aastahinnet ka 1983+ sündinud vanemale (p 3)');
 assert.ok(near(P.childSupplement(K({ b2021: 2 })), 0), '09.2021+ II sambaga: lisa pole');
 assert.strictEqual(P.earlyYears(K({ b2013: 1, b2021: 2 })), 1, '09.2021+ lapsed loevad varem pensionile mineku arvus');
@@ -52,6 +56,16 @@ assert.ok(near(P.childPillar2(K({ b2021: 2, u3: 2, u3Left: [30, 3], monthNow: 9 
 assert.ok(near(P.childPillar2(K({ b2021: 1, u3: 1, u3Left: [0] })), 0), '3-aastaseks saanud: sissemakseid enam pole');
 assert.strictEqual(P.childPillar2({ ...K({ b2021: 1, u3: 1 }), p2Rate: 0 }), 0, 'ilma II samba sissemakseta riik ei maksa');
 assert.strictEqual(P.childPillar2(K({ b2021: 1, u3: 1, supUser: 'other' })), 0, 'teine vanem saab');
+// II samba väljamaksete algus (pensionile minek / varane väljavõtt) lõpetab ka riigi lisamakse: untilAge (vanus).
+{
+  const k36 = K({ b2021: 1, u3: 1, u3Left: [36], monthNow: 0 }), ageNow = P.CURRENT_YEAR - k36.birthYear;
+  assert.ok(near(P.childPillar2(k36, ageNow + 1), 12 * M26), 'pensionile aasta pärast: ainult jooksva aasta 12 kuud');
+  assert.ok(near(P.childPillar2(k36, ageNow), 0), 'pensionil juba: lisamakset pole');
+  assert.ok(near(P.childPillar2(k36, ageNow + 10), P.childPillar2(k36)), 'pension hiljem kui 3 a: kõik 36 kuud');
+  // Tulevane laps: maksed algavad sünniaastast (u3Start), mitte täna.
+  const fut = K({ b2021: 1, u3: 1, u3Left: [36], u3Start: [P.CURRENT_YEAR + 2], u3StartMonth: [1], monthNow: 0 });
+  assert.ok(near(P.childPillar2(fut, ageNow + 3), 12 * 80.76), 'tulevane laps: enne pensioni ainult sünniaasta 12 kuud');
+}
 {
   const young = { ...base, birthYear: 1994, p2Rate: 0.02, grossMonthly: 2000 };
   const a = P.simulate({ ...young, kids: { b2021: 1, u3: 1, user: 'me', inForecast: 'no' } }, T, { id: 'D' });

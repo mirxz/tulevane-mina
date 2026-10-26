@@ -114,3 +114,14 @@ for (const id of ids) {
   for (const x of s.rows) assert.ok(x.spend >= -1e-9 && x.shortfall >= -1e-9, 'negatiivne rahavoog ' + id + ' ' + x.age);
 }
 console.log('Soodustus OK');
+
+// Nimekirja tööaastad (SVPS § 1, Kadi 24.10): varem minekuks vähemalt 10 a (nr 1) või 12,5 a (nr 2); aastad puudu → eeldame täidetud.
+{
+  const assert = require('assert');
+  assert.strictEqual(P.earlyYears({ kids: {}, hazard: 'list1', hazardYears: 9 }), 0, 'nr 1, 9 a: varem ei lähe');
+  assert.strictEqual(P.earlyYears({ kids: {}, hazard: 'list1', hazardYears: 10 }), 10, 'nr 1, 10 a: 10 a varem');
+  assert.strictEqual(P.earlyYears({ kids: {}, hazard: 'list2', hazardYears: 12 }), 0, 'nr 2, 12 a: varem ei lähe');
+  assert.strictEqual(P.earlyYears({ kids: {}, hazard: 'list2', hazardYears: 12.5 }), 5, 'nr 2, 12,5 a: 5 a varem');
+  assert.strictEqual(P.earlyYears({ kids: {}, hazard: 'list2' }), 5, 'aastad puudu: eeldame tingimus täidetud');
+  console.log('Nimekirja aastad OK');
+}

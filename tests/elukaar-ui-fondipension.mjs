@@ -8,6 +8,10 @@ const CHART = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "
 const url = (process.argv.find((a) => a.startsWith("http")) || "http://127.0.0.1:8787").replace(/\/$/, "");
 let failed = 0, passed = 0;
 const check = (ok, msg) => { if (ok) passed++; else { failed++; console.log("  ✗ " + msg); } };
+// Ilma profiilita on eeltäidetud ainult sünniaasta ja sugu (TARA); test täidab endised näidisväärtused.
+const naidis = (page) => page.waitForFunction(() => window.__elukaar || document.getElementById("sinaList")).then(() => page.evaluate(() => {
+  for (const [id, v] of Object.entries({ p1Monthly: 900, grossMonthly: 2200, p2: 25000, p3: 5000, p3Monthly: 0 })) { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); }
+}));
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 const ctx = await browser.newContext();
 await ctx.addInitScript(() => { window.__ELUKAAR_TEST = true; });
@@ -19,7 +23,7 @@ const set = (vals) => page.evaluate((v) => { for (const [id, val] of Object.entr
 const pick = (name, value) => page.evaluate(([n, v]) => { const r = document.querySelector('input[name="' + n + '"][value="' + v + '"]'); r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }, [name, value]);
 const shown = (id) => page.evaluate((i) => !document.getElementById(i).classList.contains("d-none"), id);
 const inp = () => page.evaluate(() => window.__elukaar.readInput());
-await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
+await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" }); await naidis(page);
 await page.waitForFunction(() => window.__elukaar);
 await set({ birthYear: 1966, p2: 60000, p3: 0, p3Joined: "none", p3Monthly: 0 });
 

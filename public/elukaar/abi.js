@@ -110,7 +110,8 @@
     },
     kids: {
       title: 'Kuidas lapsed pensioni mõjutavad?',
-      html: '<p>Lapse kasvatamine (vähemalt 8 aastat) annab kaks eraldi õigust. Üks vanem võib kasutada <strong>mõlemat õigust kõigi laste eest</strong>, aga õigused võib ka vanemate vahel jagada. Vanemad lepivad kirjalikult kokku, kokkuleppe puudumisel jagatakse õigus võrdselt.</p>' +
+      html: '<p><strong>Kuidas Elukaar lapsi arvestab:</strong> iga last eraldi, kui oled teda pensionile minekuks kasvatanud vähemalt 8 aastat (kuni lapse 18-aastaseks saamiseni). Võid sisestada ka tulevase lapse sünniaasta, Elukaar arvutab vastavalt pensionilisad. Kui laps saab 8 alles pärast pensionile minekut, me teda ei arvesta. Pensionilisa sõltub lapse sünniaastast; ilma sünniaastata loeme last ainult varem pensionile mineku õiguse juures.</p>' +
+        '<p>Lapse kasvatamine (vähemalt 8 aastat) annab kaks eraldi õigust. Üks vanem võib kasutada <strong>mõlemat õigust kõigi laste eest</strong>, aga õigused võib ka vanemate vahel jagada. Vanemad lepivad kirjalikult kokku, kokkuleppe puudumisel jagatakse õigus võrdselt.</p>' +
         '<ul><li>Teise vanema nõusolekut pole vaja, kui ta on surnud, temalt on enne lapse 8-aastaseks saamist vanemaõigused ära võetud või tema elukohta ei saa rahvastikuregistri järgi kindlaks teha.</li>' +
         '<li>Kokkulepe ja avaldus esitatakse Sotsiaalkindlustusametile e-postiga või ' + a(SKA_SELF, 'iseteeninduses') + '.</li>' +
         '<li>Tasub mõelda, kellele õigus rohkem annab: näiteks eripensionärile pensionilisa ei lisata, siis võiks seda kasutada teine vanem.</li></ul>' +
@@ -224,6 +225,23 @@
         '<li>Välja võetud raha ei kasva pensioniks edasi ja riigi 4% jääb saamata, seega pensioniks jääb vähem.</li></ul>' +
         '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/KoPS', 'Kogumispensionide seadus § 27¹, § 27², § 43¹') + ' (redaktsioonid 01.11.2026 ja 01.01.2028, kontrollitud 16.10.2026).</p>',
     },
+    p2EarlyAge: {
+      title: 'Millal saab II samba raha varem välja võtta?',
+      html: '<ul><li><strong>Enne 5 aastat enne pensioniiga</strong> saad kogu II samba välja võtta 22% tulumaksuga. Alates 01.11.2026 saab seda teha <strong>ainult ühe korra</strong>.</li>' +
+        '<li>Siis lõpevad sinu ja riigi sissemaksed (riigi 4% jääb saamata). Uuesti saad II sambaga liituda 5 aasta pärast (varem 10 aastat) ja kogumine algab nullist.</li>' +
+        '<li>Kui sul on alla 3-aastane laps (sündinud 2013 või hiljem) või sünnib laps, lõpeb koos sissemaksetega ka riigi lisamakse lapse eest. <strong>Eeldus:</strong> pärast uuesti liitumist Elukaar riigi lisamakset lapse eest ei arvesta.</li>' +
+        '<li><strong>Alates 5 aastat enne pensioniiga</strong> (nt 60-aastaselt) on maks väiksem: korraga välja võttes 10%, fondipensionina 0%. Selle valiku teed järgmises sammus.</li>' +
+        '<li>Alates 2028. a saab välja võtta ka osa rahast. Elukaar arvestab praegu ainult kogu summa väljavõttu.</li></ul>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/KoPS', 'Kogumispensionide seadus § 27¹, § 27², § 43¹') + ' (redaktsioonid 01.11.2026 ja 01.01.2028, kontrollitud 16.10.2026).</p>',
+    },
+    p3EarlyAge: {
+      title: 'Millal saab III samba raha varem välja võtta?',
+      html: '<ul><li>III samba raha saad välja võtta igal ajal. <strong>Enne soodusvanust</strong> on tulumaks 22%.</li>' +
+        '<li><strong>Soodusvanus:</strong> enne 2021. a liitunul 55, hiljem liitunul 60 ja kogumist vähemalt 5 aastat. Siis on maks korraga välja võttes 10% ja fondipensionina 0%.</li>' +
+        '<li>Väljavõtt ei sulge sammast: võid sissemakseid jätkata ja saad nendelt edasi tulumaksu tagasi. Edasised sissemaksed kogunevad pensioniks.</li>' +
+        '<li>Kui liitusid enne 2021. a ja võtad raha varem välja, Elukaar 55-aastaselt seda valikut enam ei küsi.</li></ul>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/TuMS', 'Tulumaksuseadus § 28') + ', ' + a('https://www.pensionikeskus.ee/iii-sammas/', 'Pensionikeskus: III sammas') + '.</p>',
+    },
     p3Joined: {
       title: 'Miks on oluline, millal III sambaga liitusid?',
       html: '<p>Sellest sõltub, mis vanusest saad kogu III samba raha välja võtta väiksema tulumaksuga (10%, muidu 22%).</p>' +
@@ -238,14 +256,21 @@
       html: '<p>See näitab, kui palju sinu raha ostujõud aastas päriselt kasvab, kui fondi kasvust lahutada hindade tõus ja fonditasud.</p>' +
         '<p><strong>Näide:</strong> fond kasvab aastas 6%, hinnad tõusevad 4%. Tootlus pärast inflatsiooni on siis umbes 2%: saad aasta pärast 2% rohkem osta kui täna.</p>' +
         '<ul><li><strong>0%:</strong> raha hoiab väärtust, aga ei kasva.</li><li><strong>2%:</strong> ettevaatlik eeldus.</li><li><strong>4%:</strong> optimistlik eeldus, pikaajaline aktsiafond madala tasuga.</li></ul>' +
-        '<p><strong>Kehtib mõlemale sambale korraga.</strong> II ja III samba raha kasvab Elukaares sama tootlusega.</p>' +
+        '<p><strong>II ja III samba tootluse valid eraldi</strong>, sest fondid võivad olla erinevad.</p>' +
         '<p><strong>Miks kõige rohkem 4%?</strong> 4% pärast inflatsiooni ja tasusid on madala tasuga indeksfondile juba optimistlik pikaajaline eeldus. Aktsiaturg on pikalt andnud rohkem, aga aastad on väga erinevad ja langused tulevad tihti just enne väljamakseid. Suurem number paneks sambaid üle hindama, sellepärast seda valikut pole.</p>' +
-        '<p class="mb-0">Seetõttu on kõik summad Elukaares <strong>tänastes eurodes</strong>: saad neid võrrelda tänaste hindadega. Tootlus on eeldus, mitte lubadus.</p>',
+        '<p class="mb-0">Seetõttu näitab Elukaar summasid vaikimisi <strong>tänastes eurodes</strong>: saad neid võrrelda tänaste hindadega. Tulemuse graafikul saad vaadata ka tuleviku hindades. Tootlus on eeldus, mitte lubadus.</p>',
+    },
+    legacyLeft: {
+      title: 'Kuidas see summa arvutatakse?',
+      html: '<ul><li><strong>Keskmine eluiga</strong> on vanus, milleni jõuab elusana pool sinuvanustest (Statistikaameti elutabel, sinu sugu ja sünniaasta).</li>' +
+        '<li><strong>Summa</strong> on raha, mis on sul selle aasta alguses fondides ja hoiusel kokku: kõik senised väljamaksed on maha arvatud ja tootlus juurde arvestatud. Summa on tänastes eurodes.</li>' +
+        '<li><strong>Miks see võib olla suur:</strong> fondipensioni makse on fondi summa jagatud elada jäänud aastatega, seega kasvab fondi jääk tootluse võrra edasi. Kui makse on suurem kui kulud, koguneb ülejääk hoiusele.</li></ul>' +
+        '<p class="mb-0">Pooled sinuvanustest elavad kauem, seega peab raha jätkuma ka pärast seda vanust.</p>',
     },
     nominal: {
       title: 'Mida näitab „tuleviku hindades“?',
       html: '<p>Tavaliselt näitame kõiki summasid <strong>tänastes eurodes</strong>: 1 000 € 2045. aastal ostab sama palju kui 1 000 € täna. Nii on lihtne võrrelda tänaste hindadega.</p>' +
-        '<p><strong>Tuleviku hindades</strong> näeb graafik, tabel ja kokkuvõte välja nii, nagu summad tulevikus päriselt kontol paistavad. Eeldame, et hinnad tõusevad 2% aastas (Euroopa Keskpanga eesmärk). Näiteks 1 500 € kulud täna on 20 aasta pärast u 2 230 €.</p>' +
+        '<p><strong>Tuleviku hindades</strong> näeb graafik, tabel ja kokkuvõte välja nii, nagu summad tulevikus päriselt kontol paistavad. Eeldame, et hinnad tõusevad 2% aastas (Euroopa Keskpanga eesmärk). Näiteks 1 500 € kulud täna on 20 aasta pärast u 2 230 €. Samamoodi on 600 000 € sammastes 33 aasta pärast tuleviku eurodes u 1,15 miljonit, aga see ostab sama palju kui 600 000 € täna.</p>' +
         '<ul><li><strong>Tulemus ei muutu:</strong> kas raha jätkub ja mis vanuseni, on mõlemas vaates sama. Muutub ainult see, kuidas summad välja näevad.</li>' +
         '<li><strong>Milleks see on hea:</strong> näed, miks tuleviku suurem number ei tähenda tingimata rohkem raha, ja oskad hiljem pangakontol või SKA teates nähtud summat võrrelda. Sama vaate leiad ka Tuleva pensionikalkulaatorist.</li></ul>' +
         '<p class="small-muted mb-0">Hinnatõus on eeldus, mitte prognoos. Päris pensioni indekseeritakse igal aastal ja palgad tõusevad, mida mudel tänastes eurodes ei näita.</p>',
@@ -263,6 +288,12 @@
         '<li><strong>Kui muid sääste pole,</strong> ei pruugi riiklikust pensionist ja III sambast elu lõpuni jätkuda. Siis on fondipension kõige kindlam viis.</li></ul>' +
         '<p><strong>Tuleva soovitus:</strong> kasuta II ja III samba raha alles siis, kui seda päriselt vajad. Fondipension (igakuine väljamakse) on maksuvaba ja välja võtmata raha kasvab fondis edasi; korraga või osade kaupa välja võttes on tulumaks 10%. Kindlustuslepingu tasud on praegu nii kõrged, et Tuleva ei pea seda mõistlikuks.</p>' +
         '<p class="mb-0">' + a('https://tuleva.ee/pensioni-valjamaksed/', 'Loe Tuleva lehelt pensioni väljamaksete kohta') + '</p>' },
+    { q: 'Mis saab, kui fondipension maksab rohkem, kui vajan?',
+      html: '<ul>' +
+        '<li><strong>Makse ei sõltu kuludest.</strong> Fondipensioni makse on fondi summa jagatud veel tegemata maksete arvuga (KoPS § 60¹ lg 5). Väiksemat summat valida ei saa.</li>' +
+        '<li><strong>Ülejääk läheb hoiusele.</strong> Elukaares kaotab hoiusel olev raha väärtust 1% aastas pärast inflatsiooni, fondis kasvab see edasi. Kui ülejääk seisab hoiusel kauem kui 3–4 aastat, kaotad rohkem kui 10% tulumaks, mida maksaksid, kui võtaksid fondist välja ainult vajaliku summa („Kasvatan edasi“).</li>' +
+        '<li><strong>Fondipensioni saab peatada</strong> ja hiljem uuesti alustada (vt „Mida teada fondipensioni kohta?“). Näiteks kui lükkad riikliku pensioni edasi, võid vahepeal elada fondipensionist ja selle peatada, kui riiklik pension algab. Elukaar peatamist eraldi ei arvuta; sarnase tulemuse annab „Kasvatan edasi“ või hilisem fondipensioni algus.</li></ul>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://tuleva.ee/pensioni-valjamaksed/', 'Tuleva: pensioni väljamaksed') + ', KoPS § 60¹ (loetud 17.10.2026).</p>' },
     { q: 'Mida teada fondipensioni kohta?',
       html: '<ul>' +
         '<li><strong>Avaldusest piisab.</strong> Raha ei pea kuhugi ümber tõstma: igal kuul müüakse automaatselt väike osa fondiosakutest, ülejäänu jääb fondi.</li>' +

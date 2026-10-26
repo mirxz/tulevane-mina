@@ -183,7 +183,10 @@
     const earlyUser = k.earlyUser || k.user;
     const kidsY = earlyUser !== 'me' ? 0 : k.disabled ? 5 : n >= 5 ? 5 : n === 4 ? 3 : n === 3 ? 1 : 0;
     // Tingimuste täitmise (staaž, nimekirja aastad) eest vastutab inimene ise; mootor ei kontrolli (UI hoiatab).
-    const hazardY = input.hazard === 'list1' ? 10 : input.hazard === 'list2' ? 5 : 0;
+    // Nimekirja tööaastad (input.hazardYears): varem minekuks vähemalt 10 a (nr 1) või 12,5 a (nr 2), SVPS § 1 (kogustaaži
+    // 20/25 a mootor ei kontrolli). Aastad puudu (undefined) → eeldame, et tingimus on täidetud (vanad testid, Kadi 24.10).
+    const hy = input.hazardYears;
+    const hazardY = input.hazard === 'list1' ? (hy === undefined || hy >= 10 ? 10 : 0) : input.hazard === 'list2' ? (hy === undefined || hy >= 12.5 ? 5 : 0) : 0;
     // PäästeTS § 19 ootetoetus; input.rescueBasis 'pension' = ootetoetust ei võta, lähed laste eest varem pensionile.
     const rescueY = (input.rescueYears || 0) >= 15 && input.rescueBasis !== 'pension' ? 5 : 0;
     return Math.max(kidsY, hazardY, rescueY);
@@ -219,7 +222,10 @@
       const m = k.iiMonths && k.iiMonths[i] !== undefined ? k.iiMonths[i] : noII ? 0 : 36;
       part21 += (36 - Math.max(0, Math.min(36, m))) / 36;
     }
-    const after2013 = (noII ? (input.birthYear < 1983 ? k.b2013 || 0 : 0) + u3n : 0) + part21;
+    // 2013 – aug 2021 laps: lisa ainult enne 1983 sündinud vanemale, kes ei olnud lapse 3 esimesel aastal II sambas
+    // (k.b2013noII: kasutaja vastus lapse kaupa; puudumisel tänase II samba seisu järgi, nagu varem).
+    const b2013 = input.birthYear < 1983 ? (k.b2013noII !== undefined ? k.b2013noII : noII ? k.b2013 || 0 : 0) : 0;
+    const after2013 = b2013 + (noII ? u3n : 0) + part21;
     return AASTAHINNE * 3.5 * ((k.b1991 || 0) + (k.b2012 || 0) + after2013);
   }
 
@@ -241,17 +247,20 @@
     const ys = Object.keys(CHILD_II_MONTHLY).map(Number).sort((a, b) => a - b);
     return CHILD_II_MONTHLY[ys.filter((y) => y <= year).pop() || ys[0]];
   }
-  function childPillar2(input) {
+  // untilAge: II samba väljamaksete algus (pensionile minek või varane väljavõtt) lõpetab sissemaksed, ka riigi lisamakse;
+  // selle järel tulevaid kuid ei arvesta. Tulevane laps (k.u3Start[i] = sünniaasta, k.u3StartMonth[i]): maksed algavad sünnist.
+  function childPillar2(input, untilAge) {
     const k = input.kids || {};
     if ((k.supUser || k.user) !== 'me' || !((input.p2Rate || 0) > 0)) return 0;
     const n = Math.min(k.u3 || 0, k.b2021 || 0);
     const monthNow = k.monthNow !== undefined ? k.monthNow : 0; // 0 = jaanuar; mitu kuud on jooksval aastal veel ees: 12 − monthNow
     let sum = 0;
+    const endYear = untilAge !== undefined ? input.birthYear + untilAge : Infinity;
     for (let i = 0; i < n; i++) {
       const left = Math.max(0, Math.min(36, k.u3Left && k.u3Left[i] !== undefined ? k.u3Left[i] : 18));
-      const thisYear = Math.min(left, 12 - monthNow);
-      sum += thisYear * childIIMonthly(CURRENT_YEAR);
-      for (let m = thisYear, y = CURRENT_YEAR + 1; m < left; y++) { const c = Math.min(12, left - m); sum += c * childIIMonthly(y); m += c; }
+      const y0 = k.u3Start && k.u3Start[i] > CURRENT_YEAR ? k.u3Start[i] : CURRENT_YEAR;
+      const first = y0 === CURRENT_YEAR ? 12 - monthNow : 13 - ((k.u3StartMonth && k.u3StartMonth[i]) || 1);
+      for (let m = 0, y = y0, c = Math.min(left, first); m < left && y < endYear; y++, c = Math.min(12, left - m)) { sum += c * childIIMonthly(y); m += c; }
     }
     return sum;
   }
@@ -285,6 +294,8 @@
   function simulate(input, table, scenario, needOverride) {
     const need = needOverride !== undefined ? needOverride : input.needMonthly;
     const r = input.realReturn;
+    // III samba oma fondi tootlus (eraldi pott p3Sep); puudumisel sama mis II sambal.
+    const r3 = input.realReturn3 !== undefined ? input.realReturn3 : r;
     const rd = input.depositReturn !== undefined ? input.depositReturn : -0.01; // hoiuse intress jääb tavaliselt inflatsioonist maha
     const pa = retirementYears(input);
     const currentAge = CURRENT_YEAR - input.birthYear;
@@ -370,15 +381,32 @@
     // Ilma selleta on III sammas II sambaga ühes potis (senine käitumine).
     const sep = input.p3Sep || null;
     const c3 = sep ? (input.p3Monthly || 0) * 12 : 0;
-    let fund = input.p2 + input.p3 + childPillar2(input);
+    // Riigi lisamakse lapse eest lõpeb ka II samba varase väljavõtuga (input.p2Early; uuesti liitumist siin ei arvesta).
+    const peCut = input.p2Early && input.p2Early.age >= currentAge && input.p2Early.age < Math.min(workEnd, pa - 5) ? input.p2Early.age : ret;
+    let fund = input.p2 + input.p3 + childPillar2(input, Math.min(ret, peCut));
     let fund3 = sep ? sep.amount : 0;
     // Jooksval aastal on sissemakseid alles ainult ülejäänud kuude eest (input.firstYearShare, nt oktoobris 3/12); vaikimisi terve aasta.
     // Nii on sissemakseaastad sama mis SKA kalkulaatoris (nt 29,3 a, mitte 30).
     const share = (a) => (a === currentAge && input.firstYearShare !== undefined ? Math.max(0, Math.min(1, input.firstYearShare)) : 1);
-    for (let a = currentAge; a < workEnd; a++) { const c3a = c3 * p3Factor(input, a) * share(a); fund = fund * (1 + r) + yearlyContribution(input, a) * share(a) - c3a; fund3 = fund3 * (1 + r) + c3a; }
+    // II samba varane väljavõtt (KoPS § 43¹, alates 01.11.2026): üks kord, 22% tulumaks; sinu ja riigi sissemaksed lõpevad,
+    // uuesti saab liituda 5 aasta pärast (input.p2Early = { age, rejoin, save }). III sammas jätkab. Pensioniea − 5 järel on tavaline väljamakse.
+    const pe = input.p2Early;
+    const peAge = pe && pe.age >= currentAge && pe.age < Math.min(workEnd, pa - 5) ? pe.age : null;
+    let early = null;
+    for (let a = currentAge; a < workEnd; a++) {
+      if (a === peAge) {
+        const tax = taxOn ? INCOME_TAX * fund : 0;
+        early = { age: a, gross: fund, tax: tax, net: fund - tax, rejoin: !!pe.rejoin, save: !!pe.save };
+        fund = 0;
+      }
+      const c3a = c3 * p3Factor(input, a) * share(a);
+      const stopII = peAge !== null && a >= peAge && !(pe.rejoin && a >= peAge + 5);
+      const contrib = stopII ? (input.p3Monthly || 0) * 12 * p3Factor(input, a) : yearlyContribution(input, a); // peatatud: ainult III samba osa
+      fund = fund * (1 + r) + contrib * share(a) - c3a; fund3 = fund3 * (1 + r3) + c3a;
+    }
 
     // Hoius pensioni alguses: varem sambast välja võetud ja kõrvale pandud raha (valikuline, vaikimisi 0).
-    let deposit = input.extraDeposit || 0;
+    let deposit = (input.extraDeposit || 0) + (early && early.save ? early.net * Math.pow(1 + rd, Math.max(0, ret - early.age)) : 0); // varem välja võetud II samba raha hoiusel
     // Ühekordne väljavõtt pensioniea aastal: 10% tulumaks, millest saab maha arvata pensioniea aasta kasutamata maksuvaba tulu.
     // Ühekordne väljavõte tehakse siis, kui sammas avaneb. Maksuvaba tulu arvestatakse ainult pensionieas (enne seda konservatiivselt 0).
     const firstRetAge = Math.max(open2, startAge); // II samba (ühise poti) ühekordse väljavõtu aasta
@@ -466,7 +494,7 @@
       }
       // Kasv enne pensioniiga on kogumisfaasis (ülal) juba arvestatud; siin kasvab vara ainult pensionieast alates.
       // Kasv ja hoiuse väärtuse muutus pensionieast (ühekordne väljamakse on arvestatud pensioniea seisuga).
-      if (age >= workEnd) { fund *= 1 + r; fund3 *= 1 + r; }
+      if (age >= workEnd) { fund *= 1 + r; fund3 *= 1 + r3; }
       if (age >= ret) deposit *= 1 + rd;
       const income = i1 + isp + sched + extraNet + sched3 + extra3;
       // Enne pensioniiga on eripension elamiseks (nagu palk); vajaduse katmist arvestab mudel pensioniast.
@@ -491,6 +519,8 @@
         work: work, // töötad pensioni ajal (palk katab kulud)
         shortfall: age >= ret ? Math.max(0, needYear - spend) / 12 : 0,
         moneyLeft: fundStart + depositStart,
+        pot: fundStart, // sammastes aasta alguses (II + III)
+        deposit: depositStart, // hoiusel aasta alguses (sambast välja võetud, pärast tulumaksu)
         alive: survival(table, input.sex, currentAge, age),
       });
     }
@@ -500,6 +530,7 @@
     // Ootetoetus (päästeasutus maksab): vanus, millest alates maksab vanaduspensioni SKA, ja toetuse summa kuus.
     res.rescueAllowance = toetusEnd !== null && toetusEnd > ret ? { from: ret, until: toetusEnd, monthly: toetusYear / 12, pension: p1Year / 12 } : null;
     res.hazardSupplement = hazardMonthly > 0 ? hazardMonthly : null;
+    res.p2Early = early;
     // Eripensioni ja vanaduspensioni võrdlus tulemuse selgituseks („Pensionieas makstakse sulle suurem kahest“).
     res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge', larger: spYear >= p1Full ? 'special' : 'oldAge',
       // Pensionieas uuesti (ainult kui varem jätkasid eripensioniga): vanaduspension koos pensioni ajal töötatud aastatega.

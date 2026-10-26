@@ -68,6 +68,8 @@ const lubatudKutsed = [
   // mootSamm(step): sama sammu number (tulemus 9), eripensioni samm ei lähe mõõtmisse. Uusi andmeid ei lisandu.
   /minaMoot\('samm', \{ samm: mootSamm\(step\) \}\)/, /minaMoot\('elukaar', \{ p: profiil \}\)/,
   /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('r:' \+ t\.name \+ '=' \+ t\.value\) \}\)/, /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('s:p3Joined=' \+ t\.value\) \}\)/,
+  // Kiirmuutmine tulemuste lehel: sama valiku nimi eesliitega „q:“. Uusi andmeid ei lisandu; otsuste logi rida: Kadi.
+  /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\(q \+ 'r:' \+ t\.name \+ '=' \+ t\.value\) \}\)/,
   /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: 'b:rada' \}\)/, /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('b:' \+ b\.id\) \}\)/,
 ];
 for (const r of story.split("\n").filter((r) => /window\.minaMoot\('/.test(r))) for (const m of r.matchAll(/window\.minaMoot\('[^;]*?\}\)/g)) check(lubatudKutsed.some((re) => re.test(m[0])), "elukaare uus mõõtmiskutse vajab ülevaatust: " + m[0]);

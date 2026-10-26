@@ -157,4 +157,14 @@ assert.ok(Math.abs(a2.rows.find((x) => x.age === 70).i1 - 900 * 1.1688) < 0.01);
   assert.notDeepStrictEqual(both('once').rows.map((x) => x.i23), both('yearly').rows.map((x) => x.i23));
 }
 
+// III samba oma tootlus (realReturn3): mõjutab ainult eraldi III samba potti (i3); puudumisel sama mis II sambal.
+{
+  const sep = { ...base, needMonthly: 300, p3: 0, p3Sep: { amount: 20000, mode: 'fund', contract: 'yearly' } };
+  const same = P.simulate(sep, table, B), explicit = P.simulate({ ...sep, realReturn3: 0.02 }, table, B);
+  assert.deepStrictEqual(explicit.rows, same.rows, 'realReturn3 = realReturn: tulemus sama');
+  const hi = P.simulate({ ...sep, realReturn3: 0.04 }, table, B);
+  assert.deepStrictEqual(hi.rows.map((x) => x.i2), same.rows.map((x) => x.i2), 'III tootlus ei muuda II samba makseid');
+  assert.ok(hi.rows.find((x) => x.i3 > 0).i3 > same.rows.find((x) => x.i3 > 0).i3, 'kõrgem III tootlus: suurem III makse');
+}
+
 console.log('OK');

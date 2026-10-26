@@ -9,6 +9,10 @@ const CHART = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "
 const url = (process.argv.find((a) => a.startsWith("http")) || "http://127.0.0.1:8787").replace(/\/$/, "");
 let failed = 0, passed = 0;
 const check = (ok, msg) => { if (ok) passed++; else { failed++; console.log("  ✗ " + msg); } };
+// Ilma profiilita on eeltäidetud ainult sünniaasta ja sugu (TARA); test täidab endised näidisväärtused.
+const naidis = (page) => page.waitForFunction(() => window.__elukaar || document.getElementById("sinaList")).then(() => page.evaluate(() => {
+  for (const [id, v] of Object.entries({ p1Monthly: 900, grossMonthly: 2200, p2: 25000, p3: 5000, p3Monthly: 0 })) { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); }
+}));
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 const ctx = await browser.newContext();
 await ctx.addInitScript(() => { window.__ELUKAAR_TEST = true; });
@@ -16,7 +20,7 @@ await ctx.route("**/cdn.jsdelivr.net/**", (r) => r.fulfill({ contentType: "appli
 const page = await ctx.newPage();
 const errs = [];
 page.on("pageerror", (e) => errs.push(e.message));
-await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
+await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" }); await naidis(page);
 await page.waitForFunction(() => window.__elukaar);
 
 const set = (vals) => page.evaluate((v) => {
@@ -65,15 +69,13 @@ await refresh();
 check(await monthShown(2), "alla 3-aastane: küsib kuud");
 k = await kids();
 check(k.u3 === 1 && k.u3Left[0] === undefined, "ilma kuuta alla 3-aastane: " + JSON.stringify(k));
-check(!(await hidden("kidsU3Wrap")), "II samba vihje nähtav");
-const hint = await page.evaluate(() => document.getElementById("kidsU3Hint").textContent);
-check(/II sambasse veel u/.test(hint) && /18 kuud/.test(hint) && /76,12/.test(hint), "vihje: riigi sissemakse, 18 kuu eeldus ja SKA summa: " + hint);
+// Riigi II samba lisamakse on arvutuses sees, eraldi summat sammus „Sina“ ei näidata (Kadi 24.10).
+check(await page.evaluate(() => !document.getElementById("kidsU3Wrap") && window.Pension.childPillar2(window.__elukaar.readInput()) > 0), "II samba lisamakse arvutuses, vihjet pole");
 const back = 6, d = new Date(); d.setMonth(d.getMonth() - back);
 await set({ kidsBorn2: d.getFullYear(), kidsMonth2: d.getMonth() + 1 });
 await refresh();
 k = await kids();
 check(k.u3 === 1 && k.u3Left[0] === 36 - back, "sünnikuust jäänud kuud: " + JSON.stringify(k.u3Left));
-check(!/18 kuud/.test(await page.evaluate(() => document.getElementById("kidsU3Hint").textContent)), "kuuga vihjes 18 kuu eeldust pole");
 check(!!(await page.evaluate(() => document.getElementById("kidsSupWrap") && !document.getElementById("kidsSupWrap").classList.contains("d-none"))), "„Pensionilisa või II samba lisamakset saab“ nähtav");
 
 // RPKS § 24 lg 6: üle 3-aastane sept 2021+ laps → küsitakse riigi II samba lisamakse kuid; 12 kuud → 2/3 lisast.
@@ -144,20 +146,28 @@ check(hz.y === 20 && hz.u === 5 && /SVPS § 3/.test(hz.hint), "aastad jõuavad m
 await set({ hazardYears: 5 });
 await refresh();
 const hz5 = await page.evaluate(() => ({ s: window.__elukaar.readInput().soodus, hint: document.getElementById("soodusNote").textContent }));
-check(hz5.s === 10 && /lisab vanaduspensionile u/.test(hz5.hint) && /vähemalt 10 aastat/.test(hz5.hint), "nimekiri nr 1, 5 a: valik jääb inimesele, vihje hoiatab: " + JSON.stringify(hz5));
-await set({ soodusYears: 7 });
-check((await page.evaluate(() => window.__elukaar.readInput().soodus)) === 7, "nimekiri nr 1: saab valida 7 a varem");
+check(hz5.s === 0 && /lisab vanaduspensionile u/.test(hz5.hint) && /vähemalt 10 aastat/.test(hz5.hint) && /ei arvesta/.test(hz5.hint), "nimekiri nr 1, 5 a: varem ei lähe (alla 10 a), lisa jääb, vihje ütleb: " + JSON.stringify(hz5));
+await set({ hazardYears: 20 }); await set({ soodusYears: 7 });
+check((await page.evaluate(() => window.__elukaar.readInput().soodus)) === 7, "nimekiri nr 1 (20 a): saab valida 7 a varem");
 await set({ soodusYears: "" });
 await set({ hazard: "list2" });
 await refresh();
-check(await hidden("hazardYearsWrap") && (await page.evaluate(() => window.__elukaar.readInput().hazardYears)) === 0, "nimekiri nr 2: väljad peidus, lisa pole");
+check(!(await hidden("hazardYearsWrap")) && (await hidden("undergroundWrap")) && (await page.evaluate(() => window.Pension.hazardSupplement(window.__elukaar.readInput()))) === 0 && /nimekirja nr 2/.test(await page.evaluate(() => document.querySelector('label[for="hazardYears"]').textContent)), "nimekiri nr 2: aastad küsitakse (hoiatuseks), allmaatöö peidus, lisa pole");
+await set({ hazardYears: 12 }); await refresh();
+check((await page.evaluate(() => window.Pension.earlyYears({ kids: {}, hazard: 'list2', hazardYears: window.__elukaar.readInput().hazardYears }))) === 0 && /ei piisa/.test(await page.evaluate(() => document.getElementById("hazardYearsHint").textContent)), "nimekiri nr 2, 12 a: nimekirja eest varem ei lähe (lapsed eraldi), väli ütleb, et ei piisa");
+await set({ hazardYears: 13 }); await refresh();
+check((await page.evaluate(() => window.Pension.earlyYears({ kids: {}, hazard: 'list2', hazardYears: window.__elukaar.readInput().hazardYears }))) === 5, "nimekiri nr 2, 13 a: 5 a varem");
 
 // Tööga seotud erijuhud: linnukesed (päris klõps: brauser saadab enne „input“, siis „change“) avavad väljad.
-await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
+await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" }); await naidis(page);
 await page.waitForFunction(() => window.__elukaar);
 const vis = (id) => page.evaluate((i) => !document.getElementById(i).classList.contains("d-none"), id);
 const on = (id) => page.evaluate((i) => document.getElementById(i).checked, id);
-check(await vis("kidsHasWrap") && !(await vis("hazardRow")) && !(await vis("rescueWrap")), "lapsed eraldi plokis, tööga seotud väljad peidus");
+check(!(await vis("kidsHasWrap")) && !(await vis("hazardRow")) && !(await vis("rescueWrap")), "lapsed: 8 a küsimust pole (lisa-nupp), tööga seotud väljad peidus");
+// Lapsed ja erijuhud on vaikimisi kinni: „+ Lisa …“ avab osa ja fookus läheb esimesele väljale.
+check(await page.evaluate(() => document.getElementById("body-kids").hidden && document.getElementById("body-work").hidden), "lapsed ja erijuhud vaikimisi kinni");
+await page.click("#add-work");
+check(await page.evaluate(() => !document.getElementById("body-work").hidden && document.activeElement.id === "toggle-work" && document.getElementById("toggle-work").getAttribute("aria-expanded") === "true"), "„+ Lisa erijuht“ avab osa, fookus jääb samale nupule (nüüd „Sulge“)");
 await page.click("#cHazard");
 check((await on("cHazard")) && (await vis("hazardRow")) && (await page.evaluate(() => document.getElementById("hazard").value)) === "list1", "klõps: tervist kahjustav töö, nimekiri nr 1");
 await page.click("#cHazard");
@@ -168,8 +178,9 @@ await page.click("#cSp");
 await page.click("#cRescue");
 check((await on("cRescue")) && (await vis("rescueWrap")), "klõps: päästeteenistus");
 await page.fill("#rescueYears", "22");
-const rs = await page.evaluate(() => ({ y: window.__elukaar.readInput().rescueYears, h: document.getElementById("soodusNote").textContent }));
+const rs = await page.evaluate(() => ({ y: window.__elukaar.readInput().rescueYears, p2: window.__elukaar.readInput().p2Has, h: document.getElementById("soodusNote").textContent }));
 check(rs.y === 22 && /25%/.test(rs.h), "päästja 22 a: +25%: " + JSON.stringify(rs));
+check(rs.p2 === /ära alusta II samba väljamakseid enne töö lõppu/.test(rs.h), "päästja töö: II samba väljamakse hoiatus ainult II sambaga (p 6): p2Has=" + rs.p2);
 const pl = await page.evaluate(() => [...document.querySelectorAll("#path .path-label")].map((e) => e.textContent));
 check(pl.some((x) => / a sambad$/.test(x)) && pl.some((x) => / a pension$/.test(x)), "sama vanus kahel sammul: sildid eristuvad: " + pl.join(", "));
 check(/ootel/.test(rs.h) && /sõltuvad staažist/.test(await page.evaluate(() => document.getElementById("rescueHint").textContent)), "pensionile mineku sammus ootetoetus; välja juhend püsiv");
@@ -192,11 +203,12 @@ await refresh();
 check(await on("cSp"), "eripension valitud mujalt → linnuke sees");
 
 // Päästja ootetoetus või laste eest pension (TLV-105): valik ainult siis, kui mõlemad õigused on sinul.
-await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
+await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" }); await naidis(page);
 await page.waitForFunction(() => window.__elukaar);
 await set({ birthYear: 1975, kidsHas: "yes", kidsCount: 4 });
 await set({ kidsBorn0: 1998, kidsBorn1: 2000, kidsBorn2: 2002, kidsBorn3: 2004 });
 check(!(await vis("rescueBasisWrap")), "ainult lapsed: ootetoetuse valikut pole");
+await page.click("#add-work");
 await page.click("#cRescue");
 await page.fill("#rescueYears", "20");
 await refresh();

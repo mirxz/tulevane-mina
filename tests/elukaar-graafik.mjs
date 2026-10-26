@@ -61,7 +61,7 @@ for (const [vName, vp] of Object.entries(VIEWPORTS)) {
     const d = await read(page);
     check(errors.length === 0, `${tag}: lehe vead: ${errors.join("; ")}`);
     const ds = (l) => d.ds.find((x) => x.label === l);
-    const i1 = ds("I sammas"), i2 = ds("II sammas"), i3 = ds("III sammas"), dep = ds("Hoiuselt (välja võetud raha)"), need = ds("Kulud");
+    const i1 = ds("I sammas"), i2 = ds("II sammas"), i3 = ds("III sammas"), dep = ds("Hoiuselt (välja makstud, kulutamata raha)"), need = ds("Kulud");
     const alive = d.ds.find((x) => x.label.startsWith("Elus"));
     check(!!(i1 && i2 && i3 && dep && need && alive), `${tag}: kõik andmerea nimed olemas`);
     // Graafiku liik: töölaual tulbad, mobiilis kihid (pindgraafik), elus-% telg ainult töölaual.

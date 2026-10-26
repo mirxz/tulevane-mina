@@ -47,6 +47,8 @@
   }
   // Pensionile minek: tavaline pensioniiga miinus soodustus (1. vaade).
   const retAge = (input) => P.retirementYears(input) - (input.soodus || 0);
+  // 66+ sammu vanus: varasem II või III samba fondipensioni algus (kui on valitud).
+  const firstFund = (input) => Math.min(input.fundFrom || Infinity, input.fundFrom3 || Infinity) === Infinity ? undefined : Math.min(input.fundFrom || Infinity, input.fundFrom3 || Infinity);
   const SP_STEP = 9;
   // Teekonna järjekord: eripensioni samm on oma vanuse kohal (enne sama vanuse tavalist sammu), teised indeksi järgi.
   function stepOrder(i) {
@@ -114,19 +116,20 @@
     '<circle class="h-ring" cx="8" cy="8" r="7.4" stroke-width="1.2"/><path class="h-q" d="m5.25497 5.786c-.00137.03229.00389.06453.01543.09472.01155.03019.02916.05769.05173.08083.02257.02313.04964.04141.07954.05369.02989.01229.06199.01833.0943.01776h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217c.00105.06561.02786.12817.07463.1742.04677.04602.10976.07181.17537.0718h.811c.06631 0 .1299-.02634.17678-.07322.04688-.04689.07322-.11048.07322-.17678v-.105c0-.718.273-.927 1.01-1.486.60903-.463 1.24403-.977 1.24403-2.056 0-1.511-1.27603-2.241-2.67303-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>';
   const SVG_REST = {
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
     lock: '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
     bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   };
   Object.assign(SVG, SVG_REST);
   const EMOJI = { '🙂': 'user', '🧍': 'user', '👫': 'users', '👨‍👩‍👧': 'users', '🔓': 'lockOpen', '💼': 'briefcase', '🧳': 'briefcase',
     '🏖️': 'sun', '🌳': 'tree', '🛒': 'cart', '🏁': 'flag', '⚓': 'anchor', '🔄': 'refresh', '♻️': 'refresh', '🚫': 'ban', '🌱': 'sprout',
-    '💰': 'coins', '🗓️': 'calendar', '📜': 'file', '🥔': 'home', '🏡': 'home', '✈️': 'plane', '🛋️': 'sofa', '🥩': 'utensils', '⛽': 'fuel',
+    '💰': 'coins', '💸': 'coins', '🗓️': 'calendar', '📜': 'file', '🥔': 'home', '🏡': 'home', '✈️': 'plane', '🛋️': 'sofa', '🥩': 'utensils', '⛽': 'fuel',
     '☕': 'coffee', '🏦': 'wallet', '🐷': 'wallet', '🏛️': 'landmark', '💝': 'heart', '🎒': 'bag',
     '🛡️': 'shield', '🎁': 'gift', '🌿': 'leaf', '📈': 'trending', '🧭': 'compass', '🎲': 'dice', '🧸': 'smile', '🌓': 'half', '⏳': 'hourglass', '👶': 'smile', '🎓': 'cap' };
   const ico = (name) => '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (SVG[name] || '') + '</svg>';
   // Asenda dekoratiivsed emojid SVG-ga (elemendid, mille ainus sisu on emoji).
   function svgify(root) {
-    root.querySelectorAll('.choice-emoji, .pot-emoji, .path-dot, .hh-emoji, .chapter-art, .recap li > span:first-child, .pkg-facts li > span:first-child, .pkg-alt > span:first-child').forEach((el) => {
+    root.querySelectorAll('.choice-emoji, .opt-ico, .pot-emoji, .path-dot, .hh-emoji, .chapter-art, .recap li > span:first-child, .pkg-facts li > span:first-child, .pkg-alt > span:first-child').forEach((el) => {
       const k = el.textContent.trim();
       if (EMOJI[k]) el.innerHTML = ico(EMOJI[k]);
     });
@@ -136,9 +139,16 @@
   const chapters = Array.from(document.querySelectorAll('.chapter'));
   const LAST = chapters.length - 1;
   // Minevikuetapid (0–18, 18) ja tööaastad jäävad eraldi etapina välja: kõik on esimeses vaates.
-  const SKIP = new Set([1, 2, 3]); // tööaastate küsimused on esimeses vaates
+  const SKIP = new Set([1, 2]); // tööaastate küsimused on esimeses vaates
   // 55 a samm on loos ainult siis, kui III sambaga liitusid enne 2021 (siis avaneb soodusmaks 55-aastaselt).
-  const skipped = (i) => SKIP.has(i) || (i === 4 && $('p3Joined').value !== 'before') || (i === SP_STEP && $('spHas').value !== 'yes');
+  // 3. samm (II samba varane väljavõtt, KoPS § 43¹) on olemas, kui II sammas on ja pensioniea − 5 (tavaline väljamakse) on vähemalt aasta kaugusel.
+  function p2EarlyOpen() {
+    const by = Math.min(2008, Math.max(1930, parseInt($('birthYear').value, 10) || 1980));
+    const pa = parseInt($('pensionAgeYears').value, 10) || 65;
+    return ((parseFloat($('p2').value) || 0) > 0 || (parseFloat($('p2Rate').value) || 0) > 0) && P.CURRENT_YEAR - by <= pa - 6;
+  }
+  const p3EarlyTaken = () => !!(lastInput && lastInput.p3EarlyAge !== undefined);
+  const skipped = (i) => SKIP.has(i) || (i === 3 && !p2EarlyOpen() && !(lastInput && lastInput.p3EarlyOk)) || (i === 4 && p3EarlyTaken()) || (i === 4 && $('p3Joined').value !== 'before') || (i === SP_STEP && $('spHas').value !== 'yes');
   const shownSteps = () => chapters.map((c, i) => i).filter((i) => !skipped(i)).sort((a, b) => stepOrder(a) - stepOrder(b));
   // Mõõtmise sammunumbrid (src/moot.js SAMMUD) jäävad samaks: tulemus on 9, eripensioni samm (9 DOM-is) ei lähe mõõtmisse.
   const mootSamm = (s) => (s === SP_STEP ? null : s === LAST ? 9 : s);
@@ -176,6 +186,8 @@
     const sex = $('sex').value;
     const rateAt = (a) => (switching && a >= switchAge ? FUNDS[fundNow].r : FUNDS[fund18].r);
     const rFinal = FUNDS[fundNow].r;
+    // III sambal oma fond ja tootlus (mootoris eraldi pott p3Sep, realReturn3).
+    const fund3 = $('fund3Cur').value, r3 = FUNDS[fund3].r;
 
     // III sammas: kas on, mis vanuses avati, sissemakse. Avamise aasta määrab maksureeglid (enne 2021 või hiljem).
     // have: sammas on olemas (liitumise aeg enne/pärast 2021); future: avan hiljem; no: ei ava.
@@ -200,11 +212,15 @@
     const p3Open = p3Kind === 'have'
       ? (p3Before2021 ? 55 : Math.max(60, 2026 - birthYear))
       : Math.max(p3Before2021 ? 55 : 60, p3OpenAge + 5);
-    const p3Age = Math.max(55, currentAge);
+    // III samba varane väljavõtt (3. samm): enne soodusvanust 22% tulumaksuga, kogu sammas korraga. Siis 55 a sammu ei ole.
+    const p3EarlyMax = Math.min(p3Open, pa) - 1;
+    const p3EarlyOk = p3Kind === 'have' && p3Base > 0 && currentAge <= p3EarlyMax;
+    const p3EarlyAge = p3EarlyOk && radio('p3Early') === 'yes' && parseInt($('p3EarlyAge').value, 10) > 0 ? Math.min(p3EarlyMax, Math.max(currentAge, parseInt($('p3EarlyAge').value, 10))) : undefined;
+    const p3Age = p3EarlyAge !== undefined ? p3EarlyAge : Math.max(55, currentAge);
     const p3Allowed = p3Has && p3Age < pa && p3OpenAge < p3Age;
     // Täiendav fondipension on võimalik alles soodusvanusest (enne 2021 liitunul 55, hiljem 60). Varem ainult korraga (22%).
     const p3FundOk = p3Age >= p3Open;
-    let p3Plan = p3Allowed && $('p3Joined').value === 'before' ? (radio('p3plan') || 'keep') : 'keep';
+    let p3Plan = p3EarlyAge !== undefined ? 'lump' : p3Allowed && $('p3Joined').value === 'before' ? (radio('p3plan') || 'keep') : 'keep';
     if (p3Plan === 'fund' && !p3FundOk) p3Plan = 'keep';
     const p3Use = 'spend'; // väljavõetud III samba raha kasutatakse kohe (pensioniks ei jää)
     // Arvutuse plaan: 55-aastase sammu valik või, kui seal jätsid kasvama, pensioniea − 5 sammu valik (fondipension või
@@ -219,17 +235,18 @@
     // simulate lisab III samba sissemakse igal aastal ühisesse rahasse. Eemaldame selle aastatel, kui sammas pole avatud
     // või kui sissemakse läheb väljavõetavale III samba saldole (samaväärne tänane summa, sest mudel on lineaarne).
     // Jooksval aastal sissemaksed ainult ülejäänud kuude eest (sama mis mootoris firstYearShare).
-    const c3At = (a) => (a === currentAge ? c3 * (12 - new Date().getMonth()) / 12 : c3);
+    // III samba makse on nominaalselt sama (mootoris p3Indexed: false), tänastes eurodes kahaneb: sama tegur mis mootoris.
+    const c3At = (a) => (a === currentAge ? c3 * (12 - new Date().getMonth()) / 12 : c3) * P.p3Factor({ p3Indexed: false, inflation: P.INFLATION, birthYear: birthYear }, a);
     let c3Adj = 0;
     for (let a = currentAge; a < pa; a++) {
       // 'fund': sissemaksed kuni pensionini lähevad 55-aastasse fondipensioni potti (vt allpool), mitte pensionieas uude lepingusse.
-      if (a < p3OpenAge || (calcPlan === 'fund' && a < pa) || (calcPlan === 'lump' && a < calcAge)) c3Adj -= c3At(a) / Math.pow(1 + rFinal, a - currentAge + 1);
+      if (a < p3OpenAge || (calcPlan === 'fund' && a < pa) || (calcPlan === 'lump' && a < calcAge)) c3Adj -= c3At(a) / Math.pow(1 + r3, a - currentAge + 1);
     }
     let p3Gross = 0, p3Net = 0, p3Rem = 0, p3Tax = 0;
     const p3Early = {};
     if (calcPlan !== 'keep') {
       let b = p3Base;
-      for (let a = currentAge; a < calcAge; a++) b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3At(a) : 0);
+      for (let a = currentAge; a < calcAge; a++) b = b * (1 + r3) + (a >= p3OpenAge ? c3At(a) : 0);
       if (calcPlan === 'lump') {
         p3Tax = calcAge >= p3Open ? 0.10 : 0.22;
         p3Gross = b; p3Net = b * (1 - p3Tax);
@@ -241,7 +258,7 @@
           const pay = once3 ? (left3 > 0 ? b / left3 : 0) : b / P.fundPensionTerm(T, sex, a);
           b -= pay; p3Gross += pay; p3Net += pay * (a >= p3Open ? 1 : 0.78);
           p3Early[a] = (pay * (a >= p3Open ? 1 : 0.78)) / 12; // enne pensioniiga makstav III samba fondipension kuus (graafikule)
-          b = b * (1 + rateAt(a)) + (a >= p3OpenAge ? c3At(a) : 0); // sissemakse läheb samasse lepingupotti
+          b = b * (1 + r3) + (a >= p3OpenAge ? c3At(a) : 0); // sissemakse läheb samasse lepingupotti
         }
         p3Rem = b; // pensionieas läheb ülejääk ühisesse samba rahasse
       }
@@ -257,12 +274,16 @@
     }
 
     // III samba ülejääk pensionieas → samaväärne tänane summa (simulate kasvatab kõike lõpptootlusega).
-    const p3RemNow = p3Rem / Math.pow(1 + rFinal, Math.max(0, pa - currentAge));
+    const p3RemNow = p3Rem / Math.pow(1 + r3, Math.max(0, pa - currentAge));
 
     const pkg = PACKAGES.find((p) => p.id === radio('pkg')) || PACKAGES[0];
     const household = $('household').value;
     const pkgTotal = packageTotal(pkg, household);
 
+    // II samba varane väljavõtt (3. samm): ainult siis, kui samm on rajal ja valisid „Võtan korraga välja“.
+    const p2Early = p2EarlyOpen() && radio('p2Early') === 'yes' && parseInt($('p2EarlyAge').value, 10) > 0 ? { age: Math.min((parseInt($('pensionAgeYears').value, 10) || 65) - 6, Math.max(currentAge, parseInt($('p2EarlyAge').value, 10))), rejoin: radio('p2EarlyRejoin') === 'yes', save: radio('p2EarlyUse') === 'save' } : undefined;
+    // II võeti varem välja ja uuesti ei liitu: II sammast enam pole, 60 a ja pensioniea II valikuid ei küsita.
+    const p2Gone = !!(p2Early && !p2Early.rejoin);
     return withP3({
       birthYear: birthYear,
       currentAge: currentAge,
@@ -275,8 +296,10 @@
       p3RemNow: p3RemNow, c3Adj: c3Adj,
       p3Pre: (calcPlan === 'keep' ? p3Base : 0) + childNow + p3RemNow + c3Adj,
       p3Before2021: p3Before2021,
-      p2Has: num('p2') > 0 || parseFloat($('p2Rate').value) > 0, // II sammas on, kui summa või sissemakse > 0
+      p2Has: (num('p2') > 0 || parseFloat($('p2Rate').value) > 0) && !p2Gone, // II sammas on, kui summa või sissemakse > 0 ja seda pole varem välja võetud
+      p2Gone: p2Gone, p2Early: p2Early,
       p3Has: p3Has, p3Kind: p3Kind, p3OpenAge: p3OpenAge, p3Allowed: p3Allowed,
+      p3EarlyOk: p3EarlyOk, p3EarlyMax: p3EarlyMax, p3EarlyAge: p3EarlyAge,
       p3Open: p3Open, p3Age: p3Age, p3Plan: p3Plan, p3Use: p3Use, p3CalcPlan: calcPlan, p3CalcAge: calcAge,
       p3Gross: p3Gross, p3Net: p3Net, p3Tax: p3Tax, p3Rem: p3Rem, p3Early: p3Early,
       extraDeposit: p3Plan !== 'keep' && p3Use === 'save' ? p3Net : 0,
@@ -302,7 +325,8 @@
       kids: kidsInput(), // lapsed sünniaja järgi, puue, kes kasutab, kas prognoos sisaldab pensionilisa
       hazard: $('hazard').value, // tervist kahjustav töö (SVPS): 'list1' 10 a, 'list2' 5 a varem
       // SVPS § 3 lisa (TLV-88): nimekirja nr 1 tööaastad ja neist allmaatöö aastad.
-      hazardYears: $('hazard').value === 'list1' ? Math.max(0, Math.min(50, parseInt($('hazardYears').value, 10) || 0)) : 0,
+      // Nimekirja tööaastad: nr 1 annab lisa (hazardSupplement) ja mõlemal on varem mineku tingimus (earlyYears).
+      hazardYears: $('hazard').value !== 'no' ? Math.max(0, Math.min(50, parseFloat($('hazardYears').value) || 0)) : 0,
       civilYears: 0, // ATS § 113: suurendus on SKA prognoosis (juhend), Elukaar seda ei lisa
       rescueYears: $('cRescue').checked ? Math.max(0, Math.min(50, parseInt($('rescueYears').value, 10) || 0)) : 0, // päästeteenistuse staaž (PäästeTS)
       undergroundYears: $('hazard').value === 'list1' ? Math.max(0, Math.min(50, parseInt($('undergroundYears').value, 10) || 0)) : 0,
@@ -320,10 +344,11 @@
       fundNow: fundNow,
       switching: switching, switchAge: switchAge, switchAdj: switchAdj,
       realReturn: FUNDS[fundNow].r,
+      fund3: fund3, realReturn3: r3,
       child: child, childMonthly: childMonthly, child18: child18, childNow: childNow,
-      payout: radio('payout'),
+      payout: p2Gone ? 'grow' : radio('payout'),
       // Tegelik väljamakse viis: kui 60-aastaselt jätkad kasvatamist, otsustad pensionieas.
-      method: radio('payout') === 'grow' ? (radio('payoutPa') || 'grow') : radio('payout'),
+      method: p2Gone ? 'grow' : radio('payout') === 'grow' ? (radio('payoutPa') || 'grow') : radio('payout'),
       // III samba valik pensionieas (kui 55-aastaselt ei võetud välja).
       p3pa: radio('p3pa') === 'grow' ? (radio('p3paPa') || 'grow') : (radio('p3pa') || 'grow'),
       p3At60: radio('p3pa') || 'grow',
@@ -333,7 +358,8 @@
       half: $('spHas').value !== 'yes' && radio('p1Mode') === 'half' ? parseInt(radio('defer') || '0', 10) : 0,
       contract: radio('contract'),
       // „Kasvatan edasi“ pensionieas: fondipensioni algus (61+ samm); tühi = kasvatan edasi.
-      fundFrom: $('fundFrom').value ? parseInt($('fundFrom').value, 10) : undefined,
+      fundFrom: $('fundFrom').value ? parseInt($('fundFrom').value, 10) : undefined, // II samba fondipensioni algus
+      fundFrom3: $('fundFrom3').value ? parseInt($('fundFrom3').value, 10) : undefined, // III samba oma (eraldi leping)
       contract3: radio('contract3'), // III samba fondipension on eraldi leping (Pensionikeskus: täiendav fondipension)
       pkg: pkg,
       pkgTotal: pkgTotal,
@@ -344,7 +370,7 @@
 
   // Lisastsenaarium: raha jääb fondi, lepingut ega ühekordset väljamakset pole. pension.js katab siis vajaduse
   // lisaväljamaksetega sambast (10% tulumaks) ja ülejäänu kasvab edasi.
-  const GROW = { id: 'E', name: 'Jätkan kasvatamist', short: 'Raha jääb fondi, võtad välja ainult nii palju, kui vaja (10% tulumaks).' };
+  const GROW = { id: 'E', name: 'Jätkan kasvatamist', short: 'Raha jääb fondi kasvama, vajadusel võtad osa välja (10% tulumaks).' };
 
   // Stsenaariumid failist pension.js. C nimi loo jaoks: ametlik termin on paindlik pension.
   const SCEN = P.SCENARIOS.map((s) => (s.id === 'C'
@@ -363,7 +389,7 @@
     const sep = { amount: amount, mode: mode, contract: input.contract3 };
     if (input.p3CalcPlan === 'fund') sep.start = input.p3CalcAge;
     // Kasvab edasi, aga 61+ sammus valitud fondipensioni algus: leping alates sellest vanusest.
-    if (mode === 'grow' && input.fundFrom) { sep.mode = 'fund'; sep.start = input.fundFrom; }
+    if (mode === 'grow' && input.fundFrom3) { sep.mode = 'fund'; sep.start = input.fundFrom3; }
     return Object.assign(input, { p3: input.p3 - amount, p3Pre: input.p3Pre - amount, p3Sep: sep });
   }
 
@@ -383,9 +409,18 @@
   // fromToday: „mis oleks, kui alates tänasest selles fondis“ (fondivahetuse korrektsioonita).
   function potAtPension(input, r, fromToday) {
     const pa = P.retirementYears(input) - (input.soodus || 0); // kogumine kestab pensionile minekuni
-    let fund = input.p2 + (fromToday ? input.p3Pre : input.p3) + (input.p3Sep && !fromToday ? input.p3Sep.amount : 0);
-    for (let a = input.currentAge; a < pa; a++) fund = fund * (1 + r) + P.yearlyContribution(input, a);
-    return fund;
+    // II sammas eraldi, et varane väljavõtt (input.p2Early) selle nulliks saaks; III kasvab oma tootlusega (input.realReturn3).
+    const pe = input.p2Early && input.p2Early.age >= input.currentAge && input.p2Early.age < P.retirementYears(input) - 5 ? input.p2Early : null;
+    const r3 = input.p3Sep && input.realReturn3 !== undefined ? input.realReturn3 : r;
+    let f2 = input.p2, rest = fromToday ? input.p3Pre : input.p3, f3 = input.p3Sep && !fromToday ? input.p3Sep.amount : 0;
+    for (let a = input.currentAge; a < pa; a++) {
+      if (pe && a === pe.age) f2 = 0;
+      const stop = pe && a >= pe.age && !(pe.rejoin && a >= pe.age + 5);
+      const p3part = (input.p3Monthly || 0) * 12 * P.p3Factor(input, a);
+      f2 = f2 * (1 + r) + (stop ? 0 : P.yearlyContribution(input, a) - p3part);
+      rest = rest * (1 + r); f3 = f3 * (1 + r3) + p3part;
+    }
+    return f2 + rest + f3;
   }
 
   // ---------- Kulupaketid ----------
@@ -490,11 +525,15 @@
   }
 
   // ---------- Etappide tekstid ----------
+  // 3. sammu viimane vanus: II sammas kuni pensioniea − 6, III sammas kuni soodusvanuse − 1.
+  function earlyEnd(input) {
+    return Math.max(input.currentAge, p2EarlyOpen() ? P.retirementYears(input) - 6 : 0, input.p3EarlyOk ? input.p3EarlyMax : 0);
+  }
   function kicker(input, idx) {
-    const ages = stageAges(P.retirementYears(input), input.spHas ? P.specialStart(input) : null, retAge(input), input.fundFrom)[idx];
+    const ages = stageAges(P.retirementYears(input), input.spHas ? P.specialStart(input) : null, retAge(input), firstFund(input))[idx];
     if (!ages) return '';
     let [a, b] = ages;
-    if (idx === 3) a = Math.max(a, Math.min(input.currentAge, b)); // tööaastad: alates tänasest
+    if (idx === 3) { a = input.currentAge; b = earlyEnd(input); } // samba varane väljavõtt: tänasest kuni viimase võimaliku vanuseni
     const tense = b < input.currentAge ? 'Sinu minevik' : a > input.currentAge ? 'Sinu tulevik' : 'Sinu praegune elu';
     const years = a === b ? String(input.birthYear + a) : (input.birthYear + a) + '–' + (b >= 100 ? '…' : input.birthYear + b);
     const label = a === b ? a + '-aastane' : b >= 100 ? a + '+ a' : a + '–' + b + ' a';
@@ -504,14 +543,46 @@
   function renderTexts(input) {
     const pa = P.retirementYears(input);
     for (let i = 1; i <= 7; i++) { const k = $('k' + i); if (k) k.textContent = kicker(input, i); }
-    chapters[3].dataset.label = Math.min(input.currentAge, 55) + '–55';
+    const lastEarly = earlyEnd(input);
+    chapters[3].dataset.label = input.currentAge === lastEarly ? input.currentAge + ' a' : input.currentAge + '–' + lastEarly;
+    // 3. samm: II samba varane väljavõtt (KoPS § 43¹). Vanuse valik tänasest kuni pensioniea − 6; valik jääb alles, kui mahub.
+    {
+      // Vanuse sisestab inimene ise; abitekst ütleb vahemiku ja mis tuleb järgmisena.
+      const last2 = P.retirementYears(input) - 6;
+      $('p2EarlyAgeHint').textContent = 'Vanus ' + input.currentAge + '–' + last2 + '.';
+      $('p2EarlyPart').classList.toggle('d-none', !p2EarlyOpen());
+      // Sissejuhatus ütleb, mõlema samba valik on samas sammus (III osa jääb muidu II lisaküsimuste alla märkamata).
+      const both = p2EarlyOpen() && input.p3EarlyOk;
+      $('earlyIntro').textContent = both ? 'Siin on kaks valikut: II sammas ja allpool III sammas. Enamasti tasub mõlemad kasvama jätta.'
+        : input.p3EarlyOk ? 'III samba raha saad välja võtta igal ajal, enne soodusvanust 22% tulumaksuga.' : 'II samba raha saad enne pensioniiga välja võtta ainult ühe korra.';
+      $('p3EarlyPart').classList.toggle('d-none', !input.p3EarlyOk);
+      if (input.p3EarlyOk) {
+        $('p3EarlyAgeHint').textContent = 'Vanus ' + input.currentAge + '–' + input.p3EarlyMax + '.';
+        $('p3EarlyMore').classList.toggle('d-none', radio('p3Early') !== 'yes');
+        $('p3EarlyTxt').textContent = 'Kogu III sammas korraga, 22% tulumaksuga. Soodusmaks (10%) algab alles ' + input.p3Open + '-aastaselt.';
+        $('p3EarlyNote').classList.toggle('d-none', input.p3EarlyAge === undefined);
+        $('p3EarlyNote').innerHTML = input.p3EarlyAge !== undefined ? '<strong>' + input.p3EarlyAge + '-aastaselt</strong> on III sambas u ' + eur(input.p3Gross) + ', tulumaksu läheb ' + eur(input.p3Gross - input.p3Net) + ' ja kätte saad <strong>' + eur(input.p3Net) + '</strong>. Pensioniks sellest raha ei jää.' +
+          (input.p3Monthly > 0 ? ' Kui maksad III sambasse edasi, koguneb sinna uus raha, mida kasutad pensionieas.' : '') + (input.p3Before2021 ? ' ' + input.p3Open + '-aastaselt seda valikut enam ei küsita.' : '') : '';
+      }
+      const on = radio('p2Early') === 'yes';
+      $('p2EarlyMore').classList.toggle('d-none', !on);
+      $('p2EarlyTxt').textContent = '22% tulumaksuga, ainult üks kord (alates 01.11.2026). Sinu ja riigi sissemaksed lõpevad, uuesti saab liituda 5 aasta pärast.';
+      const e = input.p2Early ? P.simulate(input, T, SCEN[0]).p2Early : null;
+      $('p2EarlyNote').classList.toggle('d-none', !e);
+      $('p2EarlyNote').innerHTML = e ? '<strong>' + e.age + '-aastaselt</strong> on II sambas u ' + eur(e.gross) + ', tulumaksu läheb ' + eur(e.tax) + ' ja kätte saad <strong>' + eur(e.net) + '</strong>. ' +
+        (e.save ? 'Raha on pensionini hoiusel.' : 'Pensioniks sellest raha ei jää.') + (e.rejoin ? ' Sissemaksed algavad uuesti ' + (e.age + 5) + '-aastaselt nullist.' : ' II sambasse enam ei koguta, seega pensioniks jääb vähem.') +
+        ((input.kids || {}).u3 > 0 ? ' Riigi lisamakse lapse eest lõpeb samuti' + (e.rejoin ? '; pärast uuesti liitumist Elukaar seda ei arvesta (eeldus).' : '.') : '') +
+        ' Riiklikku pensioni see ei muuda.' : '';
+    }
     chapters[5].dataset.label = (pa - 5) + ' a'; // rajal vanus aastates („60 a“)
     chapters[6].dataset.label = retAge(input) + ' a';
     // Sama vanus kahel sammul (nt 5 a varem pensionile = pensioniiga − 5): eristame sõnaga.
     const same = retAge(input) === pa - 5;
     chapters[5].dataset.sub = same ? 'sambad' : ''; chapters[6].dataset.sub = same ? 'pension' : '';
     // Kui sammast pole (summa ja sissemakse 0), on selle valikud keelatud ja kollane märkus ütleb, miks.
-    const noneTxt = (n) => '<strong>' + n + ' sambas ei ole kogutud midagi, valik puudub.</strong> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda ' + n + ' samba summat<span class="visually-hidden"> sinu andmetes</span></button>';
+    const noneTxt = (n) => n === 'II' && input.p2Gone
+      ? '<strong>II samba võtsid ' + input.p2Early.age + '-aastaselt välja ja uuesti ei liitu, valik puudub.</strong> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="3">Muuda II samba valikut<span class="visually-hidden"> tööaastatel</span></button>'
+      : '<strong>' + n + ' sambas ei ole kogutud midagi, valik puudub.</strong> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda ' + n + ' samba summat<span class="visually-hidden"> sinu andmetes</span></button>';
     const lockSet = (id, off) => { $(id).disabled = off; $(id).classList.toggle('is-off', off); };
     // 60: II samba osa
     lockSet('p2At60Set', !input.p2Has);
@@ -525,12 +596,14 @@
     $('p3At60Note').classList.toggle('d-none', input.p3Has && !p3Done);
     $('p3At60Note').innerHTML = !input.p3Has
       ? noneTxt('III')
-      : p3Done ? 'III samba kohta tegid valiku juba ' + input.p3Age + '-aastaselt: <strong>' + (input.p3Plan === 'lump' ? 'võtsid selle korraga välja' : 'fondipension') + '</strong>. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda III samba valikut<span class="visually-hidden"> ' + input.p3Age + '-aastaselt</span></button>' : '';
-    // 60 a samm: teine otsustuskoht, kui 55 a samm on loos, muidu esimene.
-    $('h5').textContent = (pa - 5) + '-aastaselt: ' + (skipped(4) ? 'esimene' : 'teine') + ' otsustuskoht';
+      : p3Done ? 'III samba kohta tegid valiku juba ' + input.p3Age + '-aastaselt: <strong>' + (input.p3Plan === 'lump' ? 'võtsid selle korraga välja' : 'fondipension') + '</strong>. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="' + (input.p3EarlyAge !== undefined ? 3 : 4) + '">Muuda III samba valikut<span class="visually-hidden"> ' + input.p3Age + '-aastaselt</span></button>' : '';
+    // Otsustuskohtade järjekord: varane väljavõtt (samm 3), 55 a (samm 4) ja pa − 5 (samm 5), ainult need, mis on loos.
+    const ORD = ['esimene', 'teine', 'kolmas'], nth = (i) => ORD[[3, 4, 5].filter((j) => j < i && !skipped(j)).length];
+    $('h4').textContent = '55-aastaselt: ' + nth(4) + ' otsustuskoht';
+    $('h5').textContent = (pa - 5) + '-aastaselt: ' + nth(5) + ' otsustuskoht';
     $('p60Txt').innerHTML = (input.birthYear + pa - 5) + '. aastal oled ' + (pa - 5) + '-aastane, 5 aastat enne pensioniiga. Siis avaneb soodustingimustel II samba väljavõtmise võimalus. Väljamakse algab Elukaares pensionieas. Kui hakkad raha välja võtma, lõpevad II samba sissemaksed igaveseks.';
     // 66+ samm: kui kasvatad edasi ja valisid fondipensioni alguse, on samm rajal selle vanuse kohal (nagu soodustuse samm).
-    chapters[7].dataset.label = input.fundFrom ? input.fundFrom + ' a' : (retAge(input) + 1) + '+ a';
+    chapters[7].dataset.label = firstFund(input) ? firstFund(input) + ' a' : (retAge(input) + 1) + '+ a';
     // Pensioni samm: soodustingimustel pensionile (1. vaate valik) asendab tavalise pensioniea sammu.
     const ret = retAge(input);
     $('h6').textContent = input.flexEarly > 0 ? 'Paindlik pension varem' : input.soodus > 0 ? 'Soodustingimustel pensionile' : 'Pensioniiga';
@@ -539,7 +612,7 @@
     {
       const wu = $('workUntil'), cur = input.workUntil !== undefined ? input.workUntil : input.soodus > 0 ? pa : ret + 1;
       const opts = []; for (let a = ret + 1; a <= Math.max(pa + 5, 75); a++) opts.push(a);
-      const html = opts.map((a) => '<option value="' + a + '"' + (a === cur ? ' selected' : '') + '>' + a + '-aastaseks (' + (input.birthYear + a) + ')' + (a === pa ? ', tavaline pensioniiga' : '') + '</option>').join('');
+      const html = opts.map((a) => '<option value="' + a + '"' + (a === cur ? ' selected' : '') + '>' + a + '-aastaseni (' + (input.birthYear + a) + ')' + (a === pa ? ', tavaline pensioniiga' : '') + '</option>').join('');
       if (wu.dataset.k !== ret + ':' + pa) { wu.innerHTML = html; wu.dataset.k = ret + ':' + pa; }
       $('workUntilWrap').classList.toggle('d-none', !input.workOn);
       const acc = P.workAccrual(input.grossMonthly, input.p2Rate > 0, input.p2Rate > 0);
@@ -584,11 +657,15 @@
         else if (resLaw > 0) extra.push('<strong>Päästja suurendus:</strong> suurendus (+' + Math.round(resLaw * 100) + '%) kehtib kuni 2043. a veebruarini, sinu pensioniaastal (' + (input.birthYear + ret) + ') enam mitte.');
         // Ootetoetus ja suurendus nõuavad päästeteenistusest lahkumist; laste eest varem saadud pension töötamist ei piira.
         const kidsPension = kidsYn && input.kids.earlyUser === 'me' && input.rescueBasis !== 'toetus';
+        // Spetsifikatsiooni p 6 (TLV-105): II samba väljamakse avaldus lõpetab sissemaksed, ka riigi 4%.
         extra.push('<strong>Töö:</strong> ootetoetust ja päästja suurendust makstakse ainult siis, kui sa ei tööta päästjana. Muul erialal võid edasi töötada.' +
+          (input.p2Has ? ' Kui töötad, ära alusta II samba väljamakseid enne töö lõppu: väljamakse avaldusega lõpevad sinu ja riigi sissemaksed (sh riigi 4%).' : '') +
           (kidsPension ? ' Laste eest varem saadud vanaduspensioni kõrvalt võid töötada, sh ka päästjana: pension jääb, ainult ootetoetust selle ajal ei maksta.' : ''));
       }
       const hzM = P.hazardSupplement(input);
-      if (hzM > 0) extra.push('<strong>Nimekiri nr 1:</strong> ' + input.hazardYears + ' a tööd lisab vanaduspensionile u ' + eur(hzM) + ' kuus (SVPS § 3).' + (input.hazardYears < 10 ? ' Varem minekuks on vaja vähemalt 10 aastat, kontrolli oma õigust Sotsiaalkindlustusametist.' : ''));
+      if (hzM > 0) extra.push('<strong>Nimekiri nr 1:</strong> ' + input.hazardYears + ' a tööd lisab vanaduspensionile u ' + eur(hzM) + ' kuus (SVPS § 3).' + (input.hazardYears < 10 ? ' Varem minekuks on vaja vähemalt 10 aastat, seega varem pensionile minekut nimekirja eest ei arvesta.' : ''));
+      const hz2 = input.hazard === 'list2' ? parseFloat($('hazardYears').value) : NaN;
+      if (hz2 >= 0 && hz2 < 12.5) extra.push('<strong>Nimekiri nr 2:</strong> varem minekuks on vaja vähemalt 12,5 aastat nimekirja tööd, sul ' + hz2.toLocaleString('et-EE') + '. Seepärast ei arvesta me nimekirja eest varem pensionile minekut.');
       if (civInc > 0) extra.push('<strong>Ametnik:</strong> teenistusstaaž ' + input.civilYears + ' a suurendab vanaduspensioni ' + Math.round(civInc * 100) + '%.');
       // Nupp „Muuda varem pensionile minekut“ märkuse lõppu (pärast loendit).
       const btnAt = sNote.indexOf(' <button'), btn = btnAt >= 0 ? sNote.slice(btnAt) : '';
@@ -632,7 +709,6 @@
     const kn = input.kids.b1991 + input.kids.b2012 + input.kids.b2013 + input.kids.b2021 + input.kids.bUnknown;
     $('kidsDetails').classList.toggle('d-none', $('kidsHas').value !== 'yes');
     renderKids();
-    $('kidsU3Wrap').classList.toggle('d-none', !(input.kids.u3 > 0));
     // Kaks eraldi õigust: valik avaneb ainult siis, kui õigus sinu laste järgi tekib.
     const asMe = Object.assign({}, input, { kids: Object.assign({}, input.kids, { earlyUser: 'me', supUser: 'me', user: 'me' }) });
     $('kidsEarlyWrap').classList.toggle('d-none', !(P.earlyYears({ kids: asMe.kids }) > 0));
@@ -640,16 +716,20 @@
     const supMe = P.childSupplement(asMe) > 0, iiMe = P.childPillar2(asMe) > 0;
     $('kidsSupWrap').classList.toggle('d-none', !(supMe || iiMe));
     document.querySelector('label[for="kidsSupUser"]').textContent = supMe && iiMe ? 'Pensionilisa või II samba lisamakset saab' : iiMe ? 'II samba lisamakset saab' : 'Pensionilisa saab';
-    const sup = P.childSupplement(input), ii2 = P.childPillar2(input);
+    const sup = P.childSupplement(input);
     // Kas SKA prognoos sisaldab juba laste pensionilisa: „jah“ → ei lisa, „ei“ → lisame, „ei tea“ → ei lisa (ettevaatlik).
     $('kidsForecastWrap').classList.toggle('d-none', !(sup > 0));
-    const guess = input.kids.u3Left.some((v) => v === undefined);
-    $('kidsU3Hint').textContent = ii2 > 0
-      ? 'Alla 3-aastase lapse eest maksab riik II sambasse veel u ' + eur(ii2) + ' (' + P.CHILD_II_MONTHLY[P.CURRENT_YEAR].toLocaleString('et-EE', { minimumFractionDigits: 2 }) + ' € kuus kuni 3-aastaseks saamiseni' + (guess ? '; ilma sünnikuuta eeldame 18 kuud' : '') + ').'
-      : 'Riik maksab II sambasse ainult II sambas olevale vanemale.';
+    // Riigi II samba lisamakse (alla 3-aastase lapse eest) on arvutuses sees; eraldi summat sammus „Sina“ ei näidata (Kadi 24.10).
     const why = [];
-    const l1 = input.hazard === 'list1';
-    $('hazardYearsWrap').classList.toggle('d-none', !l1);
+    const l1 = input.hazard === 'list1', l2 = input.hazard === 'list2';
+    // Nimekirja tööaastad: nr 1 annab pensionilisa (SVPS § 3) ja varem minekuks on vaja 10 a; nr 2 lisa ei anna, aga varem
+    // minekuks on vaja 12,5 a (abi.js „hazard“ tabel). Nr 2 aastaid arvutus ei kasuta, ainult hoiatus.
+    $('hazardYearsWrap').classList.toggle('d-none', !(l1 || l2));
+    const hzN = l1 ? 1 : 2, hzNeed = l1 ? 10 : 12.5, hzYrs = parseFloat($('hazardYears').value);
+    document.querySelector('label[for="hazardYears"]').firstChild.textContent = 'Mitu aastat töötasid nimekirja nr ' + hzN + ' tööl? ';
+    $('hazardYearsHint').textContent = (l1 ? 'Iga aasta lisab pensionile 3,1% aastahindest. ' : 'Nimekirja nr 2 töö eest pensionilisa pole. ') +
+      'Varem minekuks on vaja vähemalt ' + hzNeed.toLocaleString('et-EE') + ' aastat nimekirja tööd ja ' + (l1 ? 20 : 25) + ' aastat staaži kokku.' +
+      (hzYrs >= 0 && hzYrs < hzNeed ? ' ' + hzYrs.toLocaleString('et-EE') + ' aastast ei piisa, seega varem pensionile minekut nimekirja eest ei arvesta.' : '');
     $('undergroundWrap').classList.toggle('d-none', !l1);
     const hz = P.hazardSupplement(input);
     const kidsY = P.earlyYears({ kids: input.kids }), hazY = P.earlyYears({ kids: {}, hazard: input.hazard, hazardYears: input.hazardYears });
@@ -825,7 +905,7 @@
     }
     $('paIIINote').classList.toggle('d-none', p3Open && input.p3At60 === 'grow' && !sameAge);
     $('paIIINote').innerHTML = !input.p3Has ? noneTxt('III') : '<strong>III sammas:</strong> ' + (!input.p3Has ? ''
-      : !p3Open ? 'valiku tegid ' + input.p3Age + '-aastaselt: ' + (input.p3Plan === 'lump' ? 'võtsid korraga välja' : 'fondipension') + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="4">Muuda III samba valikut<span class="visually-hidden"> ' + input.p3Age + '-aastaselt</span></button>'
+      : !p3Open ? 'valiku tegid ' + input.p3Age + '-aastaselt: ' + (input.p3Plan === 'lump' ? 'võtsid korraga välja' : 'fondipension') + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="' + (input.p3EarlyAge !== undefined ? 3 : 4) + '">Muuda III samba valikut<span class="visually-hidden"> ' + input.p3Age + '-aastaselt</span></button>'
       : (sameAge && input.p3At60 === 'grow' ? 'valiku tegid eelmises sammus (' + (pa - 5) + ' a): ' : 'valiku tegid ' + (pa - 5) + '-aastaselt: ') + { grow: 'kasvatan edasi', lump: 'võtad korraga välja', fund: 'fondipension' }[input.p3At60] + '. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="5">Muuda III samba valikut<span class="visually-hidden"> ' + (pa - 5) + '-aastaselt</span></button>');
     // Pensionieas: täis kohe, pool N aastat või edasi N aastat (p1Mode). Aastad on raadio „defer“ (0 = kohe täis).
     const isHalf = !!input.half;
@@ -834,7 +914,10 @@
     document.querySelectorAll('input[name=p1Mode]').forEach((el) => { el.checked = el.value === mode; });
     $('p1FullTxt').textContent = eur(input.p1Monthly) + ' kuus enne maksu, kohe ' + pa + '-aastaselt';
     $('p1HalfTxt').textContent = eur(input.p1Monthly / 2) + ' kuus. Teine pool kasvab nagu edasilükkamisel';
-    $('p1DeferTxt').textContent = 'Kuni ' + (pa + 5) + '-aastaseni: ' + eur(input.p1Monthly * (1 + P.DEFERRAL_INCREASE[5])) + ' kuus';
+    // Kui töötad edasi, näita ka edasilükkamist töö lõpuni (siis elad palgast ja pension tõuseb), mitte ainult kõige pikemat.
+    const workTo = input.workOn ? (input.workUntil !== undefined ? input.workUntil : retAge(input) + 1) : 0, dWork = Math.min(5, workTo - pa);
+    $('p1DeferTxt').textContent = (dWork > 0 && dWork < 5 ? 'Töö lõpuni (' + workTo + '-aastaseni): ' + eur(input.p1Monthly * (1 + P.DEFERRAL_INCREASE[dWork])) + ' kuus. ' : '') +
+      'Kõige kauem ' + (pa + 5) + '-aastaseni: ' + eur(input.p1Monthly * (1 + P.DEFERRAL_INCREASE[5])) + ' kuus';
     $('deferYearsWrap').classList.toggle('d-none', mode === 'full');
     $('deferYearsLegend').textContent = isHalf ? 'Mitu aastat võtad poole?' : 'Mitu aastat lükkad edasi?';
     $('deferChoices').innerHTML = [0, 1, 2, 3, 4, 5].map((d) => {
@@ -855,21 +938,21 @@
         : 'Töötad ' + end + '-aastaseks. Iga tööaasta tõstab pensioni' + accTxt + ', see on arvutuses sees.' + (end < pa + curDef ? ' Kui töötad kogu edasilükatud aja, vali ülal „Töötan kuni“ ' + (pa + curDef) + '-aastaseks.' : '');
     }
 
-    // 66+: fondipensioni algus, kui mõni sammas kasvab pensionieas edasi (ainult üks vanus mõlemale sambale).
+    // 66+: fondipensioni algus eraldi II ja III sambale (kumbki on oma leping), kui see sammas kasvab pensionieas edasi.
     const p3Grows = input.p3Has && input.p3Plan === 'keep' && input.p3pa === 'grow';
-    const anyGrow = (input.p2Has && input.method === 'grow') || p3Grows;
-    $('fundFromWrap').classList.toggle('d-none', !anyGrow);
-    if (anyGrow) {
-      const ff = $('fundFrom'), from = retAge(input) + 1, cur = input.fundFrom;
-      const k = from + ':' + input.birthYear;
-      if (ff.dataset.k !== k) {
+    const p2Grows = input.p2Has && input.method === 'grow';
+    [['fundFrom', p2Grows, input.fundFrom], ['fundFrom3', p3Grows, input.fundFrom3]].forEach(([id, on, cur]) => {
+      $(id + 'Wrap').classList.toggle('d-none', !on);
+      const ff = $(id), from = retAge(input) + 1, k = from + ':' + input.birthYear;
+      if (on && ff.dataset.k !== k) {
         const opts = ['<option value="">Ei hakka, kasvatan edasi</option>'];
         for (let a = from; a <= 85; a++) opts.push('<option value="' + a + '"' + (a === cur ? ' selected' : '') + '>' + a + '-aastaselt (' + (input.birthYear + a) + ')</option>');
         ff.innerHTML = opts.join(''); ff.dataset.k = k;
       }
-    }
+    });
+    $('fundFromHint').classList.toggle('d-none', !(p2Grows || p3Grows));
     let lockMsg = '';
-    if (!input.p2Has) lockMsg = 'II sambas ei ole kogutud midagi, fondipensioni lepingu valik puudub.';
+    if (!input.p2Has) lockMsg = input.p2Gone ? 'II samba võtsid varem välja, fondipensioni lepingu valik puudub.' : 'II sambas ei ole kogutud midagi, fondipensioni lepingu valik puudub.';
     else if (input.method === 'grow' && !input.fundFrom) lockMsg = 'Kasvatad edasi, nii et fondipensioni lepingut pole. Raha kasvab fondis ja võtad välja ainult nii palju, kui kuus vaja (10% tulumaks). Kui tahad hiljem fondipensioni, vali ülal algusaasta.';
     else if (input.method === 'lump') lockMsg = 'Võtsid samba raha korraga välja, nii et fondipensioni lepingut pole vaja. Raha on hoiusel ja kasutad seda vajaduse järgi.';
     // II ja III samba fondipension on eraldi lepingud (Pensionikeskus): kumbagi saab valida eraldi.
@@ -880,7 +963,7 @@
     const off = !!lockMsg && !p3Fund;
     // Lukus: kaarte ei näita, vaid selgitab ja viib sinna, kus otsus tehakse.
     $('contractLocked').innerHTML = p3Fund && lockMsg
-      ? (!input.p2Has ? 'II sambas ei ole kogutud midagi.' : (input.method === 'lump' ? 'II samba võtsid korraga välja' : 'II sammas kasvab edasi') + ', seal fondipensioni lepingut pole.' + goto)
+      ? (!input.p2Has ? (input.p2Gone ? 'II samba võtsid varem välja.' : 'II sambas ei ole kogutud midagi.') : (input.method === 'lump' ? 'II samba võtsid korraga välja' : 'II sammas kasvab edasi') + ', seal fondipensioni lepingut pole.' + goto)
       : !input.p2Has ? noneTxt('II') : lockMsg + (lockMsg ? goto : '');
     $('contractLocked').classList.toggle('d-none', !lockMsg);
     $('contractSet').disabled = !!lockMsg;
@@ -890,7 +973,7 @@
     $('contract3Set').classList.toggle('d-none', !p3Fund);
     // Pealkiri II valikule ainult siis, kui mõlemad valikud on näha.
     $('contractLegend').className = !lockMsg && p3Fund ? 'form-label' : 'visually-hidden';
-    $('h7').textContent = input.fundFrom && input.method === 'grow'
+    $('h7').textContent = (input.fundFrom && p2Grows) || (input.fundFrom3 && p3Grows)
       ? 'Fondipension algab: mis lepinguga?'
       : off ? 'Pensionipõlv: kuidas raha kestab?' : 'Pensionipõlv: kuidas fondipension kestab?';
   }
@@ -898,11 +981,14 @@
   function renderPotBar(input) {
     const pa = P.retirementYears(input);
     const p1 = input.p1Monthly * (1 + P.DEFERRAL_INCREASE[input.deferral] + P.DEFERRAL_INCREASE[input.half || 0] / 2);
+    // Sambad ja hoius pensionile minnes sama arvutusega mis tulemus: korraga välja võetud raha (pensioniea − 5, III 55 a, II varem)
+    // on hoiusel, mitte sammastes.
+    const sim = P.simulate(input, T, scenarioFor(input)), at = sim.rows.find((x) => x.age === retAge(input)) || sim.rows[0];
     const items = [
-      ['🏦', eur(potAtPension(input, input.realReturn)), 'sammastes ' + retAge(input) + '-aastaselt'],
+      ['🏦', eur(at.pot), 'sammastes ' + at.age + '-aastaselt'],
       // Eripensioniga: pensionieas makstakse suurem kahest (pension.js).
       input.spMonthly > input.p1Monthly ? ['🏛️', eur(input.spMonthly) + ' /kuus', 'eripension (enne tulumaksu, suurem kahest)'] : ['🏛️', eur(p1) + ' /kuus', 'riiklik pension (enne tulumaksu)' + (input.spMonthly > 0 ? ', suurem kahest' : '')],
-    ].concat(input.extraDeposit > 0 ? [['🐷', eur(input.extraDeposit), 'tavalisel hoiusel (III sambast välja võetud)']] : []).concat([
+    ].concat(at.deposit >= 1 ? [['🐷', eur(at.deposit), 'hoiusel (sambast välja võetud, pärast tulumaksu)']] : []).concat([
       ['🛒', visited.has(8) ? eur(input.needMonthly) + ' /kuus' : 'valimata', 'kulud' + (visited.has(8) ? ' (' + input.pkg.name + (input.edited ? ', muudetud' : '') + ')' : '')],
     ]);
     $('potBar').innerHTML = items.map((x) => '<div class="pot-item"><span class="pot-emoji" aria-hidden="true">' + x[0] + '</span><span><strong>' + x[1] + '</strong><small>' + x[2] + '</small></span></div>').join('');
@@ -919,7 +1005,16 @@
     else parts.push('Sinu kulud (' + need + ') on kaetud <strong>kuni ' + r.coversNeedUntil + '. eluaastani</strong>.');
     if (r.moneyEndAge === null) parts.push('Samba raha ei saa enne 100. eluaastat otsa.');
     else parts.push('Samba ja hoiuse raha lõpeb ' + r.moneyEndAge + '-aastaselt, edasi jääb riiklik pension ' + eur(r.incomeAfterMoney) + ' kuus.');
-    parts.push('<strong>Elu lõpuni</strong> (' + r.horizonAge + '. eluaastani) kannab see plaan kuni <strong>' + eur(r.sustainable) + ' kuus</strong>.');
+    // „?“ selgitus sinu numbritega: kust „elu lõpuni“ summa ja vanus tulevad.
+    const p1Row = r.rows.find((x) => x.i1g > 0.5);
+    ABI.sustainable = { title: 'Kuidas see summa tekib?', html:
+      '<p><strong>' + eur(r.sustainable) + ' kuus</strong> on suurim kuukulu, mille juures sinu raha jätkub ' + r.horizonAge + '. eluaastani. Arvutame selle sinu valikutega:</p>' +
+      '<ul>' + (p1Row ? '<li>riiklik pension ' + eur(p1Row.i1g) + ' kuus enne tulumaksu, alates ' + p1Row.age + '-aastaselt;</li>' : '') +
+      '<li>sammastes u ' + eur(potAtPension(input, input.realReturn)) + ' pensionile minnes; raha kasvab valitud tootlusega;</li>' +
+      '<li>väljamaksetelt arvestame tulumaksu ja sinu valitud väljamakse viisi (fondipension, korraga või kasvatan edasi).</li></ul>' +
+      '<p><strong>Miks ' + r.horizonAge + '?</strong> „Elu lõpuni“ on vanus, milleni jõuab elusana 10% sinuvanustest (Statistikaameti elutabel). Plaan peab kandma ka siis, kui elad keskmisest kauem.</p>' +
+      '<p class="mb-0">Sinu kulud on ' + eur(input.needMonthly) + ' kuus. Kui kulud on sellest summast väiksemad, jääb raha üle; kui suuremad, saab samba raha varem otsa.</p>' };
+    parts.push('<strong>Elu lõpuni</strong> (' + r.horizonAge + '. eluaastani) kannab see plaan kuni <strong>' + eur(r.sustainable) + ' kuus</strong>.\u2060' + helpBtn('sustainable'));
     return parts.join(' ');
   }
 
@@ -952,7 +1047,7 @@
       if (input.p3Has && input.p3CalcPlan !== 'keep') tips.push(['iii', 'Jäta III sammas kasvama.',
         (input.p3Use === 'spend'
           ? 'Kui kulutad III samba raha ' + input.p3CalcAge + '-aastaselt ära, pole seda pensionil.'
-          : 'Hoiusel seisev raha kaotab väärtust (arvutuses −1% aastas pärast inflatsiooni), fondis kasvab sinu valitud tootlusega (' + rPct + ' aastas).') +
+          : 'Hoiusel seisev raha kaotab väärtust (arvutuses −1% aastas pärast inflatsiooni), fondis kasvab sinu valitud tootlusega (' + pct(input.realReturn3) + ' aastas).') +
         ' Kui oled selle juba välja võtnud, investeeri see uuesti, ära hoia seda arvel ega padja all.',
         ico('sprout') + ' Jäta III sammas kasvama']);
       box.innerHTML = '<div class="legacy-card"><h3 class="h5">Raha üle ei jää. Mida saaks muuta?</h3>' +
@@ -976,7 +1071,7 @@
       ['care', '🏡', 'Jätan puhvriks hoolduseks', 'Puhver katab ootamatud kulud ja hooldekodu, nii ei pea lapsed maksma.'],
     ];
     box.innerHTML = '<div class="legacy-card"><h3 class="h5">Sul jääb raha üle. Mida sellega teed?</h3>' +
-      '<p class="text-secondary">Kui elad keskmiselt kaua (' + median + '-aastaseks, pooled sinuvanustest elavad kauem), on samba ja hoiuse raha alles umbes <strong>' + eur(left) + '</strong>.</p>' +
+      '<p class="text-secondary">Kui elad keskmiselt kaua (' + median + '-aastaseks, pooled sinuvanustest elavad kauem), on samba ja hoiuse raha alles umbes <strong>' + eur(left) + '</strong>.\u2060' + helpBtn('legacyLeft') + '</p>' +
       '<fieldset><legend class="visually-hidden">Mida ülejäägiga teed?</legend><div class="choices choices-sm">' +
       opts.map((o) => '<label class="choice"><input type="radio" name="legacy" value="' + o[0] + '"' + (legacyChoice === o[0] ? ' checked' : '') + '><span class="choice-body"><span class="choice-emoji" aria-hidden="true">' + o[1] + '</span><strong>' + o[2] + '</strong></span></label>').join('') +
       '</div></fieldset><div class="story-note mt-3" id="legacyNote" aria-live="polite"></div></div>';
@@ -994,28 +1089,50 @@
     note();
   }
 
-  function renderRecap(input, scenario) {
+  function renderRecap(input, scenario, rules) {
     const pa = P.retirementYears(input);
     const lep = (c) => (c === 'yearly' ? 'uue lepinguga igal aastal' : 'ühe lepinguga');
     const items = [
-      [0, '🙂', ['Sündinud ' + input.birthYear, input.p2Has ? 'II sammas ' + eur(input.p2) : '', input.p3Has ? 'III sammas ' + eur(input.p3Base) : '', input.spMonthly > 0 ? 'eripension ' + eur(input.spMonthly) + ' kuus' : ''].filter(Boolean).join(', ')],
+      [0, '🙂', ['Sündinud ' + input.birthYear, input.p2Has || input.p2Gone ? 'II sammas ' + eur(input.p2) : '', input.p3Has ? 'III sammas ' + eur(input.p3Base) : '', input.spMonthly > 0 ? 'eripension ' + eur(input.spMonthly) + ' kuus' : ''].filter(Boolean).join(', ')],
+      [3, '💸', [input.p2Early ? 'Võtan II samba ' + input.p2Early.age + '-aastaselt korraga välja (22% tulumaks)' + (input.p2Early.rejoin ? ', liitun uuesti ' + (input.p2Early.age + 5) + '-aastaselt' : ', uuesti ei liitu') : '',
+        input.p3EarlyAge !== undefined ? 'Võtan III samba ' + input.p3EarlyAge + '-aastaselt korraga välja (22% tulumaks): ' + eur(input.p3Net) : ''].filter(Boolean).join('. ') || 'Ei võta enne pensioniiga midagi välja'],
       [4, '🔓', !input.p3Has ? 'III sammast ei ole' : input.p3Plan === 'keep' ? 'III sammas jääb kasvama' : (input.p3Plan === 'lump' ? 'Võtan III samba ' + input.p3Age + '-aastaselt korraga välja: ' + eur(input.p3Net) : 'Fondipension III sambast alates ' + input.p3Age + '-aastaselt: ' + eur(input.p3Net)) + (input.p3Plan === 'keep' ? '' : input.p3Use === 'save' ? ', hoiusele' : ', kasutan kohe')],
       // Sammast, mida pole (summa ja sissemakse 0), kokkuvõttes ei mainita.
       [5, '🧳', [input.p2Has ? 'II sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan korraga välja', fund: 'fondipension' }[input.payout] : '',
         input.p3Has && input.p3Plan === 'keep' ? 'III sammas: ' + { grow: 'jätkan kasvatamist', lump: 'võtan ' + (pa - 5) + '-aastaselt korraga välja', fund: 'fondipension alates ' + (pa - 5) + ' a' }[input.p3At60] : ''].filter(Boolean).join('. ')],
       [6, '🏛️', (input.p2Has && input.payout === 'grow' ? 'Pensionieas II sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'fondipension' }[input.method] + '. ' : '') +
         (input.p3Has && input.p3Plan === 'keep' && input.p3At60 === 'grow' ? 'III sammas: ' + { grow: 'kasvatan edasi', lump: 'võtan korraga välja', fund: 'fondipension' }[input.p3pa] + '. ' : '') + (input.half ? 'Pool riiklikku pensioni ' + retAge(input) + '-aastaselt, täis ' + (retAge(input) + input.half) + '-aastaselt' : !input.deferral ? 'Riiklik pension ' + retAge(input) + '-aastaselt' + (input.soodus > 0 ? ' (soodustingimustel ' + input.soodus + ' a varem)' + (!input.workOn && input.p3After !== undefined ? ', III samba sissemakse ' + eur(input.p3After) + ' kuus' : '') : '') : 'Riiklik pension ' + (pa + input.deferral) + '-aastaselt (' + input.deferral + ' a hiljem)') +
-        (input.workOn ? ', töötan kuni ' + (input.workUntil !== undefined ? input.workUntil : input.soodus > 0 ? P.retirementYears(input) : retAge(input) + 1) + '-aastaseks' : '')],
-      [7, '🌳', [input.fundFrom ? 'Fondipension alates ' + input.fundFrom + '-aastaselt' : '', input.p2Has ? 'Väljamakse viis: ' + scenario.name.toLowerCase() + (scenario.id === 'C' ? ', fondipension ' + lep(input.contract) : '') : '',
+        (input.workOn ? ', töötan kuni ' + (input.workUntil !== undefined ? input.workUntil : input.soodus > 0 ? P.retirementYears(input) : retAge(input) + 1) + '-aastaseni' : '')],
+      [7, '🌳', [input.fundFrom && input.p2Has && input.method === 'grow' ? (input.fundFrom3 ? 'II samba fondipension' : 'Fondipension') + ' alates ' + input.fundFrom + '-aastaselt' : '',
+        input.fundFrom3 && input.p3Sep && input.p3Sep.start === input.fundFrom3 ? 'III samba fondipension alates ' + input.fundFrom3 + '-aastaselt' : '', input.p2Has ? 'Väljamakse viis: ' + scenario.name.toLowerCase() + (scenario.id === 'C' ? ', fondipension ' + lep(input.contract) : '') : '',
         input.p3Sep && input.p3Sep.mode === 'fund' ? 'III samba fondipension ' + lep(input.contract3) : ''].filter(Boolean).join('. ')],
       [8, '🛒', input.pkg.name + (input.edited ? ' (muudetud)' : '') + ': ' + eur(input.needMonthly) + ' kuus'],
     ];
     // Iga „Muuda“ nupu ekraanilugeja nimi ütleb, mida see muudab (WCAG 2.4.4).
-    const RECAP_WHAT = { 0: 'sinu andmeid', 4: 'III samba valikut 55-aastaselt', 5: 'II ja III samba valikut ' + (pa - 5) + '-aastaselt',
+    const RECAP_WHAT = { 0: 'sinu andmeid', 3: 'samba raha varem välja võtmise valikut', 4: 'III samba valikut 55-aastaselt', 5: 'II ja III samba valikut ' + (pa - 5) + '-aastaselt',
       6: 'riikliku pensioni ja samba raha valikut pensionieas', 7: 'pensionipõlve valikut', 8: 'kulupaketti', 9: 'eripensioni valikut' };
     // Tühjad read (nt sammast pole) ja vahele jäetud sammud jäävad välja; 55 a rida ainult siis, kui III sammas on.
     if (input.spMonthly > 0) items.splice(1, 0, [SP_STEP, '🛡️', 'Eripension ' + P.specialStart(input) + '-aastaselt' + (P.specialStart(input) < P.retirementYears(input) ? (input.spWork ? ', töötan edasi muul kutsealal' + (input.spGross !== undefined ? ', uus palk ' + eur(input.spGross) : '') : ', ei tööta') : '')]);
-    $('recap').innerHTML = items.filter((x) => !skipped(x[0]) && x[2] && !(x[0] === 4 && !input.p3Has)).map((x) => '<li><span aria-hidden="true">' + x[1] + '</span><span class="flex-grow-1">' + x[2] + '</span><button type="button" class="btn btn-link btn-sm p-0" data-goto="' + x[0] + '">Muuda<span class="visually-hidden"> ' + (RECAP_WHAT[x[0]] || chapters[x[0]].dataset.label) + '</span></button></li>').join('');
+    // Read: pealkiri + praegune valik. „Muuda“ avab rea alla sama sammu valikukaardid (tõstetakse DOM-is ümber, vt resPanels).
+    const TITLE = { 3: 'Raha välja enne pensioniiga', 4: 'III sammas ' + input.p3Age + '-aastaselt', 5: (input.p2Has && input.p3Has ? 'II ja III sammas ' : input.p3Has ? 'III sammas ' : 'II sammas ') + (pa - 5) + '-aastaselt', 6: $('h6').textContent,
+      7: 'Pensionipõlv', 8: 'Kulud pensionil', 9: 'Eripension' };
+    const rows = items.filter((x) => !skipped(x[0]) && x[2] && !(x[0] === 4 && !input.p3Has))
+      .map((x) => ({ key: String(x[0]), ico: x[1], title: TITLE[x[0]], now: x[2], what: RECAP_WHAT[x[0]] || chapters[x[0]].dataset.label }));
+    rows[0] = Object.assign(rows[0], { title: 'Sinu andmed' });
+    const fundNow = (k) => FUNDS[k].name.replace(/ \(.*\)$/, '') + ', ' + pct(FUNDS[k].r) + ' aastas pärast inflatsiooni';
+    const fundRows = [];
+    if (input.p2Has) fundRows.push({ key: 'fund2', ico: '📈', title: 'II samba tootlus', now: fundNow(input.fund18), what: 'II samba tootlust' });
+    if (input.p3Has) fundRows.push({ key: 'fund3', ico: '📈', title: 'III samba tootlus', now: fundNow(input.fund3), what: 'III samba tootlust' });
+    rows.splice(1, 0, ...fundRows);
+    // Rea vanus = sammu (otsuse) vanus; otsuste kaardi reeglid lähevad oma rea juurde, ülejäänud reeglid on inforead.
+    const ROW_AGE = { 3: input.currentAge, 4: input.p3Age, 5: pa - 5, 6: retAge(input), 7: firstFund(input) || retAge(input) + 1, 9: input.spHas ? P.specialStart(input) : null };
+    rows.forEach((r) => { const ag = ROW_AGE[r.key]; if (ag !== undefined && ag !== null) { r.age = ag; r.year = input.birthYear + ag; } });
+    rules.forEach((rl) => {
+      const row = rows.find((r) => r.key === rl.key);
+      if (row) (row.rules = row.rules || []).push(rl);
+      else rows.push({ key: 'i' + rows.length, info: true, title: rl.title, now: rl.choice || '', age: rl.age, year: rl.year, rules: [Object.assign({}, rl, { title: '' })] });
+    });
+    drawResRows(rows);
   }
 
   // Otsuste kaart: reeglid ja maksud (Pensionikeskus, SKA 2026) koos kasutaja valikuga.
@@ -1065,15 +1182,13 @@
       pillars ? pillars + ' fondis olev raha (ka fondipension) läheb pärijatele. ' + (input.p2Has ? 'Kui pärija võtab II samba osakud rahana välja, on maks 22%. ' : '') +
         'Eluaegne kindlustuspension pärandada ei saa (v.a garantiiperiood).' : 'Pärijatele läheb hoiusel ja muus varas olev raha.',
       legacy]);
-    // Järjesta vanuse (aasta) järgi; „Elu lõpus“ jääb viimaseks.
-    const yearOf = (x) => { const m = x[0].match(/· (\d{4})/); return m ? +m[1] : 9999; };
-    items.sort((a, b) => yearOf(a) - yearOf(b));
-    $('decisionMap').innerHTML = items.map((x) => {
-      const yr = parseInt((x[0].match(/· (\d{4})/) || [])[1], 10);
-      const past = yr && yr < P.CURRENT_YEAR ? ' <span class="badge text-bg-light">avanenud</span>' : '';
-      return '<li><div class="when">' + x[0] + past + '</div><div class="fw-medium">' + x[1] + '</div><div class="text-secondary small">' + x[2] + '</div>' +
-        (x[3] ? '<div class="map-choice">Sinu valik: <strong>' + x[3] + '</strong></div>' : '') + '</li>';
-    }).join('');
+    // Iga reegel läheb oma sammu rea juurde (Sinu otsused); rida, mida pole, saab reeglist oma inforea.
+    const KEY = (t) => (t === 'Igal ajal enne pensioniiga' ? '3' : t === 'III sammas soodusmaksuga' ? '4' : /^(II sammas ja paindlik|Paindlik riiklik pension$)/.test(t) ? '5'
+      : /^(Riiklik pension täissummas|Riikliku pensioni edasilükkamine)/.test(t) ? '6' : /^Fondipensioni leping/.test(t) ? '7' : t === 'Eripension' ? SP_STEP + '' : null);
+    return items.map((x) => {
+      const yr = parseInt((x[0].match(/· (\d{4})/) || [])[1], 10), age = parseInt(x[0], 10);
+      return { key: KEY(x[1]), when: x[0], age: isNaN(age) ? null : age, year: isNaN(yr) ? null : yr, title: x[1], text: x[2], choice: x[3] };
+    });
   }
 
   function renderCompare(defs, results, activeId) {
@@ -1137,7 +1252,7 @@
       : 'Eripension on väiksem kui pensionäri maksuvaba tulu, seega tulumaksu pole.');
     // Töötamine soodustusega pensioni ajal: palk katab kulud, pension kogub hoiusele.
     const workRows = r.rows.filter((x) => x.work);
-    if (workRows.length) parts.splice(1, 0, 'Kuni ' + (workRows[workRows.length - 1].age + 1) + '-aastaseks töötad: palk katab kulud, riiklik pension kogub hoiusele ja iga tööaasta tõstab pensioni.');
+    if (workRows.length) parts.splice(1, 0, 'Kuni ' + (workRows[workRows.length - 1].age + 1) + '-aastaseni töötad: palk katab kulud, riiklik pension kogub hoiusele ja iga tööaasta tõstab pensioni.');
     // Sild (riiklik pension hiljem): kuni riikliku pensioni alguseni elad sammastest.
     const bridge = r.rows.filter((x) => x.age >= r.pensionStartAge && x.age < r.p1StartAge);
     if (bridge.length) {
@@ -1236,7 +1351,8 @@
     }));
     // Fondipensioni makse = osakud × hind (KoPS § 52³ lg 8, § 60¹ lg 5), seega muutub see koos fondi väärtusega.
     const fundNote = (scenario && ['B', 'C', 'D'].includes(scenario.id)) || (input.p3Sep && input.p3Sep.mode === 'fund') || r.rows.some((x) => x.pre && x.i3 > 0.5)
-      ? '<li>Fondipensioni makse muutub koos fondi väärtusega. Joonis eeldab ühtlast tootlust.</li>' : '';
+      ? '<li>Fondipensioni makse ei sõltu sinu kuludest: fondi summa jagatakse veel tegemata maksete arvuga (KoPS § 60¹ lg 5), seega muutub see koos fondi väärtusega. Joonis eeldab ühtlast tootlust. ' +
+        'Kui makse on suurem kui kulud, läheb ülejääk hoiusele, kus see kaotab väärtust (−1% aastas pärast inflatsiooni), ja seda kasutad hiljem (triibuline osa). Kui ülejääk on suur, võib olla parem jätta raha fondi kasvama („Kasvatan edasi“).</li>' : '';
     const kind = mobile ? 'Kihid' : 'Tulbad';
     const look = '<ul class="mb-0">' +
       '<li>' + kind + ' näitavad iga vanuse kohta, millest kulud kaetakse: ' +
@@ -1276,7 +1392,7 @@
         Object.assign({ type: 'bar', label: 'I sammas', data: rows.map((x) => Math.round(x.i1)), backgroundColor: '#002f63', stack: 'income', yAxisID: 'y', order: 3 }, area('origin')),
         Object.assign({ type: 'bar', label: 'II sammas', data: rows.map((x) => Math.round(x.i2)), backgroundColor: '#00aeea', borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
         Object.assign({ type: 'bar', label: 'III sammas', data: rows.map((x) => Math.round(x.i3)), backgroundColor: dots('#006ce6', '#ffffff'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
-        Object.assign({ type: 'bar', label: 'Hoiuselt (välja võetud raha)', data: rows.map((x) => Math.round(x.dep)), backgroundColor: stripes('#9fd8f0', '#002f63'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
+        Object.assign({ type: 'bar', label: 'Hoiuselt (välja makstud, kulutamata raha)', data: rows.map((x) => Math.round(x.dep)), backgroundColor: stripes('#9fd8f0', '#002f63'), borderColor: '#002f63', borderWidth: 1, stack: 'income', yAxisID: 'y', order: 3 }, area('-1')),
         // Joonte valge „halo“ (laiem valge joon all), et jooned paistaksid ka tumedate tulpade peal. Legendis ja vihjes ei näidata.
         { type: 'line', label: '_halo', data: rows.map((x) => (x.age >= r.pensionStartAge ? (x.needM !== undefined ? x.needM : input.needMonthly) : null)), borderColor: '#fff', borderWidth: 6, pointRadius: 0, stack: 'needHalo', yAxisID: 'y', order: 2, halo: true },
         { type: 'line', label: '_halo', data: rows.map((x) => Math.round(x.alive * 100)), borderColor: '#fff', borderWidth: 6, pointRadius: 0, tension: 0.3, yAxisID: 'y1', order: 2, halo: true },
@@ -1333,15 +1449,41 @@
     $('answer').innerHTML = answerText(mine, input);
     renderMetrics(mine);
     renderChart(nominal ? toNominal(mine) : mine, input, scenario);
+    // Tuleviku eurodes kasvab fond valitud tootlus + hinnatõus (nt 2% → u 4%), II ja III eraldi.
+    const nomR = (r) => (Math.round(((1 + r) * (1 + INFLATION) - 1) * 1000) / 10).toLocaleString('et-EE') + '%';
     $('moneyNote').textContent = nominal
-      ? 'Graafik, tabel ja kokkuvõte on tuleviku eurodes (hinnad tõusevad ' + pct(INFLATION) + ' aastas). Ülejäänud summad on tänastes eurodes.'
+      ? 'Graafik, tabel ja kokkuvõte on tuleviku eurodes (hinnad tõusevad ' + pct(INFLATION) + ' aastas). Fondid kasvavad siis umbes ' +
+        (input.p2Has && input.p3Has && input.realReturn !== input.realReturn3 ? nomR(input.realReturn) + ' (II sammas) ja ' + nomR(input.realReturn3) + ' (III sammas)' : nomR(input.p2Has ? input.realReturn : input.realReturn3)) +
+        ' aastas: sinu valitud tootlus pluss hinnatõus. Ülejäänud summad on tänastes eurodes.'
       : 'Summad on tänastes eurodes.';
     renderLegacy(mine, input);
-    renderMap(input, scenario);
-    renderRecap(input, scenario);
+    renderRecap(input, scenario, renderMap(input, scenario));
+    renderOutcomes(mine);
     renderCompare(defs, results, scenario.id);
     renderWarn(mine, scenario, defs, results);
+    renderSurplus(mine, input, defs, results, scenario);
     svgify($('legacy'));
+  }
+
+  // Fondipension maksab mitu aastat järjest rohkem, kui kulud vajavad: ülejääk seisab hoiusel (−1% aastas). Ütle see välja ja,
+  // kui „Kasvatan edasi“ kannab elu lõpuni rohkem, näita kui palju (sama mootor, GROW stsenaarium võrdlusest).
+  function renderSurplus(mine, input, defs, results, scenario) {
+    const box = $('surplusTip');
+    const sur = (x) => (x.fp > 0.5 && !x.work ? Math.max(0, x.i1 + x.isp + x.i23 + x.dep - x.spend) : 0);
+    let best = null, cur = null;
+    mine.rows.filter((x) => x.age >= mine.pensionStartAge).forEach((x) => {
+      if (sur(x) > 20) { cur = cur || { from: x.age, to: x.age, sum: 0, n: 0 }; cur.to = x.age; cur.sum += sur(x); cur.n++; if (!best || cur.n > best.n) best = cur; } else cur = null;
+    });
+    if (!best || best.n < 3 || !box) { if (box) box.classList.add('d-none'); return; }
+    const gi = defs.findIndex((d) => d.id === 'E'), grow = gi >= 0 ? results[gi] : null;
+    const better = grow && scenario.id !== 'E' && grow.sustainable > mine.sustainable;
+    const row = input.payout === 'grow' ? '6' : '5';
+    box.innerHTML = 'Fondipension maksab ' + best.from + '–' + best.to + '-aastaselt keskmiselt <strong>' + eur(best.sum / best.n) + ' kuus rohkem</strong>, kui kulud vajavad. Ülejääk seisab hoiusel ja kaotab väärtust (−1% aastas pärast inflatsiooni).' +
+      (better ? ' Kui jätad raha fondi („Kasvatan edasi“), kannab plaan elu lõpuni <strong>' + eur(grow.sustainable) + ' kuus</strong> (praegu ' + eur(mine.sustainable) + ').' : '') +
+      // Peatamine (Tuleva: igakuised väljamaksed saab igal ajal peatada ja hiljem jätkata); Elukaar seda eraldi ei arvuta.
+      ' Fondipensioni saad ka peatada ja hiljem uuesti alustada, näiteks kui riiklik pension algab ja katab suurema osa kuludest.' +
+      ' <button type="button" class="btn btn-link p-0 align-baseline" data-open-row="' + row + '">Muuda<span class="visually-hidden"> samba väljamakse viisi</span></button>';
+    box.classList.remove('d-none');
   }
 
   // Kui valitud plaan ei kanna elu lõpuni, ütle see otse välja ja paku parimat väljamakse viisi.
@@ -1405,7 +1547,7 @@
       const c = chapters[i];
       // Lukus: samm on kohustusliku täitmata väljaga sammust hiljem (tekst jääb näha, ikoon heledam, luku märk).
       const locked = fb !== undefined && order.indexOf(i) > order.indexOf(fb);
-      const ages = stageAges(P.retirementYears(input), input.spHas ? P.specialStart(input) : null, retAge(input), input.fundFrom)[i];
+      const ages = stageAges(P.retirementYears(input), input.spHas ? P.specialStart(input) : null, retAge(input), firstFund(input))[i];
       const past = ages && ages[1] < input.currentAge;
       const now = ages && ages[0] <= input.currentAge && ages[1] >= input.currentAge;
       const cls = [i === step ? 'current' : '', visited.has(i) ? 'visited' : '', past ? 'past' : '', now ? 'now' : '', locked ? 'locked' : ''].join(' ');
@@ -1413,9 +1555,9 @@
         '<span class="path-dot" aria-hidden="true">' + c.dataset.icon + '</span>' +
         // Vaadatud olek ka ilma värvita (WCAG 1.4.1): linnuke ja ekraanilugejale tekst.
         (locked ? '<span class="path-check path-lock" aria-hidden="true">' + ico('lock') + '</span>' : visited.has(i) && i !== step ? '<span class="path-check" aria-hidden="true">' + ico('check') + '</span>' : '') +
-        '<span class="path-label">' + (i === SP_STEP ? P.specialStart(input) + ' a' : c.dataset.label) + (c.dataset.sub ? '<span class="path-sub"> ' + c.dataset.sub + '</span>' : '') + '</span>' +
+        '<span class="path-text"><span class="path-label">' + (i === SP_STEP ? P.specialStart(input) + ' a' : c.dataset.label) + (c.dataset.sub ? '<span class="path-sub"> ' + c.dataset.sub + '</span>' : '') + '</span>' +
         '<span class="visually-hidden">' + (i === step ? ', praegune samm' : locked ? ', lukus: täida enne kohustuslikud väljad' : visited.has(i) ? ', vaadatud' : ', vaatamata') + '</span>' +
-        (now ? '<span class="path-now">täna</span>' : '') + '</button></li>';
+        (now ? '<span class="path-now">täna</span>' : '') + '</span></button></li>';
     }).join('');
     // Edenemisriba: täidetud kuni aktiivse sammuni (kaasa arvatud).
     const shown = shownSteps(), pos = shown.indexOf(step);
@@ -1428,22 +1570,26 @@
   const tried = new Set();
   const isShown = (el) => !el.closest('.d-none');
   const isEmpty = (el) => el.value === '' || (el.id === 'spMonthly' && !(parseFloat(el.value) > 0));
-  const missingIn = (i) => [...chapters[i].querySelectorAll('[required]')].filter((el) => isShown(el) && isEmpty(el));
+  // Välja silt ilma „kohustuslik“ märgiseta (veateadetes ja vihjetes).
+  const labelText = (el) => { const l = document.querySelector('label[for="' + el.id + '"]'); if (!l) return el.id; const c = l.cloneNode(true); c.querySelectorAll('.req, .help-btn').forEach((x) => x.remove()); return c.textContent.trim(); };
+  // Sammu kohustuslikud väljad, ka siis, kui sammu valikud on parasjagu tulemuste lehe real (#sb-N).
+  const reqIn = (i) => { const sb = $('sb-' + i); return [...chapters[i].querySelectorAll('[required]')].concat(sb && !chapters[i].contains(sb) ? [...sb.querySelectorAll('[required]')] : []); };
+  const missingIn = (i) => reqIn(i).filter((el) => isShown(el) && isEmpty(el)).concat(i === 0 ? sinaBlockers() : []);
   function markRequired() {
     chapters.forEach((c, i) => {
-      c.querySelectorAll('[required]').forEach((el) => {
+      reqIn(i).forEach((el) => {
         el.setAttribute('aria-required', 'true');
         const bad = isShown(el) && isEmpty(el) && (tried.has(i) || el.dataset.touched === '1');
         el.classList.toggle('is-invalid', bad);
         el.setAttribute('aria-invalid', bad ? 'true' : 'false');
       });
       const note = c.querySelector('.req-note');
-      if (note) note.classList.toggle('d-none', ![...c.querySelectorAll('[required]')].some(isShown));
+      if (note) note.classList.toggle('d-none', i !== 0 && !reqIn(i).some(isShown)); // sammus „Sina“ on alati kohustuslikke välju
       const err = c.querySelector('.req-error'), miss = missingIn(i);
       if (err) {
         const show = tried.has(i) && miss.length > 0;
         err.classList.toggle('d-none', !show);
-        err.innerHTML = show ? 'Enne edasi minekut täida: ' + miss.map((el) => '<a href="#' + el.id + '">' + (document.querySelector('label[for="' + el.id + '"]') || el).textContent.replace('*', '').trim() + '</a>').join(', ') + '.' : '';
+        err.innerHTML = show ? 'Enne edasi minekut täida: ' + miss.map((el) => '<a href="#' + el.id + '">' + labelText(el) + '</a>').join(', ') + '.' : '';
       }
     });
   }
@@ -1453,10 +1599,128 @@
   chapters.forEach((c) => {
     const head = c.querySelector('.chapter-head');
     if (!head) return;
-    head.insertAdjacentHTML('afterend', '<p class="req-note small-muted d-none">Tärniga (<span aria-hidden="true">*</span>) märgitud väljad on kohustuslikud.</p>' +
+    head.insertAdjacentHTML('afterend', '<p class="req-note small-muted d-none">Kohustuslikud väljad on märgitud sõnaga <span class="req">kohustuslik</span>.</p>' +
       '<div class="req-error alert alert-danger d-none" role="alert"></div>');
   });
   document.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('[required]')) { e.target.dataset.touched = '1'; markRequired(); } });
+  // ---------- Tulemuste lehe kiirmuutmine ----------
+  // Iga otsustussammu valikud (kõik peale pealkirja, kohustuslike väljade teadete ja KKK) on ühes ümbrises #sb-N.
+  // „Muuda“ tõstab ümbrise tulemuste lehe rea alla ja „Sulge“/Esc tagasi sammu (eraldi „Valmis“ nuppu pole): üks valikute komplekt, loogika sama.
+  const RES_STEPS = [3, 4, 5, 6, 7, 8, SP_STEP], SB = {};
+  RES_STEPS.forEach((i) => {
+    const c = chapters[i], box = document.createElement('div');
+    box.className = 'step-body'; box.id = 'sb-' + i; SB[i] = box;
+    [...c.children].filter((el) => !el.matches('.chapter-head, .req-note, .req-error, section.faq')).forEach((el) => box.appendChild(el));
+    c.insertBefore(box, c.querySelector(':scope > section.faq'));
+  });
+  const stepBody = (i) => SB[i]; // viide, mitte getElementById: ümberjoonistamise ajal on ümbris dokumendist väljas
+  const sendHome = (sb) => { const c = chapters[+sb.id.slice(3)]; if (sb.parentNode !== c) c.insertBefore(sb, c.querySelector(':scope > section.faq')); };
+  const resOpen = {};
+  let drawSeq = 0;
+  function closePanels() { Object.keys(resOpen).forEach((k) => { delete resOpen[k]; }); document.querySelectorAll('#recap .step-body').forEach(sendHome); }
+  // Fondi tootluse kaardid: sama väärtus mis sammu „Sina“ väljal (II: fundCur, III: fund3Cur); fondivahetust ei küsita.
+  const FUND_SEL = { fund2: 'fundCur', fund3: 'fund3Cur' };
+  function fundCards(key) {
+    const cur = $(FUND_SEL[key]).value;
+    return '<fieldset><legend class="visually-hidden">' + (key === 'fund3' ? 'III' : 'II') + ' samba tootlus pärast inflatsiooni</legend><div class="choices">' + Object.entries(FUNDS).map(([k, f]) =>
+      '<label class="choice"><input type="radio" name="res-' + key + '" value="' + k + '"' + (k === cur ? ' checked' : '') + '><span class="choice-body"><span class="choice-emoji" aria-hidden="true">📈</span>' +
+      '<strong>' + pct(f.r) + ' aastas</strong><small>' + f.name.replace(/ \(.*\)$/, '') + '. ' + f.note + '</small></span></label>').join('') + '</div></fieldset>';
+  }
+  function drawResRows(rows) {
+    // Ümberjoonistamisel jäävad tõstetud valikud alles (väärtused, kuulajad); fookus taastatakse.
+    const a = document.activeElement, box = $('recap');
+    const keepFocus = a && box.contains(a) ? (a.id ? '#' + a.id : a.name ? 'input[name="' + a.name + '"][value="' + a.value + '"]' : null) : null;
+    // Fookusega väli sammu valikutes: blur enne eemaldamist (selle change-käsitleja joonistab read ise uuesti).
+    if (keepFocus && a.closest('.step-body')) { const n = ++drawSeq; a.blur(); if (n !== drawSeq) { const el = box.querySelector(keepFocus); if (el) el.focus({ preventScroll: true }); return; } }
+    drawSeq++;
+    const bodies = [...box.querySelectorAll('.step-body')];
+    bodies.forEach((sb) => sb.remove());
+    // Eeldused (andmed, tootlus, kulud) üleval, otsused vanuse järgi all; vanus ja aasta rea alguses (variant B, Kadi 24.10).
+    const PRE = ['0', 'fund2', 'fund3', '8'];
+    const rowHtml = (r) => {
+      const goto = r.key === '0', open = !goto && !r.info && !!resOpen[r.key];
+      const btn = r.info ? '' : goto ? '<button type="button" class="btn btn-link btn-sm" data-goto="0">Muuda sammus „Sina“</button>'
+        : '<button type="button" class="btn btn-link btn-sm" id="res-' + r.key + '" data-res="' + r.key + '" aria-expanded="' + open + '" aria-controls="rp-' + r.key + '">' +
+          (open ? 'Sulge' : 'Muuda') + '<span class="visually-hidden"> ' + r.what + '</span></button>';
+      const panel = open ? '<div class="res-panel" id="rp-' + r.key + '" role="group" aria-labelledby="rt-' + r.key + '">' + (FUND_SEL[r.key] ? fundCards(r.key) : '') + '</div>' : '';
+      const pre = PRE.includes(r.key);
+      const lead = pre ? '<span class="opt-ico" aria-hidden="true">' + r.ico + '</span>'
+        : '<div class="res-age">' + (r.age !== null && r.age !== undefined ? r.age + ' a' : '') + (r.year ? '<small>' + r.year + (r.year < P.CURRENT_YEAR ? ', avanenud' : '') + '</small>' : r.age === null ? '<small>Elu lõpus</small>' : '') + '</div>';
+      const rl = (r.rules || []).map((x) => '<p class="res-rule">' + (x.title ? '<strong>' + x.title + '.</strong> ' : '') + x.text + '</p>').join('');
+      return '<li data-row="' + r.key + '"><div class="opt-row' + (pre ? '' : ' has-age') + '">' + lead + '<div class="flex-grow-1"><h5 id="rt-' + r.key + '">' + r.title + '</h5>' +
+        (r.now ? '<small class="res-now">' + r.now + '</small>' : '') + rl + '</div>' + btn + '</div>' + panel + '</li>';
+    };
+    const timed = rows.filter((r) => !PRE.includes(r.key)).sort((a, b) => (a.year || 9999) - (b.year || 9999));
+    box.innerHTML = '<h4 class="res-group">Eeldused</h4><ul class="opt-list res-list">' + rows.filter((r) => PRE.includes(r.key)).map(rowHtml).join('') + '</ul>' +
+      '<h4 class="res-group">Otsused vanuse järgi</h4><ul class="opt-list res-list">' + timed.map(rowHtml).join('') + '</ul>';
+    RES_STEPS.forEach((i) => {
+      const sb = stepBody(i), panel = $('rp-' + i);
+      if (panel) panel.appendChild(sb); else sendHome(sb);
+    });
+    if (keepFocus) { const el = box.querySelector(keepFocus); if (el) el.focus({ preventScroll: true }); }
+  }
+  $('recap').addEventListener('click', (e) => {
+    // Viide teise sammu juurde (nt „Muuda 3. sammus“) avab tulemuste lehel selle rea, kui see on olemas.
+    const g = e.target.closest('.res-panel [data-goto]');
+    if (g && $('res-' + g.dataset.goto)) {
+      e.preventDefault(); e.stopPropagation();
+      resOpen[g.dataset.goto] = true; update();
+      $('res-' + g.dataset.goto).scrollIntoView({ block: 'start' }); $('res-' + g.dataset.goto).focus({ preventScroll: true });
+      return;
+    }
+    const t = e.target.closest('[data-res]');
+    if (!t) return;
+    const k = t.dataset.res;
+    if (resOpen[k]) delete resOpen[k]; else resOpen[k] = true;
+    update();
+    $('res-' + k).focus(); // fookus jääb rea nupule („Muuda“ ↔ „Sulge“), see joonistatakse uuesti
+  });
+  // Soovituse „Muuda“ (nt ülejääk hoiusel): ava see rida tulemuste lehel ja vii fookus rea nupule.
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-open-row]');
+    if (!b) return;
+    const k = b.dataset.openRow;
+    if (!$('res-' + k)) { go(+k); return; }
+    resOpen[k] = true; update();
+    $('res-' + k).scrollIntoView({ block: 'start' }); $('res-' + k).focus({ preventScroll: true });
+  });
+  // Esc sulgeb rea, fookus tagasi „Muuda“ nupule.
+  $('recap').addEventListener('keydown', (e) => {
+    const p = e.key === 'Escape' && e.target.closest('.res-panel');
+    if (!p) return;
+    const k = p.id.slice(3); delete resOpen[k]; update(); $('res-' + k).focus();
+  });
+  $('recap').addEventListener('change', (e) => { const k = e.target.name.replace(/^res-/, ''); if (FUND_SEL[k]) setSel(FUND_SEL[k], e.target.value); });
+
+  // Iga lahti rea kaardil: „Raha jätkub X-aastaseni“ ja muutus praegusega võrreldes. Arvutus on sama mis vastusel:
+  // valik märgitakse ajutiselt (ilma sündmusteta), readInput + P.simulate, siis taastatakse; pension.js ei muutu.
+  const DELTA_UNIT = ' a'; // muutuse ühik (vanus aastates)
+  const coversAge = (r) => (r.coversNeedUntil === null ? 100 : r.coversNeedUntil);
+  const coversTxt = (a) => (a >= 100 ? 'elu lõpuni (100+)' : a + '-aastaseni');
+  function outcomeWith(radioEl) {
+    const group = [...document.querySelectorAll('input[type="radio"][name="' + radioEl.name + '"]')], was = group.find((x) => x.checked);
+    const extra = [];
+    const fk = radioEl.name.replace(/^res-/, '');
+    if (FUND_SEL[fk]) extra.push([$(FUND_SEL[fk]), 'value', radioEl.value]);
+    // „Täis / pool / edasi“ muudab ka aastaid (nagu p1Mode kuulaja).
+    if (radioEl.name === 'p1Mode') { const d = parseInt(radio('defer') || '0', 10), r = document.querySelector('input[name=defer][value="' + (radioEl.value === 'full' ? 0 : Math.max(1, d)) + '"]'); if (r) extra.push([r, 'checked', true]); }
+    const saved = extra.map(([el, k]) => [el, k, el[k]]).concat(extra.filter(([, k]) => k === 'checked').map(([el]) => [document.querySelector('input[name="' + el.name + '"]:checked'), 'checked', true]));
+    radioEl.checked = true; extra.forEach(([el, k, v]) => { el[k] = v; });
+    try { const inp = readInput(); return coversAge(P.simulate(inp, T, scenarioFor(inp))); }
+    finally { saved.forEach(([el, k, v]) => { if (el) el[k] = v; }); if (was) was.checked = true; else radioEl.checked = false; }
+  }
+  function renderOutcomes(mine) {
+    const cur = coversAge(mine);
+    document.querySelectorAll('#recap .res-panel .choice').forEach((lab) => {
+      const r = lab.querySelector('input[type="radio"]'), body = lab.querySelector('.choice-body');
+      const old = body && body.querySelector('.outcome'); if (old) old.remove();
+      if (!r || !body || r.matches(':disabled') || !isShown(r)) return;
+      const a = r.checked ? cur : outcomeWith(r), d = a - cur;
+      body.insertAdjacentHTML('beforeend', '<span class="outcome">Raha jätkub ' + coversTxt(a) + (r.checked ? '<span class="outcome-now"> · praegu</span>'
+        : d ? ' <span class="delta ' + (d > 0 ? 'up' : 'down') + '">' + (d > 0 ? '+' : '−') + Math.abs(d) + DELTA_UNIT + '<span class="visually-hidden"> võrreldes praegusega</span></span>' : '') + '</span>');
+    });
+  }
+
 
   // Liigu järgmisele/eelmisele näidatavale etapile (vahelejäetud etapid jäävad vahele).
   function move(dir) {
@@ -1473,6 +1737,7 @@
     const fb = firstBlocked();
     let blocked = false;
     if (fb !== undefined && shown.indexOf(target) > shown.indexOf(fb)) { target = fb; blocked = true; tried.add(fb); }
+    if (target !== LAST) closePanels(); // sammu valikud tagasi oma sammu
     step = target;
     visited.add(step);
     if (window.minaMoot && step !== lastTracked && mootSamm(step) !== null) { lastTracked = step; window.minaMoot('samm', { samm: mootSamm(step) }); } // mõõtmine: samm
@@ -1494,19 +1759,18 @@
       requestAnimationFrame(() => window.scrollTo(0, 0));
       const h = chapters[step].querySelector('h2'); if (h) h.focus({ preventScroll: true });
     }
-    // Lukus: fookus esimesele täitmata väljale, veateade on role="alert".
-    if (blocked) { const m = missingIn(step)[0]; if (m) m.focus(); }
+    // Lukus: fookus sammu alguse veateatele (role="alert", lingid väljadele), ekraanilugeja loeb selle ette.
+    if (blocked) {
+      if (step === 0) { flagSinaEmpty(); markRequired(); }
+      const box = chapters[step].querySelector('.req-error');
+      box.setAttribute('tabindex', '-1');
+      box.scrollIntoView({ block: 'center' }); box.focus({ preventScroll: true });
+    }
   }
 
-  // Lepingu vaikevalik: edasilükkamisega (C) uus leping igal aastal, muidu üks leping. Kasutaja enda valikut ei muudeta.
+  // Lepingu vaikevalik: uus leping igal aastal (Kadi 24.10; HTML-is esimene ja valitud). Kasutaja enda valikut ei muudeta.
   let contractTouched = false;
   document.querySelectorAll('input[name="contract"]').forEach((el) => el.addEventListener('change', () => { contractTouched = true; }));
-  function syncContractDefault() {
-    if (contractTouched) return;
-    const want = parseInt(radio('defer') || '0', 10) > 0 ? 'yearly' : 'once';
-    const el = document.querySelector('input[name="contract"][value="' + want + '"]');
-    if (el && !el.checked) el.checked = true;
-  }
 
   // Ühe visuaalse rea sildid sama kõrgeks (kõrgeima järgi), et lahtrid oleksid ühel joonel ka siis, kui silt murdub kahele reale.
   function alignLabels() {
@@ -1542,7 +1806,6 @@
   function update() {
     syncSpecial();
     lastInput = readInput();
-    syncContractDefault();
     // Valikukaardid joonistatakse uuesti: hoia klaviatuuri fookus samal raadionupul.
     const a = document.activeElement;
     const keep = a && a.type === 'radio' && (a.name === 'pkg' || a.name === 'defer') ? a.name : null;
@@ -1553,6 +1816,7 @@
     const fresh = readInput();
     renderPotBar(fresh);
     markRequired();
+    renderSina();
     renderPath(fresh);
     requestAnimationFrame(alignLabels);
     if (step === LAST) { renderResult(fresh); if (chart) chart.resize(); }
@@ -1566,6 +1830,8 @@
   // Lapsed (1. vaade): iga lapse sünniaasta (ja vajadusel kuu), rühmad arvutame ise (RPKS § 24, KoPS § 10).
   // Kuu küsime ainult 2021. a (aug/sept piir) ja alla 3-aastase lapse puhul (riigi II samba sissemakse kestab 36 kuud).
   const MONTHS = ['jaan', 'veebr', 'märts', 'apr', 'mai', 'juuni', 'juuli', 'aug', 'sept', 'okt', 'nov', 'dets'];
+  // Sünniaasta võib olla tulevikus kuni pensionieani (nagu SKA kalkulaatoris).
+  function kidsMaxYear() { return (parseInt($('birthYear').value, 10) || 1980) + (parseInt($('pensionAgeYears').value, 10) || 65); }
   function kidsCount() { return $('kidsHas').value === 'yes' ? Math.max(0, parseInt($('kidsCount').value, 10) || 0) : 0; }
   const needMonth = (y, now) => y === 2021 || y >= now.getFullYear() - 3;
   function kidsInput() {
@@ -1575,18 +1841,40 @@
     const k = { b1991: 0, b2012: 0, b2013: 0, b2021: 0, bUnknown: 0, u3: 0, u3Left: [], iiMonths: [] };
     // Sept 2021+ laps, kes on üle 3 a: mitu kuud tegi riik II sambasse lisamakseid (RPKS § 24 lg 6; tühi → mootori vaikimisi).
     const olderII = (i) => { const el = $('kidsII' + i), v = el && el.value !== '' ? parseInt(el.value, 10) : NaN; k.iiMonths.push(isNaN(v) ? undefined : Math.max(0, Math.min(36, v))); };
+    // Last arvestame, kui ta on pensionile minekuks vähemalt 8 aastat kasvatatud (iga laps eraldi; RPKS § 24, SKA: kuni
+    // 18-aastase lapse kasvatamine vähemalt 8 aastat). Ka tulevane laps. Kas lisa tuleb ka hiljem, kui laps saab 8 pärast
+    // pensionile minekut, SKA leht ei ütle [inferred: ei arvesta]. Varem pensionile minek (3+ last) toob pensioni ette, seega
+    // kontrollime vanust selle aasta järgi, kuni arv ei muutu.
+    const by = parseInt($('birthYear').value, 10) || 1980, paY = by + (parseInt($('pensionAgeYears').value, 10) || 65);
+    const ys = []; for (let i = 0; i < kidsCount(); i++) { const el = $('kidsBorn' + i); ys.push(el ? parseInt(el.value, 10) : NaN); }
+    const known = ys.filter((y) => y >= 1930 && y <= kidsMaxYear());
+    let retY = paY;
+    for (let t = 0; t < 4; t++) {
+      const n = known.filter((y) => y + 8 <= retY).length + ys.filter((y) => !(y >= 1930 && y <= kidsMaxYear())).length;
+      const e = P.earlyYears({ kids: { b1991: n, earlyUser: early, disabled: has && $('kidsDisabled').value === 'yes' } });
+      if (paY - e === retY) break; retY = paY - e;
+    }
+    k.late = known.filter((y) => y + 8 > retY).length; k.lateYear = retY;
     for (let i = 0; i < kidsCount(); i++) {
       const yEl = $('kidsBorn' + i), mEl = $('kidsMonth' + i);
       const y = yEl ? parseInt(yEl.value, 10) : NaN;
-      if (!(y >= 1930 && y <= now.getFullYear())) { k.bUnknown++; continue; }
+      if (!(y >= 1930 && y <= kidsMaxYear())) { k.bUnknown++; continue; }
+      if (y + 8 > retY) continue; // pensionile minekuks alla 8 aasta kasvatatud: ei arvesta
       const m = mEl && mEl.value ? parseInt(mEl.value, 10) : 0; // 1–12, 0 = ei tea
       if (y < 1991) k.b1991++;
       else if (y <= 2012) k.b2012++;
-      else if (y < 2021 || (y === 2021 && m !== 0 && m <= 8) || (y === 2021 && m === 0)) k.b2013++; // 2021 ilma kuuta: aug või varem
+      else if (y < 2021 || (y === 2021 && m !== 0 && m <= 8) || (y === 2021 && m === 0)) { // 2021 ilma kuuta: aug või varem
+        k.b2013++;
+        // Enne 1983 sündinud vanem: kas oli lapse esimesel 3 aastal II sambas (siis maksis riik sinna, lisa pole)?
+        const q = $('kidsII13_' + i); if (by < 1983 && q) k.b2013noII = (k.b2013noII || 0) + (q.value === 'no' ? 1 : 0);
+      }
       else {
         k.b2021++;
         // Alla 3-aastane: riik maksab II sambasse kuni 36 kuud. Ilma kuuta: kindlasti alla 3, kui sündis viimase 2 aasta sees.
-        if (m) {
+        if (y > now.getFullYear()) { // tulevane laps: 36 kuud alates sünnist
+          k.u3++; k.u3Left.push(36);
+          (k.u3Start = k.u3Start || [])[k.u3Left.length - 1] = y; (k.u3StartMonth = k.u3StartMonth || [])[k.u3Left.length - 1] = m || 1;
+        } else if (m) {
           const left = 36 - (nowM - (y * 12 + m - 1));
           if (left > 0) { k.u3++; k.u3Left.push(Math.min(36, left)); } else olderII(i);
         } else if (y >= now.getFullYear() - 2) { k.u3++; k.u3Left.push(undefined); }
@@ -1597,27 +1885,29 @@
   }
   // Iga lapse rida: sünniaasta ja vajadusel kuu. Olemasolevad väärtused jäävad alles, kui laste arv muutub.
   function renderKids() {
-    const box = $('kidsList'), cnt = kidsCount(), now = new Date();
+    const box = $('kidsList'), cnt = kidsCount(), now = new Date(), maxY = kidsMaxYear(), by = parseInt($('birthYear').value, 10) || 1980;
     const rows = box.querySelectorAll('.kid-row');
     if (rows.length !== cnt) {
-      const keep = [...rows].map((r, i) => [($('kidsBorn' + i) || {}).value || '', ($('kidsMonth' + i) || {}).value || '', ($('kidsII' + i) || {}).value || '']);
+      const keep = [...rows].map((r, i) => [($('kidsBorn' + i) || {}).value || '', ($('kidsMonth' + i) || {}).value || '', ($('kidsII' + i) || {}).value || '', ($('kidsII13_' + i) || {}).dataset && $('kidsII13_' + i).dataset.touched ? $('kidsII13_' + i).value : '']);
       box.innerHTML = cnt ? '<div class="row g-3">' + Array.from({ length: cnt }, (_, i) =>
         '<div class="col-12 col-sm-6 col-lg-4 kid-row"><div class="row g-2">' +
         '<div class="col-7"><label class="form-label" for="kidsBorn' + i + '">' + (i + 1) + '. lapse sünniaasta</label>' +
         '<input class="form-control" id="kidsBorn' + i + '" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" aria-describedby="kidsBornHint kidsBornErr' + i + '" value="' + ((keep[i] || [])[0] || '') + '">' +
-        '<div class="invalid-feedback" id="kidsBornErr' + i + '">Sisesta aasta vahemikus 1930–' + now.getFullYear() + '.</div></div>' +
+        '<div class="invalid-feedback" id="kidsBornErr' + i + '">' + (i + 1) + '. lapse sünniaasta: sisesta aasta vahemikus 1930–' + maxY + '.</div></div>' +
         '<div class="col-5 kid-month d-none"><label class="form-label" for="kidsMonth' + i + '">sünnikuu</label>' +
         '<select class="form-select" id="kidsMonth' + i + '"><option value="">ei tea</option>' + MONTHS.map((n, j) => '<option value="' + (j + 1) + '">' + n + '</option>').join('') + '</select></div>' +
+        '<div class="col-12 kid-ii13 d-none"><label class="form-label" for="kidsII13_' + i + '">Kas olid lapse esimesel 3 aastal II sambas?</label>' +
+        '<select class="form-select" id="kidsII13_' + i + '"><option value="yes">jah</option><option value="no">ei</option></select></div>' +
         '<div class="col-12 kid-ii d-none"><label class="form-label" for="kidsII' + i + '">Riigi lisamakse II sambasse (kuud)</label>' +
         '<input class="form-control" id="kidsII' + i + '" type="number" inputmode="numeric" min="0" max="36" step="1" value="' + ((keep[i] || [])[2] || '') + '" aria-describedby="kidsIIHint' + i + '"><div class="form-text" id="kidsIIHint' + i + '">0–36 kuud lapse esimesel 3 aastal.</div></div>' +
         '</div></div>').join('') + '</div>' : '';
-      keep.forEach((v, i) => { const m = $('kidsMonth' + i); if (m && v[1]) m.value = v[1]; });
+      keep.forEach((v, i) => { const m = $('kidsMonth' + i); if (m && v[1]) m.value = v[1]; const q = $('kidsII13_' + i); if (q && v[3]) { q.value = v[3]; q.dataset.touched = '1'; } });
     }
     let missing = false, anyII = false; // eslint-disable-line no-unused-vars
     for (let i = 0; i < cnt; i++) {
       const el = $('kidsBorn' + i), raw = el.value.trim();
       // Ainult 4-kohaline aasta lubatud vahemikus; muu on viga (nähtav teade, aria-invalid) ja seda ei arvestata.
-      const ok = /^\d{4}$/.test(raw) && +raw >= 1930 && +raw <= now.getFullYear();
+      const ok = /^\d{4}$/.test(raw) && +raw >= 1930 && +raw <= maxY;
       const bad = raw !== '' && !ok && (raw.length === 4 || document.activeElement !== el);
       el.classList.toggle('is-invalid', bad);
       if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
@@ -1634,7 +1924,14 @@
       // Eeltäide: II sambas 36 kuud (lisa pole), muidu 0 (täis lisa); kasutaja enda väärtus jääb.
       if (showII && (iiEl.value === '' || iiEl.dataset.auto)) { iiEl.value = String(parseFloat($('p2Rate').value) > 0 ? 36 : 0); iiEl.dataset.auto = '1'; }
       if (showII) anyII = true;
+      // 2013 – aug 2021 laps ja enne 1983 sündinud vanem: küsime, kas oli II sambas (vaikimisi tänase seisu järgi).
+      const q13 = $('kidsII13_' + i), show13 = !!y && by < 1983 && (y >= 2013 && !b21);
+      q13.closest('.kid-ii13').classList.toggle('d-none', !show13);
+      if (show13 && !q13.dataset.touched) q13.value = parseFloat($('p2Rate').value) > 0 || parseFloat($('p2').value) > 0 ? 'yes' : 'no';
     }
+    const ki = kidsInput();
+    $('kidsLateWrap').classList.toggle('d-none', !ki.late);
+    $('kidsLate').textContent = ki.late ? ki.late + ' last ei ole pensionile minekuks (' + ki.lateYear + ') vähemalt 8 aastat kasvatatud. ' + (ki.late === 1 ? 'Seda' : 'Neid') + ' arvutus ei arvesta.' : '';
     $('kidsMissingWrap').classList.toggle('d-none', !missing);
   }
   // Varem pensionile (aastad): lapsed või tervist kahjustav töö, suurem kahest (pension.js earlyYears).
@@ -1749,7 +2046,7 @@
     $('rbPensionTxt').textContent = kidsY + ' a varem (' + (pa - kidsY) + ' a) koos laste pensionilisaga. Ootetoetust ei võta.';
     $('rbToetusTxt').textContent = resY + ' a varem (' + (pa - resY) + ' a) kuni pensionieani. Laste lisa alles ' + pa + '-aastaselt.';
   }
-  function soodusMax() { return P.earlyYears({ kids: kidsInput(), rescueBasis: rescueBasisNow(), hazard: $('hazard').value, hazardYears: $('hazard').value === 'list1' ? parseInt($('hazardYears').value, 10) || 0 : undefined, rescueYears: $('cRescue').checked ? parseInt($('rescueYears').value, 10) || 0 : 0 }); }
+  function soodusMax() { return P.earlyYears({ kids: kidsInput(), rescueBasis: rescueBasisNow(), hazard: $('hazard').value, hazardYears: $('hazard').value !== 'no' ? parseFloat($('hazardYears').value) || 0 : undefined, rescueYears: $('cRescue').checked ? parseInt($('rescueYears').value, 10) || 0 : 0 }); }
   // Mitu aastat varem inimene tegelikult läheb (0 … õiguse maksimum); vaikimisi maksimum. Õigus ei kohusta minema kõige varem.
   // Valik on alati: soodustuse piires vähendamata, üle selle (kuni 5 a) paindlik pension vähendusega.
   const optMax = () => Math.max(5, soodusMax());
@@ -1799,22 +2096,12 @@
   }
   // Käsitsi valitud pensioniiga jääb alles ka siis, kui sünniaasta muutub.
   $('pensionAgeYears').addEventListener('change', () => { paTouched = true; syncPensionAge(); });
-  $('birthYear').addEventListener('input', () => { $('birthYearNote').textContent = ''; syncPensionAge(); });
-  // Väljaspool vahemikku sisestatud aasta asendatakse lähima lubatud aastaga (pärast sisestuse lõppu, mitte trükkimise ajal).
-  // Teade on nähtamatu role="status" piirkonnas: nägija näeb muutust väljas, ekraanilugeja kasutaja kuuleb seda.
-  $('birthYear').addEventListener('change', () => {
-    const el = $('birthYear'), min = parseInt(el.min, 10), max = parseInt(el.max, 10);
-    const v = parseInt(el.value, 10);
-    if (v >= min && v <= max) return;
-    const fixed = isNaN(v) ? 1980 : Math.min(max, Math.max(min, v));
-    el.value = String(fixed);
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    $('birthYearNote').textContent = 'Muudetud aastaks ' + fixed + '.';
-  });
+  // Väljaspool vahemikku sünniaasta on viga sammus „Sina“ (sinaCheck); arvutus kasutab seni lähimat lubatud aastat.
+  $('birthYear').addEventListener('input', syncPensionAge);
   // Laste read tekivad laste arvu järgi; sünniaasta näitab või peidab kuu välja.
   ['kidsCount', 'kidsHas'].forEach((id) => { $(id).addEventListener('input', renderKids); $(id).addEventListener('change', renderKids); });
   // Lapse read tekivad hiljem, seega kuulame konteinerit (tavalised väljad saavad update'i allpool).
-  $('kidsList').addEventListener('input', (e) => { if (/^kidsII/.test(e.target.id)) delete e.target.dataset.auto; syncPensionAge(); update(); });
+  $('kidsList').addEventListener('input', (e) => { if (/^kidsII\d/.test(e.target.id)) delete e.target.dataset.auto; if (/^kidsII13_/.test(e.target.id)) e.target.dataset.touched = '1'; syncPensionAge(); update(); });
   $('kidsList').addEventListener('change', () => { syncPensionAge(); update(); });
   // Lühikese või vale aasta veateade näidatakse alles väljalt lahkudes (mitte trükkimise ajal).
   $('kidsList').addEventListener('focusout', (e) => { if (/^kidsBorn/.test(e.target.id)) setTimeout(renderKids, 0); });
@@ -1824,9 +2111,10 @@
   ['fund18Fund', 'fundNew'].forEach((id) => {
     $(id).innerHTML = Object.entries(FUNDS).map(([k, f]) => '<option value="' + k + '">' + f.name + ' (' + pct(f.r) + ' a)</option>').join('');
   });
-  $('fundCur').innerHTML = Object.entries(FUNDS).map(([k, f]) => '<option value="' + k + '">' + pct(f.r) + ' aastas</option>').join('');
+  ['fundCur', 'fund3Cur'].forEach((id) => { $(id).innerHTML = Object.entries(FUNDS).map(([k, f]) => '<option value="' + k + '">' + pct(f.r) + ' aastas (' + f.name.replace(/ \(.*\)$/, '').toLowerCase() + ')</option>').join(''); });
   $('fund18Fund').value = 'index';
   $('fundCur').value = 'mix';
+  $('fund3Cur').value = 'mix';
   $('fundNew').value = 'index';
 
   document.addEventListener('click', (e) => {
@@ -1856,27 +2144,27 @@
     const pa = P.retirementYears(input);
     const today = new Date().toLocaleDateString('et-EE');
     const metrics = [...document.querySelectorAll('#metrics .metric')].map((m) => '- **' + txt(m.querySelector('.value')) + '** ' + txt(m.querySelector('.label')));
-    const recap = [...document.querySelectorAll('#recap li')].map((li) => '- ' + txt(li.querySelector('.flex-grow-1')));
-    const map = [...document.querySelectorAll('#decisionMap li')].map((li) => '### ' + txt(li.querySelector('.when')) + ': ' + txt(li.querySelector('.fw-medium')) + '\n\n' + txt(li.querySelector('.text-secondary')) +
-      (li.querySelector('.map-choice') ? '\n\n' + txt(li.querySelector('.map-choice')) : ''));
+    // Sinu otsused: vanus, valik ja reegel (otsuste kaart on ridade sees).
+    const recap = [...document.querySelectorAll('#recap li[data-row]')].map((li) => '- ' + (li.querySelector('.res-age') && txt(li.querySelector('.res-age')) ? txt(li.querySelector('.res-age')).replace(/\s+/g, ' ') + ': ' : '') +
+      '**' + txt(li.querySelector('h5')) + '**' + (li.querySelector('.res-now') ? ': ' + txt(li.querySelector('.res-now')) : '') +
+      [...li.querySelectorAll('.res-rule')].map((p) => '\n  ' + txt(p)).join(''));
     const costs = pkgLines(input.pkg, input.household).map((l) => '| ' + l[1] + ' | ' + eur(lineValue(input.pkg, l)) + ' |').join('\n');
     const warn = $('actionWarn').classList.contains('d-none') ? '' : '> ' + txt($('actionWarn')).replace(/Proovi seda$/, '').trim() + '\n\n';
     return [
       '# Tulevane Mina: minu pensionilugu', '', '_Koostatud ' + today + '. Prototüüp, mitte finants- ega maksunõu. Summad on tänastes eurodes._', '',
-      '## Tulemus', '', txt($('answer')), '', warn + metrics.join('\n'), '',
+      '## Tulemus', '', txt($('answer')).replace(/\s*Selgitus: [^\n]*$/, ''), '', warn + metrics.join('\n'), '',
       '## Graafiku kokkuvõte', '', [...$('chartSummary').querySelectorAll('li')].map((li) => '- ' + txt(li)).join('\n'), '',
       '## Sinu andmed', '',
       '- Sünniaasta: ' + input.birthYear + ', sugu: ' + (input.sex === 'N' ? 'naine' : 'mees') + ', pensioniiga: ' + pa + ' a',
       '- Riiklik pension: ' + eur(input.p1Monthly) + ' kuus enne tulumaksu (tulumaks 22% summalt, mis ületab pensionäri maksuvaba tulu ' + eur(P.PENSIONER_ALLOWANCE / 12) + ' kuus)',
       '- II sammas praegu: ' + eur(input.p2) + ', III sammas praegu: ' + eur(input.p3Base),
       '- Brutopalk: ' + eur(input.grossMonthly) + ' kuus, II samba makse ' + pct(input.p2Rate) + ', III sambasse ' + eur(input.p3Monthly) + ' kuus',
-      '- Tootlus pärast inflatsiooni: ' + pct(input.realReturn) + ' aastas', '',
-      '## Sinu valikud', '', recap.join('\n'), '',
+      '- Tootlus pärast inflatsiooni: II sammas ' + pct(input.realReturn) + ', III sammas ' + pct(input.realReturn3) + ' aastas', '',
+      '## Sinu otsused', '', recap.join('\n'), '',
       '## Kulud: ' + input.pkg.name + (input.edited ? ' (muudetud)' : '') + ', ' + eur(input.needMonthly) + ' kuus', '',
       'Pensionil elan: ' + (input.household === 'paar' ? 'paaris (summad ühe inimese kohta)' : 'üksi'), '',
       '| Kulu | Summa kuus |', '| --- | --- |', costs, '',
       '## Sissetulek ja kulud vanuse järgi', '', mdTable($('chartTableWrap').querySelector('table')),
-      '## Sinu otsuste kaart', '', map.join('\n\n'), '',
       '## Väljamakse teed kõrvuti', '', mdTable($('compare')),
       '---', 'Tulevane Mina · Tuleva häkaton 2026 · reeglid: Pensionikeskus ja Sotsiaalkindlustusamet',
     ].join('\n') + '\n';
@@ -1959,6 +2247,158 @@
   switchEl.addEventListener('input', () => { switchEl.value = switchEl.value.replace(/\D/g, ''); });
   switchEl.addEventListener('change', () => { switchEl.value = String(readInput().switchAge); update(); });
 
+  // ---------- Samm „Sina“: nimekiri ----------
+  // Iga osa avaneb ja sulgub eraldi (mitte akordion). Kinni olles kokkuvõte linnukesega või „Täitmata“.
+  // „Valmis“ nuppu pole: väärtus salvestub sisestamisel, viga näidatakse väljalt lahkumisel (change) ja kaob parandamisel kohe.
+  // Lapsed ja tööga seotud erijuhud on valikulised: „+ Lisa …“ avab osa, „Eemalda …“ lähtestab selle valikud.
+  const SINA = [...document.querySelectorAll('#sinaList > li')];
+  const secKey = (li) => li.dataset.sec;
+  const secOpen = {}, secAdded = {}, sinaErr = {};
+  // Nimed on unikaalsed (WCAG 2.4.6): ekraanilugeja kuuleb „Muuda III sammast“, nähtav on „Muuda“.
+  const SEC_ACT = {
+    me: { muuda: 'Muuda oma andmeid', taida: 'Täida oma andmed', sulge: 'Sulge oma andmed' },
+    state: { muuda: 'Muuda riiklikku pensioni', taida: 'Täida riikliku pensioni andmed', sulge: 'Sulge riiklik pension' },
+    p2: { muuda: 'Muuda tööd ja II sammast', taida: 'Täida töö ja II samba andmed', sulge: 'Sulge töö ja II sammas' },
+    p3: { muuda: 'Muuda III sammast', taida: 'Täida III samba andmed', sulge: 'Sulge III sammas' },
+    kids: { muuda: 'Muuda laste andmeid', taida: 'Täida laste andmed', sulge: 'Sulge laste andmed', lisa: 'Lisa lapsed', why: 'Lapsed annavad pensionilisa ja võivad tuua pensioni varem.' },
+    work: { muuda: 'Muuda erijuhte', taida: 'Täida erijuhud', sulge: 'Sulge erijuhud', lisa: 'Lisa erijuht', why: 'Tervist kahjustav töö, eripension, päästeteenistus või ametnik.' },
+  };
+  const optTxt = (id) => { const el = $(id); return el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : ''; };
+  const numVal = (id) => parseFloat($(id).value) || 0;
+  const SEC_SUM = {
+    me: () => 'Sündinud ' + $('birthYear').value + ' · ' + optTxt('sex').toLowerCase(),
+    state: () => $('pensionAgeYears').value + '-aastaselt · ' + eur(numVal('p1Monthly')) + ' kuus',
+    p2: () => 'Palk ' + eur(numVal('grossMonthly')) + ' kuus · II sammas ' + eur(numVal('p2')) + (numVal('p2Rate') > 0 ? ' · maksad ' + optTxt('p2Rate') : '') + ' · tootlus ' + pct(FUNDS[$('fundCur').value].r),
+    p3: () => ($('p3Joined').value === 'none'
+      ? 'Ei ole liitunud' + (numVal('p3Monthly') > 0 ? ' · avad ' + $('p3OpenAge').value + '-aastaselt, ' + eur(numVal('p3Monthly')) + ' kuus' : '')
+      : eur(numVal('p3')) + ' · ' + eur(numVal('p3Monthly')) + ' kuus') + ' · tootlus ' + pct(FUNDS[$('fund3Cur').value].r),
+    kids: () => kidsCount() + (kidsCount() === 1 ? ' laps' : ' last'),
+    work: () => { const n = ['cHazard', 'cSp', 'cRescue', 'cCivil', 'cOther'].filter((id) => $(id).checked).length; return n ? n + ' erijuht' + (n > 1 ? 'u' : '') : 'Midagi pole valitud'; },
+  };
+  const included = (li) => !li.classList.contains('is-optional') || secAdded[secKey(li)];
+  // Kontroll: tühi kohustuslik väli on „täitmata“ (edenemise rida), vale number on viga (väljal).
+  // Veateates on alati välja nimi: ekraanilugeja võib selle kuulda alles järgmise välja juures.
+  const FIELD_NAME = { birthYear: 'Sünniaasta', p1Monthly: 'Riikliku pensioni', grossMonthly: 'Brutopalga', p2: 'II samba summa', p3: 'III samba summa',
+    p3Monthly: 'III samba sissemakse', kidsCount: 'Laste arvu', hazardYears: 'Nimekirja tööaastate', rescueYears: 'Päästeteenistuse aastate' };
+  function sinaCheck(el) {
+    const v = el.value.trim(), name = FIELD_NAME[el.id] || labelText(el);
+    if (el.validity && el.validity.badInput) return name + ' väljale sisesta ainult number, näiteks 1200.';
+    if (v === '') return el.hasAttribute('data-need') && el.dataset.touched === '1' ? name + ' väli on kohustuslik.' : '';
+    if (el.type !== 'number') return '';
+    const n = Number(v), lo = el.min !== '' ? +el.min : null, hi = el.max !== '' ? +el.max : null;
+    if (el.id === 'birthYear' && (n < lo || n > hi || n % 1)) return 'Sünniaasta peab olema vahemikus ' + lo + '–' + hi + '.';
+    if ((lo !== null && n < lo) || (hi !== null && n > hi)) return name + ' väljale sisesta number ' + (hi !== null ? 'vahemikus ' + lo + '–' + hi : 'vähemalt ' + lo) + '.';
+    return '';
+  }
+  function showSinaErr(el) {
+    const msg = sinaErr[el.id] || '', fid = el.id + 'Err';
+    let fb = $(fid);
+    if (!fb && msg) {
+      // Abiteksti all, sama joondusega (Bootstrap näitab .invalid-feedback'i, kui eespool on .is-invalid väli).
+      let at = el; while (at.nextElementSibling && at.nextElementSibling.classList.contains('form-text')) at = at.nextElementSibling;
+      at.insertAdjacentHTML('afterend', '<div class="invalid-feedback" id="' + fid + '"></div>');
+      fb = $(fid);
+      el.setAttribute('aria-describedby', ((el.getAttribute('aria-describedby') || '') + ' ' + fid).trim());
+    }
+    if (fb) fb.textContent = msg;
+    el.classList.toggle('is-invalid', !!msg);
+    el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  }
+  const needEls = (li) => [...li.querySelectorAll('[data-need], [required]')].filter((el) => isShown(el) && !el.disabled);
+  const blockersIn = (li) => (included(li) ? needEls(li).filter((el) => el.value.trim() === '' || sinaErr[el.id]) : []);
+  // Kohustuslikud [required] väljad (nt eripensioni algus) loeb missingIn ise; siin ainult [data-need].
+  function sinaBlockers() { return SINA.flatMap(blockersIn).filter((el) => !el.required); }
+
+  // Valikuline osa, millel on andmeid (profiil, laste „jah“, erijuhu linnuke), on lisatud ja avaneb.
+  const hasData = { kids: () => $('kidsHas').value === 'yes', work: () => ['cHazard', 'cSp', 'cRescue', 'cCivil', 'cOther'].some((id) => $(id).checked) };
+  function autoAdd() { Object.keys(hasData).forEach((k) => { if (!secAdded[k] && hasData[k]()) { secAdded[k] = true; secOpen[k] = true; } }); }
+  // Lukus sammult edasi: ava osa, kus on esimene täitmata väli.
+  function openSecOf(el) { const li = el.closest('#sinaList > li'); if (li && !secOpen[secKey(li)]) { secOpen[secKey(li)] = true; renderSina(); } }
+  function renderSina() {
+    autoAdd();
+    SINA.forEach((li) => {
+      const k = secKey(li), a = SEC_ACT[k], inc = included(li), open = inc && !!secOpen[k], ok = inc && !blockersIn(li).length;
+      const body = $('body-' + k), btn = li.querySelector('[data-toggle]'), sum = li.querySelector('.opt-sum');
+      body.hidden = !open;
+      li.classList.toggle('is-open', open);
+      // Lisamata valikuline osa: „+ Lisa …“ ja lühike põhjendus.
+      btn.className = 'btn btn-sm ' + (!inc || !(open || ok) ? 'btn-outline-primary' : 'btn-link');
+      // Nähtav ainult esimene sõna („Muuda“, „Sulge“, „Täida“), täisnimi ekraanilugejale (nähtav sõna nime alguses, WCAG 2.5.3).
+      const act = open ? a.sulge : ok ? a.muuda : a.taida, sp = act.indexOf(' ');
+      btn.innerHTML = !inc ? ico('plus') + a.lisa : act.slice(0, sp) + '<span class="visually-hidden">' + act.slice(sp) + '</span>';
+      btn.id = !inc ? 'add-' + k : 'toggle-' + k; // mõõtmine loeb lisa-nuppe (b:add-kids)
+      if (inc) btn.setAttribute('aria-expanded', String(open)); else btn.removeAttribute('aria-expanded');
+      sum.hidden = open;
+      sum.classList.toggle('is-empty', !!(inc && !ok)); // !!: undefined vahetaks klassi igal joonistusel
+      sum.innerHTML = !inc ? a.why : ok ? ico('check') + SEC_SUM[k]() : 'Täitmata';
+    });
+    const miss = missingIn(0), bad = miss.filter((el) => sinaErr[el.id]), empty = miss.filter((el) => !sinaErr[el.id]);
+    const core = SINA.filter((li) => !li.classList.contains('is-optional'));
+    const done = core.filter((li) => !blockersIn(li).length).length;
+    const tail = ' Lapsed ja erijuhud lisa siis, kui need sind puudutavad.';
+    // Vigade kohta ütleb kõik sammu alguse veateade (req-error); siin ainult edenemine.
+    $('sinaProgress').innerHTML = !miss.length ? 'Kõik vajalik on täidetud.' + tail
+      : done === core.length ? 'Põhiosad on täidetud. Täida lõpuni ka lisatud osa.'
+      : '<strong>' + done + ' / ' + core.length + '</strong> osa täidetud.' + tail;
+    $('workNote').classList.toggle('d-none', miss.length > 0); // tühjade väljadega oleks „0 euroni“ eksitav
+    $('nextHint').textContent = step !== 0 ? '' : empty.length ? 'Täitmata: ' + empty.slice(0, 3).map((el) => labelText(el).replace(/\?$/, '').toLowerCase()).join('; ') + (empty.length > 3 ? ' ja veel ' + (empty.length - 3) : '') : '';
+  }
+  // Algolek: eeltäidetud profiilil kolm esimest osa lahti (ülejäänud kokkuvõttena), nullist kõik põhiosad lahti.
+  // Valikuline osa on lisatud, kui profiil või väli selle juba täitis.
+  function initSina(prefilled) {
+    autoAdd();
+    SINA.forEach((li, i) => {
+      const k = secKey(li);
+      secOpen[k] = li.classList.contains('is-optional') ? !!secAdded[k] : !prefilled || i < 3 || blockersIn(li).length > 0;
+    });
+    renderSina();
+  }
+  // Veateate link välja juurde: ava osa, kus väli on, ja vii fookus väljale.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('.req-error a[href^="#"]'), el = a && $(a.getAttribute('href').slice(1));
+    if (!el) return;
+    e.preventDefault(); if (el.closest('#sinaList')) openSecOf(el);
+    el.scrollIntoView({ block: 'center' }); el.focus({ preventScroll: true });
+  });
+  $('sinaList').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-toggle]'), r = e.target.closest('[data-remove]');
+    if (t) {
+      const k = t.dataset.toggle, li = t.closest('li');
+      // Fookus jääb samale nupule (nüüd „Sulge …“), see ei kao ära.
+      if (!included(li)) { secAdded[k] = true; secOpen[k] = true; if (k === 'kids') { setSel('kidsHas', 'yes'); renderKids(); } renderSina(); svgify(li); t.focus(); return; }
+      secOpen[k] = !secOpen[k]; renderSina();
+      t.focus();
+    } else if (r) {
+      const k = r.dataset.remove;
+      if (k === 'kids') setSel('kidsHas', 'no');
+      else ['cHazard', 'cSp', 'cRescue', 'cCivil', 'cOther'].forEach((id) => { if ($(id).checked) { $(id).checked = false; $(id).dispatchEvent(new Event('change', { bubbles: true })); } });
+      secAdded[k] = false; secOpen[k] = false;
+      syncPensionAge(); update();
+      $('add-' + k).focus();
+    }
+  });
+  $('sinaList').addEventListener('input', (e) => {
+    const el = e.target;
+    if (sinaErr[el.id] && !sinaCheck(el)) { sinaErr[el.id] = ''; showSinaErr(el); }
+    renderSina();
+  });
+  // Kontroll väljalt lahkudes: ka siis, kui tühja välja jäeti tühjaks (change siis ei teki).
+  // Hiirega teise nupu peale minnes (nt „Edasi“) näidatakse viga alles pärast klikki: muidu nihutaks teade lehte
+  // vajutuse ajal ja klikk läheks mööda.
+  let pointerHeld = false, pendingCheck = null;
+  const checkLeft = (el) => { el.dataset.touched = '1'; sinaErr[el.id] = sinaCheck(el); showSinaErr(el); renderSina(); };
+  document.addEventListener('pointerdown', () => { pointerHeld = true; }, true);
+  document.addEventListener('pointerup', () => { pointerHeld = false; setTimeout(() => { const el = pendingCheck; pendingCheck = null; if (el) checkLeft(el); }, 0); }, true);
+  $('sinaList').addEventListener('focusout', (e) => {
+    const el = e.target;
+    if (el.tagName !== 'INPUT' || !el.hasAttribute('data-need')) return;
+    if (pointerHeld) pendingCheck = el; else checkLeft(el);
+  });
+  // Lukus sammult edasi (raja klikk): kõik täitmata väljad saavad nimega veateate.
+  function flagSinaEmpty() { sinaBlockers().forEach((el) => { el.dataset.touched = '1'; sinaErr[el.id] = sinaCheck(el); showSinaErr(el); }); renderSina(); }
+  // „kohustuslik“ märge iga kohustusliku välja sildis (mitte tärn).
+  document.querySelectorAll('#sinaList [data-need]').forEach((el) => { const l = document.querySelector('label[for="' + el.id + '"]'); if (l) l.insertAdjacentHTML('beforeend', ' <span class="req">kohustuslik</span>'); });
+
   syncPensionAge();
   // ---------- Algandmed maandumislehelt (?p=<profiil>) ----------
   // Profiilid on tüüpilised koguja profiilid (vt maandumisleht, profiilid.js); kõiki välju saab muuta.
@@ -1966,7 +2406,7 @@
     const PROFILES = window.MINA_PROFILES || {};
     const id = new URLSearchParams(location.search).get('p');
     const pr = id && Object.prototype.hasOwnProperty.call(PROFILES, id) ? PROFILES[id] : null;
-    if (!pr) return;
+    if (!pr) { initSina(false); return; }
     Object.entries(pr).forEach(([field, v]) => { if (field === 'nimi') return; const el = $(field); if (!el) return; el.value = String(v); el.classList.add('is-prefilled'); });
     paTouched = true;
     syncPensionAge();
@@ -1974,6 +2414,7 @@
     switchEl.value = String(readInput().switchAge);
     syncP3Fields();
     update();
+    initSina(true);
     try {
       const p0 = sessionStorage.getItem('mina_p0');
       if (!p0) sessionStorage.setItem('mina_p0', id);
@@ -2007,8 +2448,7 @@
   const ABI = window.ELUKAAR_ABI || {};
   const HELP_AT = { sex: 'label[for="sex"]', pensionAge: 'label[for="pensionAgeYears"]', p1: 'label[for="p1Monthly"]', gross: 'label[for="grossMonthly"]', household: 'label[for="household"]', soodusYears: 'label[for="soodusYears"]', p3Monthly: 'label[for="p3Monthly"]',
     hazard: 'label[for="hazard"]', sp: 'label[for="spHas"]', spStart: 'label[for="spStartAge"]', p2Rate: 'label[for="p2Rate"]', p3Joined: 'label[for="p3Joined"]', fundCur: 'label[for="fundCur"]',
-    kidsWho: 'label[for="kidsHas"]', rescue: 'label[for="rescueYears"]' };
-  const LEGEND_HELP = { 'Lapsed': 'kids', 'Sambad ja töö': 'pillars', 'Tööga seotud erijuhud': 'special' };
+    kidsWho: 'label[for="kidsCount"]', rescue: 'label[for="rescueYears"]', p2EarlyAge: 'label[for="p2EarlyAge"]', p3EarlyAge: 'label[for="p3EarlyAge"]' };
   const helpBtn = (key) => '<button type="button" class="help-btn" data-help="' + key + '" aria-haspopup="dialog" aria-controls="helpDialog">' + HELP_ICO +
     '<span class="visually-hidden">Selgitus: ' + ABI[key].title.replace(/[?:]$/, '') + '</span></button>';
   Object.entries(HELP_AT).forEach(([key, sel]) => {
@@ -2027,9 +2467,8 @@
   });
   // Pealkirja „?“ (nagu väljagruppide legendidel): nupp pealkirja sees, mitte eraldi real.
   if (ABI.rescueBasis) $('rescueBasisTitle').insertAdjacentHTML('beforeend', helpBtn('rescueBasis'));
-  document.querySelectorAll('section[data-step="0"] fieldset.field-group > legend').forEach((lg) => {
-    const key = LEGEND_HELP[lg.textContent.trim()];
-    if (key && ABI[key]) lg.insertAdjacentHTML('beforeend', helpBtn(key));
+  document.querySelectorAll('#sinaList .opt-title[data-helpkey]').forEach((h) => {
+    if (ABI[h.dataset.helpkey]) h.insertAdjacentHTML('beforeend', '\u2060' + helpBtn(h.dataset.helpkey));
   });
   // KKK: „Millal valida fondipension?“ ja „Kas saab alustada 60-aastaselt?“ 60 a ja pensioniea sammus.
   document.querySelectorAll('.kkk-fond').forEach((box) => {
@@ -2080,10 +2519,9 @@
   $('helpClose').addEventListener('click', closeHelp);
   // Tulemuse lüliti: tuleviku hinnad (aria-pressed) ja selle selgitus.
   if (ABI.nominal) $('nominalRow').insertAdjacentHTML('beforeend', helpBtn('nominal'));
-  $('nominalToggle').addEventListener('click', () => {
-    nominal = !nominal;
-    $('nominalToggle').setAttribute('aria-pressed', String(nominal));
-    $('nominalToggle').textContent = nominal ? 'Näita tänastes hindades' : 'Näita tuleviku hindades';
+  $('nominalToggle').addEventListener('change', () => {
+    nominal = $('nominalToggle').checked;
+    $('nominalState').textContent = nominal ? 'sees' : 'väljas';
     update();
   });
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-help]'); if (b) { e.preventDefault(); openHelp(b.dataset.help, b); } });
@@ -2100,7 +2538,9 @@
       if (!e.isTrusted) return;
       const t = e.target;
       if (mootSamm(step) === null) return; // eripensioni samm jääb mõõtmisest välja
-      if (t.type === 'radio') window.minaMoot('klikk', { samm: mootSamm(step), nimi: nimi('r:' + t.name + '=' + t.value) });
+      // Kiirmuutmine tulemuste lehel (rea alla tõstetud valikud): eraldi eesliide „q:“, samm jääb tulemuseks.
+      const q = t.closest('#recap') ? 'q:' : '';
+      if (t.type === 'radio') window.minaMoot('klikk', { samm: mootSamm(step), nimi: nimi(q + 'r:' + t.name + '=' + t.value) });
       else if (t.id === 'p3Joined') window.minaMoot('klikk', { samm: mootSamm(step), nimi: nimi('s:p3Joined=' + t.value) });
     });
     document.addEventListener('click', (e) => {
