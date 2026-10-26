@@ -2131,6 +2131,28 @@
   $('resetPkg').addEventListener('click', () => { delete overrides[readInput().pkg.id]; breakdownKey = null; update(); });
   // ---------- Tulemuse allalaadimine: Markdown ja PDF (printimine) ----------
   const txt = (el) => (el ? el.innerText.replace(/\s+\n/g, '\n').replace(/[ \t]+/g, ' ').trim() : '');
+  // Peidetud sammu tekst (innerText jätab selle välja): plokkide vahele reavahe, nupud välja.
+  function plain(el) {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('button').forEach((b) => b.remove());
+    c.querySelectorAll('p, li, br, h3, h4, tr').forEach((b) => b.after('\n'));
+    return c.textContent.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  // KKK sammudest, mis kasutajat puudutavad (vahele jäetud sammud ja peidetud küsimused välja): [küsimus, vastuse element]
+  function faqItems() {
+    const seen = new Set();
+    // Peidetud = peidetud sammu sees (mitte samm ise, sest mitteaktiivne samm on alati peidus)
+    return chapters.flatMap((ch, i) => (skipped(i) ? [] : [...ch.querySelectorAll('details.faq-item')].filter((d) => { const h = d.closest('.d-none, [hidden]'); return !h || h.contains(ch); })))
+      .map((d) => [d.querySelector('summary').textContent.trim(), d.querySelector('.faq-body')])
+      .filter(([q, b]) => b && !seen.has(q) && seen.add(q));
+  }
+  // Kõik akordionid lahti, et fail sisaldaks ka nende sisu; pärast taastatakse kasutaja olek.
+  function withAllOpen(fn) {
+    const ds = [...$('dlMd').closest('.chapter').querySelectorAll('details')];
+    const was = ds.map((d) => d.open);
+    ds.forEach((d) => { d.open = true; });
+    try { return fn(); } finally { ds.forEach((d, i) => { d.open = was[i]; }); }
+  }
   function mdTable(table) {
     if (!table) return '';
     const cell = (c) => { const d = document.createElement('div'); d.innerHTML = c.innerHTML.replace(/<br\s*\/?>/gi, ' (') + (/<br/i.test(c.innerHTML) ? ')' : ''); return d.textContent.replace(/\s+/g, ' ').trim().replace(/\|/g, '/'); };
@@ -2150,10 +2172,14 @@
       [...li.querySelectorAll('.res-rule')].map((p) => '\n  ' + txt(p)).join(''));
     const costs = pkgLines(input.pkg, input.household).map((l) => '| ' + l[1] + ' | ' + eur(lineValue(input.pkg, l)) + ' |').join('\n');
     const warn = $('actionWarn').classList.contains('d-none') ? '' : '> ' + txt($('actionWarn')).replace(/Proovi seda$/, '').trim() + '\n\n';
+    const legacy = $('legacy').querySelector('.legacy-card') ? ['## ' + txt($('legacy').querySelector('h3')), '', plain($('legacy')).split('\n').slice(1).join('\n'), ''] : [];
+    const faq = faqItems().map(([q, b]) => '### ' + q + '\n\n' + plain(b));
     return [
       '# Tulevane Mina: minu pensionilugu', '', '_Koostatud ' + today + '. Prototüüp, mitte finants- ega maksunõu. Summad on tänastes eurodes._', '',
       '## Tulemus', '', txt($('answer')).replace(/\s*Selgitus: [^\n]*$/, ''), '', warn + metrics.join('\n'), '',
       '## Graafiku kokkuvõte', '', [...$('chartSummary').querySelectorAll('li')].map((li) => '- ' + txt(li)).join('\n'), '',
+      '### Kuidas graafikut lugeda', '', plain($('chartExplain')), '',
+      ...legacy,
       '## Sinu andmed', '',
       '- Sünniaasta: ' + input.birthYear + ', sugu: ' + (input.sex === 'N' ? 'naine' : 'mees') + ', pensioniiga: ' + pa + ' a',
       '- Riiklik pension: ' + eur(input.p1Monthly) + ' kuus enne tulumaksu (tulumaks 22% summalt, mis ületab pensionäri maksuvaba tulu ' + eur(P.PENSIONER_ALLOWANCE / 12) + ' kuus)',
@@ -2166,13 +2192,14 @@
       '| Kulu | Summa kuus |', '| --- | --- |', costs, '',
       '## Sissetulek ja kulud vanuse järgi', '', mdTable($('chartTableWrap').querySelector('table')),
       '## Väljamakse teed kõrvuti', '', mdTable($('compare')),
+      ...(faq.length ? ['## Korduma kippuvad küsimused', '', faq.join('\n\n'), ''] : []),
       '---', 'Tulevane Mina · Tuleva häkaton 2026 · reeglid: Pensionikeskus ja Sotsiaalkindlustusamet',
     ].join('\n') + '\n';
   }
   $('dlMd').insertAdjacentHTML('afterbegin', ico('download') + ' ');
   $('dlPdf').insertAdjacentHTML('afterbegin', ico('download') + ' ');
   $('dlMd').addEventListener('click', () => {
-    const blob = new Blob([buildMarkdown()], { type: 'text/markdown;charset=utf-8' });
+    const blob = new Blob([withAllOpen(buildMarkdown)], { type: 'text/markdown;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'tulevane-mina-' + new Date().toISOString().slice(0, 10) + '.md';
@@ -2181,11 +2208,22 @@
   });
   $('dlPdf').addEventListener('click', () => {
     // Prindivaates on avatud võrdlustabel ja otsuste kaart; PDF-i saab salvestada brauseri printimisaknast.
-    document.querySelectorAll('[data-step="9"] details').forEach((d) => { d.dataset.wasOpen = d.open ? '1' : ''; d.open = true; });
+    $('dlMd').closest('.chapter').querySelectorAll('details').forEach((d) => { d.dataset.wasOpen = d.open ? '1' : ''; d.open = true; });
+    // Prindivaates on näha ainult tulemuse samm: teiste sammude KKK lisatakse sinna ajutiselt.
+    const faq = faqItems();
+    const old = $('printFaq'); if (old) old.remove(); // afterprint ei käivitu igas brauseris
+    if (faq.length) {
+      const sec = document.createElement('section');
+      sec.id = 'printFaq'; sec.className = 'faq mt-4';
+      sec.innerHTML = '<h3 class="h5">Korduma kippuvad küsimused</h3>';
+      faq.forEach(([q, b]) => { const h = document.createElement('h4'); h.className = 'h6 mt-3'; h.textContent = q; sec.append(h, b.cloneNode(true)); });
+      $('compare').closest('details').after(sec);
+    }
     window.print();
   });
   window.addEventListener('afterprint', () => {
-    document.querySelectorAll('[data-step="9"] details').forEach((d) => { d.open = d.dataset.wasOpen === '1'; });
+    $('dlMd').closest('.chapter').querySelectorAll('details').forEach((d) => { d.open = d.dataset.wasOpen === '1'; });
+    const pf = $('printFaq'); if (pf) pf.remove();
   });
 
   // Uude aknasse avanevad lingid: ikoon ja ekraanilugejale „(avaneb uues aknas)“ (WCAG G201).
