@@ -71,7 +71,8 @@ check(/40-aastaselt \(2016\) algas sinu eripension/.test(await text("#spIntro"))
 check(/suurem/.test(await text("#spPaTxt")), "eripensioni samm selgitab pensioniiga (suurem kahest)");
 await setup({ ...base, spHas: "yes", spMonthly: 1500, spStartAge: 58 });
 L = await labels();
-check(L.indexOf("58 a") > 0 && L.indexOf("58 a") < L.indexOf("60 a"), "58 a samm on enne 60 a sammu: " + L.join(", "));
+{ const ii = (await page.evaluate(() => window.__elukaar.readInput().pensionAgeYears)) - 5 + " a"; // II samba samm: pensioniiga − 5 (RPKS § 7 valem)
+  check(L.indexOf("58 a") > 0 && L.indexOf("58 a") < L.indexOf(ii), "58 a samm on enne II samba sammu (" + ii + "): " + L.join(", ")); }
 await setup({ ...base, spHas: "yes", spMonthly: 1500, spStartAge: 58 });
 const potWork = await page.evaluate(() => window.__elukaar.readInput());
 check(potWork.spWork === true, "vaikimisi töötad edasi");
@@ -206,7 +207,7 @@ const L3 = await page.evaluate(() => [...document.querySelectorAll("#path .path-
 check(L3.includes((i3.pensionAgeYears - 3) + " a") && !L3.includes(i3.pensionAgeYears + " a") && L3.includes((i3.pensionAgeYears - 5) + " a"), "soodus 3: rajal " + (i3.pensionAgeYears - 3) + " a, mitte " + i3.pensionAgeYears + " a; II samba samm alles: " + L3.join(", "));
 await page.evaluate(() => document.querySelector('#path [data-goto="6"]').click());
 const st6 = await page.evaluate(() => ({ h: document.getElementById("h6").textContent, note: document.getElementById("soodusNote").textContent, lock: !document.getElementById("deferLocked").classList.contains("d-none"), btn: document.getElementById("deferLockedBtn").textContent }));
-check(st6.h === "Soodustingimustel pensionile" && /pension ei vähene/i.test(st6.note) && /700 € kuus, siis 776 €/.test(st6.note), "soodus 3: sammu pealkiri ja märkus: " + st6.note);
+check(st6.h === "Soodustingimustel pensionile" && /riiklikku pensioni ei vähendata/i.test(st6.note) && /700 € kuus, siis 776 €/.test(st6.note), "soodus 3: sammu pealkiri ja märkus: " + st6.note);
 check(st6.lock && st6.btn === "Muuda soodustust", "soodus 3: edasilükkamine lukus, nupp „Muuda soodustust“");
 check(new RegExp("sammastes " + (i3.pensionAgeYears - 3) + "-aastaselt").test(await page.evaluate(() => document.body.innerText)), "alumine riba: sammas soodustusega vanuses");
 await setup({ ...base, hazard: "list1" });
@@ -233,9 +234,9 @@ await toResult();
 check(/töötad: palk katab kulud/.test(await text("#chartSummary")), "tulemus: graafiku kokkuvõte selgitab töötamist");
 check(/töötan kuni \d+-aastaseks/.test(await text("#recap")), "kokkuvõte: töötan kuni");
 
-// 4. Pensioniea vihje näitab soodustingimustel iga.
+// 4. Varem pensionile: valiku all on vanus, millal pensionile lähed (pensioniea vihje on muutumatu).
 await setup({ ...base, kidsHas: "yes", kidsB2012: 4 });
-check(/soodustingimustel \d\d a/.test(await text("#paHint")), "pensioniea vihje näitab soodustingimustel iga");
+check(/Pensionile lähed siis \d\d-aastaselt/.test(await text("#soodusYearsHint")) && !/\d/.test(await text("#paHint")), "varem pensionile: vanus valiku all, pensioniea vihje muutumatu");
 check(errs.length === 0, "lehe vead: " + errs.join("; "));
 await browser.close();
 console.log(`\nEripension (UI): ${passed} kontrolli läbis, ${failed} kukkus`);

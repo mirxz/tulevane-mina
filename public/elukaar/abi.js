@@ -10,33 +10,35 @@
     sex: {
       title: 'Miks küsime sugu?',
       html: '<p>Naised elavad Eestis keskmiselt kauem kui mehed. Sellest sõltub, mitu aastat peab sinu raha kestma ja kui pikk on fondipensioni maksuvaba periood.</p>' +
-        '<p><strong>Elada jäänud aastad (Statistikaamet, 2025):</strong></p>' +
+        '<p><strong>Elada jäänud aastad (Statistikaamet, 2025. a):</strong></p>' +
         '<table class="table table-sm"><thead><tr><th scope="col">Vanus</th><th scope="col">Mehed</th><th scope="col">Naised</th></tr></thead>' +
         '<tbody><tr><th scope="row">60</th><td>19,8 a</td><td>25,8 a</td></tr><tr><th scope="row">65</th><td>16,3 a</td><td>21,4 a</td></tr></tbody></table>' +
-        '<p><strong>Muu:</strong> kasutame meeste ja naiste keskmist (65-aastaselt u 18,9 a).</p>' +
-        '<p>Oodatav eluiga on aastatega pikenenud. Alates 2027 on pensioniiga seotud 65-aastaste keskmise eluea muutusega (vt „Pensioniiga“). Arvutus kasutab viimast avaldatud elutabelit ega ennusta selle muutust.</p>' +
-        '<p class="small-muted mb-0">Allikas: ' + a('https://andmed.stat.ee/et/stat/rahvastik__rahvastikusundmused__surmad/RV045', 'Statistikaamet RV045 ja RV046') + '.</p>',
+        '<p><strong>Muu:</strong> arvutus kasutab meeste ja naiste keskmist (65-aastaselt u 19 a).</p>' +
+        '<p>Oodatav eluiga on aastatega pikenenud. Alates 2027. a on pensioniiga seotud 65-aastaste keskmise eluea muutusega. Mis vanuses sina pensionile lähed, näed elukaare sammudest. Arvutus kasutab Statistikaameti viimast avaldatud elutabelit (' + ((window.ELUTABEL && window.ELUTABEL.aasta) || '') + ') ega ennusta eluea pikenemist.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://andmed.stat.ee/et/stat/rahvastik__rahvastikusundmused__surmad/RV045', 'Statistikaamet RV045 ja RV046') + ', elutabel ' + ((window.ELUTABEL && window.ELUTABEL.aasta) || '') + ' (viimane avaldatud aasta).</p>',
     },
     pensionAge: {
       title: 'Kuidas pensioniiga määratakse?',
-      html: '<p><strong>Reegel (RPKS § 7):</strong> pensioniiga on 65 aastat, millele alates 2027. aastast liidetakse 65-aastaste keskmise eluea muutus. Võrreldakse viie aasta keskmist eluiga baasperioodiga 2018–2022 ja muutus ümardatakse kuudeks. Pensioniiga kinnitatakse kaks aastat ette.</p>' +
-        '<p>Reegel kehtib <strong>kalendriaasta järgi</strong>: pensioniiga on see, mis kehtib aastal, mil sa sellesse vanusesse jõuad.</p>' +
+      html: '<p><strong>Seadus (RPKS § 7, alates 2027. a):</strong> pensioniiga on 65 aastat, millele liidetakse 65-aastaste eeldatava eluea muutus. Võrreldakse viie aasta keskmist eluiga (4–8 aastat varem) baasperioodiga 2018–2022. Pensioniiga leitakse kuu täpsusega, see võib tõusta kõige rohkem 3 kuud aastas ja minister kehtestab selle kaks aastat ette.</p>' +
+        '<p>Pensioniiga kehtib <strong>kalendriaasta järgi</strong>: sinu pensioniiga on see, mis kehtib aastal, mil sa sellesse vanusesse jõuad.</p>' +
         '<table class="table table-sm"><thead><tr><th scope="col">Aasta</th><th scope="col">Pensioniiga</th></tr></thead><tbody>' +
-        '<tr><th scope="row">2026</th><td>65 a</td></tr><tr><th scope="row">2027</th><td>65 a 1 k (kehtestatud)</td></tr>' +
-        '<tr><th scope="row">2028</th><td>65 a 3 k (kavand)</td></tr><tr><th scope="row">2029</th><td>65 a 4 k (kavand)</td></tr>' +
-        '<tr><th scope="row">hiljem</th><td>sõltub eluea muutusest, ligikaudne</td></tr></tbody></table>' +
-        '<p>„Reegli järgi“ näitab sinu sünniaasta järgi arvutatud vanust täisaastates. Kui oled sisse logitud, tuleb see tulevikus SKA andmetest; seni saad selle valida ise.</p>' +
-        '<p class="small-muted mb-0">Allikad: ' + a('https://www.riigiteataja.ee/akt/RPKS', 'Riikliku pensionikindlustuse seadus § 7') + ', ' + a('https://www.err.ee/1609773990/pensioniiga-touseb-2027-aastal-65-aasta-ja-uhe-kuuni', 'ERR 2027') + ', ' + a('https://err.ee/1610124787/2029-aasta-vanaduspensioniiga-on-65-aastat-ja-neli-kuud', 'ERR 2029') + '.</p>',
+        '<tr><th scope="row">2026. a</th><td>65 a</td></tr><tr><th scope="row">2027. a</th><td>65 a 1 k (kehtestatud)</td></tr>' +
+        '<tr><th scope="row">2028. a</th><td>65 a 3 k (kehtestatud)</td></tr><tr><th scope="row">2029. a</th><td>65 a 4 k (eelnõu)</td></tr>' +
+        '<tr><th scope="row">2030.–2032. a</th><td>u 65 a 7 k … 66 a (prognoos)</td></tr><tr><th scope="row">hiljem</th><td>u 66 a (prognoos)</td></tr></tbody></table>' +
+        '<p><strong>Täpset pensioniiga pärast 2029. aastat ei tea keegi.</strong> See sõltub sellest, kui kaua inimesed tulevikus elavad. Arvutame nagu Sotsiaalkindlustusameti kalkulaator: eeldame, et eluiga jääb viimase avaldatud aasta tasemele (2025. a: 65-aastased elavad keskmiselt veel 18,9 aastat). Kui eluiga pikeneb, tõuseb ka pensioniiga: näiteks Tuleva kogumiskalkulaator eeldab 1,5 kuud iga sünniaasta kohta pärast 1962. aastat.</p>' +
+        '<p><strong>Täpsem aasta SKA-st:</strong> ' + a('https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator', 'SKA iseteenindus') + ' → Kalkulaatorid → Pensionikalkulaator → Prognoosimine → „Vanaduspension“ → „Pensionile jäämise aeg“. Pensioniiga = see aasta miinus sünniaasta. Kui see erineb Elukaare arvutusest, vali see väljal „Pensioniiga“. Laste või tervist kahjustava töö eest varem minekut ära siia lisa, selle arvestame eraldi.</p>' +
+        '<p class="small-muted mb-0">Allikad: ' + a('https://www.riigiteataja.ee/akt/RPKS', 'Riikliku pensionikindlustuse seadus § 7 ja § 7¹') + ', ' + a('https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-taotlemine/pensioniiga', 'SKA: pensioniiga') + ', ' + a('https://andmed.stat.ee/et/stat/rahvastik__rahvastikusundmused__surmad/RV045', 'Statistikaamet RV045') + ' (kontrollitud 16.10.2026).</p>',
     },
+
     p1: {
       title: 'Mis on riiklik pension?',
       html: '<p>Riiklik vanaduspension (I sammas) on enamikule pensionäridest peamine sissetulek. Selle suurus mõjutab toimetulekut pensionieas kõige rohkem. Siin ei ole arvestatud sinu muid sääste.</p>' +
         '<p><strong>Kuidas see kujuneb:</strong></p><ul>' +
         '<li><strong>Baasosa:</strong> kõigil sama.</li>' +
-        '<li><strong>Staažiosa:</strong> tööaastad kuni 1998. Iga aasta annab sama palju, palk ei loe.</li>' +
-        '<li><strong>Kindlustusosa (1999–2020):</strong> sinu eest makstud sotsiaalmaksu järgi. Kahekordne palk annab kaks korda rohkem.</li>' +
-        '<li><strong>Ühendosa (alates 2021):</strong> pool palga järgi, pool kõigile võrdselt. Kahekordne palk annab umbes 1,5 korda rohkem.</li></ul>' +
-        '<p>II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. Seetõttu võib vanem inimene, kellel on palju tööaastaid enne 1999, saada suuremat riiklikku pensioni kui noorem ja suurema palgaga inimene. Noorema riikliku pensioni kõrvale tuleb II samba raha.</p>' +
+        '<li><strong>Staažiosa:</strong> tööaastad kuni 1998. a. Iga aasta annab sama palju, palk ei loe.</li>' +
+        '<li><strong>Kindlustusosa (1999.–2020. a):</strong> sinu eest makstud sotsiaalmaksu järgi. Kahekordne palk annab kaks korda rohkem.</li>' +
+        '<li><strong>Ühendosa (alates 2021. a):</strong> pool palga järgi, pool kõigile võrdselt. Kahekordne palk annab umbes 1,5 korda rohkem.</li></ul>' +
+        '<p><strong>Tundub palga kohta väike?</strong> Alates 2021. a sõltub riiklik pension palgast vähem (ühendosa). II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. Seetõttu võib vanem inimene, kellel on palju tööaastaid enne 1999. a, saada suuremat riiklikku pensioni kui noorem ja suurema palgaga inimene. Noorema riikliku pensioni kõrvale tuleb II samba raha.</p>' +
         '<p>Pensioni indekseeritakse igal aastal 1. aprillist. Arvutus on tänastes eurodes, seega kasv pärast hinnatõusu jääb välja.</p>' +
         '<p><strong>Kust võtta summa:</strong> ' + a(SKA_SELF + 'self-service/pension-calculator', 'SKA iseteeninduse pensionikalkulaator') + ', osa <strong>„Prognoosimine“</strong>:</p>' +
         '<ol><li>Lülita sisse „Arvesta kogunenud pensioni andmeid“ ja sisesta oma brutopalk, II samba sissemakse ja III samba sissemakse.</li>' +
@@ -49,15 +51,18 @@
     },
     kids: {
       title: 'Kuidas lapsed pensioni mõjutavad?',
-      html: '<p>Lapse kasvatamine (vähemalt 8 aastat) annab kaks õigust. Mõlemat saab kasutada <strong>üks vanem</strong>; vanemad lepivad kirjalikult kokku. Kokkuleppe puudumisel jagatakse õigus võrdselt. Üks vanem võib kasutada õigust kõigi laste eest.</p>' +
-        '<p><strong>1. Varem pensionile, pension ei vähene:</strong></p><ul><li>3 last: 1 a varem</li><li>4 last: 3 a varem</li><li>5 või enam last või puudega laps: 5 a varem</li></ul>' +
+      html: '<p>Lapse kasvatamine (vähemalt 8 aastat) annab kaks eraldi õigust. Üks vanem võib kasutada <strong>mõlemat õigust kõigi laste eest</strong>, aga õigused võib ka vanemate vahel jagada. Vanemad lepivad kirjalikult kokku, kokkuleppe puudumisel jagatakse õigus võrdselt.</p>' +
+        '<p><strong>1. Varem pensionile ilma vähenduskordajata:</strong></p><ul><li>3 last: 1 a varem</li><li>4 last: 3 a varem</li><li>5 või enam last või puudega laps: 5 a varem</li></ul><p>Riiklikku pensioni ei vähendata nagu paindliku pensioni puhul (kuni −30,7%). Kuumakse tuleb siiski veidi väiksem, sest tööaastaid jääb vähemaks. Kui alustad varem ka II samba väljamakseid, on ka see kuumakse väiksem: sissemakseid on vähem ja raha jagatakse pikema aja peale.</p><p><strong>Kokku saad riiklikku pensioni tavaliselt rohkem</strong>, sest seda makstakse 1–5 aastat kauem. Näiteks 3 last, 1 a varem: kuumakse u 12 € väiksem (19 aasta peale u 2 700 €), aga lisa-aasta pension on u 10 000 €.</p>' +
+        '<p><strong>Võid edasi töötada.</strong> Kuni sa II sambast raha välja ei võta, laekuvad sinna riikliku pensioni kõrvalt edasi sinu ja riigi sissemaksed. Kui esitad II samba väljamakse avalduse (ka fondipensioni), lõpevad sissemaksed mõne kuu pärast: 31. augustil, 31. detsembril või 30. aprillil, olenevalt avalduse ajast. Elukaares vali sammus „Soodustingimustel pensionile“ „Töötan edasi“: II samba väljamaksed algavad siis töö lõppedes.</p>' +
+        '<p class="small-muted">Allikas: ' + a('https://www.pensionikeskus.ee/ii-sammas/valjamaksed/', 'Pensionikeskus: II samba väljamaksed') + ' (kontrollitud 16.10.2026).</p>' +
         '<p><strong>2. Pensionilisa:</strong></p><ul>' +
-        '<li>enne 1991 sündinud laps: 1,5 aastahinnet ja 2 aastat staaži</li>' +
-        '<li>1991–2012 sündinud laps: 3,5 aastahinnet</li>' +
-        '<li>2013 või hiljem sündinud laps: riik maksab ühe vanema II sambasse 4% keskmisest palgast kuni lapse 3-aastaseks saamiseni (ilma II sambata 3,5 aastahinnet)</li></ul>' +
-        '<p>Aastahinne on alates 1.04.2026 10,48 € kuus. Näiteks kaks 1991–2012 sündinud last annavad u 73 € kuus.</p>' +
+        '<li>enne 1991. a sündinud laps: 1,5 aastahinnet + 2 aastat staaži (staažiaasta on sama väärt kui aastahinne), kokku 3,5</li>' +
+        '<li>1991.–2012. a sündinud laps: 3,5 aastahinnet</li>' +
+        '<li>2013. a või hiljem sündinud laps: riik maksab ühe vanema II sambasse 4% Eesti keskmisest kuutulust (2026. a: 76,12 €, 2027. a: 80,76 € kuus) kuni lapse 3-aastaseks saamiseni</li>' +
+        '<li>ilma II sambata: 2013. a – aug 2021. a sündinud lapse eest 3,5 aastahinnet, kui oled sündinud enne 1983. a; sept 2021. a või hiljem sündinud lapse eest 3,5 aastahinnet, kui sa ei olnud lapse esimesel kolmel aastal II sambas</li></ul>' +
+        '<p>Aastahinne on alates 1.04.2026 10,48 € kuus. Näiteks kaks 1991.–2012. a sündinud last annavad u 73 € kuus.</p>' +
         '<p>Eripensionile lisa ei lisata. Kui eripensionär läheb pensionieas üle vanaduspensionile, lisandub lisa sellele.</p>' +
-        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'SKA: laste kasvatamine ja pension') + ' (kontrollitud 16.10.2026).</p>',
+        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'SKA: laste kasvatamine ja pension') + ', ' + a('https://www.riigiteataja.ee/akt/RPKS', 'RPKS § 24 ja § 28') + ', ' + a('https://www.riigiteataja.ee/akt/KoPS', 'KoPS § 10') + ' (kontrollitud 16.10.2026).</p>',
     },
     kidsWho: {
       title: 'Keda loetakse lapse kasvatajaks?',
@@ -67,14 +72,14 @@
         '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/types-pensions/old-age-pension-under-favourable-conditions', 'SKA: soodustingimustel vanaduspension') + ', ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'laste kasvatamine ja pension') + ' (kontrollitud 16.10.2026).</p>',
     },
     kidsEarly: { title: 'Kes kasutab varem pensionile mineku õigust?', html: '<p>Laste eest on <strong>kaks eraldi õigust</strong>: varem pensionile minek (3+ last või puudega laps) ja pensionilisa. Kumbagi saab kasutada <strong>üks vanem</strong>, aga õigused võib vanemate vahel jagada: näiteks üks läheb varem pensionile ja teine saab pensionilisa.</p>' +
-        '<ul><li>Vanemad lepivad <strong>kirjalikult</strong> kokku, kes millist õigust kasutab. Üks vanem võib kasutada õigust kõigi laste eest.</li>' +
+        '<ul><li>Vanemad lepivad <strong>kirjalikult</strong> kokku, kes millist õigust kasutab. Üks vanem võib kasutada mõlemat õigust kõigi laste eest.</li>' +
         '<li>Kokkuleppe puudumisel jagatakse õigus vanemate vahel <strong>võrdselt</strong>.</li>' +
         '<li>Teise vanema nõusolekut pole vaja, kui ta on surnud, temalt on enne lapse 8-aastaseks saamist vanemaõigused ära võetud või tema elukohta ei saa rahvastikuregistri järgi kindlaks teha.</li>' +
         '<li>Kokkulepe ja avaldus esitatakse SKA-le e-postiga või ' + a(SKA_SELF, 'SKA iseteeninduses') + '.</li></ul>' +
         '<p>Tasub mõelda, kellele õigus rohkem annab: näiteks eripensionärile pensionilisa ei lisata, siis võiks seda kasutada teine vanem.</p>' +
         '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions', 'SKA: laste kasvatamine ja pension') + ' (kontrollitud 16.10.2026).</p>' },
     kidsSup: { title: 'Kes kasutab pensionilisa õigust?', html: '<p>Laste eest on <strong>kaks eraldi õigust</strong>: varem pensionile minek (3+ last või puudega laps) ja pensionilisa. Kumbagi saab kasutada <strong>üks vanem</strong>, aga õigused võib vanemate vahel jagada: näiteks üks läheb varem pensionile ja teine saab pensionilisa.</p>' +
-        '<ul><li>Vanemad lepivad <strong>kirjalikult</strong> kokku, kes millist õigust kasutab. Üks vanem võib kasutada õigust kõigi laste eest.</li>' +
+        '<ul><li>Vanemad lepivad <strong>kirjalikult</strong> kokku, kes millist õigust kasutab. Üks vanem võib kasutada mõlemat õigust kõigi laste eest.</li>' +
         '<li>Kokkuleppe puudumisel jagatakse õigus vanemate vahel <strong>võrdselt</strong>.</li>' +
         '<li>Teise vanema nõusolekut pole vaja, kui ta on surnud, temalt on enne lapse 8-aastaseks saamist vanemaõigused ära võetud või tema elukohta ei saa rahvastikuregistri järgi kindlaks teha.</li>' +
         '<li>Kokkulepe ja avaldus esitatakse SKA-le e-postiga või ' + a(SKA_SELF, 'SKA iseteeninduses') + '.</li></ul>' +
@@ -86,13 +91,14 @@
         '<table class="table table-sm"><thead><tr><th scope="col"></th><th scope="col">Nimekiri nr 1</th><th scope="col">Nimekiri nr 2</th></tr></thead><tbody>' +
         '<tr><th scope="row">Töö</th><td>eriti raske ja eriti kahjulik</td><td>raske ja kahjulik</td></tr>' +
         '<tr><th scope="row">Varem pensionile</th><td>10 a</td><td>5 a</td></tr>' +
-        '<tr><th scope="row">Staaž kokku</th><td>vähemalt 20 a</td><td>üle 25 a</td></tr>' +
+        '<tr><th scope="row">Staaž kokku</th><td>vähemalt 20 a</td><td>vähemalt 25 a</td></tr>' +
         '<tr><th scope="row">Sellest nimekirja tööl</th><td>vähemalt 10 a</td><td>vähemalt 12,5 a</td></tr></tbody></table>' +
         '<p>Töö pidi olema täiskohaga ja sellel tööl ei tohi enam töötada. Muul tööl võid edasi töötada. Nimekirja tööd arvestatakse staaži hulka kuni 31.12.2030 (põlevkivi kaevandamine ja töötlemine kuni 31.12.2049).</p>' +
-        '<p><strong>Kust nimekirju näha:</strong> Vabariigi Valitsuse 16.07.1992 määrus nr 206 „Soodustingimustel vanaduspensionile õigust andvate tootmisalade, tööde, kutsealade ja ametikohtade loetelude kinnitamine“ (' + a('https://www.riigiteataja.ee/', 'Riigi Teataja') + ', otsi pealkirja järgi). Nimekirjad on tootmisalade kaupa, näiteks kaevandamine, keemiatööstus, metallitöötlus ja kiirgusega töö. Nimekirja rakendatakse rangelt: kui sinu ametit seal pole, õigust ei teki. Kas sinu töö loeb, ütleb SKA.</p>' +
-        '<p>Kui sul on ka lastega soodustus, arvestame neist suurema.</p>' +
+        '<p><strong>Kust nimekirju näha:</strong> Vabariigi Valitsuse 16.07.1992 määrus nr 206 „Soodustingimustel vanaduspensionile õigust andvate tootmisalade, tööde, kutsealade ja ametikohtade loetelude kinnitamine“ (' + a('https://www.riigiteataja.ee/akt/24317', 'Riigi Teataja') + ', kehtib kuni 31.12.2030). Nimekirjad on tootmisalade kaupa, näiteks kaevandamine, keemiatööstus, metallitöötlus ja kiirgusega töö. Nimekirja rakendatakse rangelt: kui sinu ametit seal pole, õigust ei teki. Kas sinu töö loeb, ütleb SKA.</p>' +
+        '<p><strong>Lisa pensionile (nimekiri nr 1, SVPS § 3):</strong> iga nimekirja nr 1 tööaasta lisab pensionile 3,1% aastahindest (u 0,32 € kuus), allmaatöö aasta lisaks 21,9% (u 2,29 € kuus). Nimekirja nr 2 eest lisa pole.</p>' +
+        '<p>Kui sul on ka lastega soodustus: kui on mõlemad, kehtib see, mis annab rohkem aastaid varem; aastad ei liitu.</p>' +
         '<p><strong>Põlevkivi kaevandamine ja töötlemine</strong> võib anda õiguse kas siia (varem vanaduspensionile) või väljateenitud aastate pensionile (vt „Eripension“). Need on kaks eri seadust ja korraga makstakse ühte; SKA ütleb, kumb sulle kehtib ja kumb on suurem.</p>' +
-        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/types-pensions/old-age-pension-under-favourable-conditions', 'SKA: soodustingimustel vanaduspension') + ' (kontrollitud 16.10.2026).</p>',
+        '<p class="small-muted mb-0">Allikas: ' + a(SKA + '/en/pension-and-benefits/types-pensions/old-age-pension-under-favourable-conditions', 'SKA: soodustingimustel vanaduspension') + ', ' + a('https://www.riigiteataja.ee/akt/SVPS', 'Soodustingimustel vanaduspensionide seadus (SVPS) § 1') + ', ' + a('https://www.riigiteataja.ee/akt/24317', 'nimekirjad nr 1 ja 2 (VV määrus nr 206)') + ' (kontrollitud 16.10.2026).</p>',
     },
     sp: {
       title: 'Mis on eripension?',
@@ -101,7 +107,7 @@
         '<li><strong>Väljateenitud aastate pension:</strong> nt piloot, meremees, balletiartist, päästja, vanglaametnik.</li></ul>' +
         '<p><strong>Uutele töötajatele ametipensioni enam ei teki.</strong> Õigus on neil, kes olid ametis tähtpäeval: kohtunik 1.7.2013, kaitsevägi, politsei ja prokuratuur 31.12.2019, päästja ja vanglaametnik 30.6.2022.</p>' +
         '<p><strong>Väljateenitud aastate pensioni</strong> staaži arvestatakse ametites, kus nõutav staaž on 10 või 12,5 aastat, kuni 31.12.2030 ja ametites, kus see on 15–25 aastat, kuni 31.12.2036. Põlevkivi kaevandamisel, töötlemisel ja rikastamisel kuni 31.12.2049.</p>' +
-        '<p><strong>Erinevus tervist kahjustavast tööst:</strong> väljateenitud aastate pension on eraldi pension, mida makstakse ametis töövõime vähenemise tõttu enne pensioniiga. Tervist kahjustav töö (soodustingimustel pension) on tavaline vanaduspension varem. Mõlemal on põlevkivi erand kuni 2049, aga korraga makstakse ühte.</p>' +
+        '<p><strong>Erinevus tervist kahjustavast tööst:</strong> väljateenitud aastate pension on eraldi pension, mida makstakse ametis töövõime vähenemise tõttu enne pensioniiga. Tervist kahjustav töö (soodustingimustel pension) on tavaline vanaduspension varem. Mõlemal on põlevkivi erand kuni 2049. a, aga korraga makstakse ühte.</p>' +
         '<p><strong>Kui suur see on:</strong> kaitseväel ja politseil 50% ametipalgast 20 teenistusaasta eest ja iga lisaaasta +2,5%, kokku kuni 75%. Määratud eripensioni näed ' + a(SKA_SELF, 'SKA iseteeninduses') + '; tulevase summa arvuta ise selle reegli järgi.</p>' +
         '<p><strong>Kahte riiklikku pensioni korraga ei maksta.</strong> Kui jõuad pensioniikka (või lastega soodustuse vanusesse), saad valida suurema: eripension või vanaduspension. Eripensioni ei saa edasi lükata, varem võtta ega peatada.</p>' +
         '<p class="small-muted mb-0">Allikad: ' + a(SKA + '/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid', 'SKA eripensionid') + ' (väljateenitud aastate pension ja tähtajad kontrollitud 16.10.2026); ametipensionide tähtpäevad: ametite seadused [secondary, tiimi kokkuvõte 14.10.2026].</p>',
@@ -117,26 +123,58 @@
     pillars: {
       title: 'Miks küsime sammaste ja töö kohta?',
       html: '<p>Nende andmete järgi arvutame, kui palju sul pensionieas sammastes raha on ja kui kaua see kestab.</p>' +
-        '<ul><li><strong>II sammas</strong> on kohustuslik kogumispension: osa sinu palgast ja riigi sotsiaalmaksust läheb pensionifondi. Raha saad kasutada alates 5 aastat enne pensioniiga.</li>' +
+        '<ul><li><strong>II sammas</strong> on kohustuslik kogumispension: osa sinu palgast ja riigi sotsiaalmaksust läheb pensionifondi. Raha saad kasutada alates 5 aastat enne pensioniiga. Varem välja võtta saab ainult ühe korra 22% tulumaksuga (vt „II samba sissemakse“ selgitus).</li>' +
         '<li><strong>III sammas</strong> on vabatahtlik: maksad ise ja saad tulumaksu tagasi (kuni 15% brutotulust, kuni 6000 € aastas).</li>' +
         '<li><strong>Brutopalk</strong> määrab II samba sissemakse ja selle, kui palju töötamine pensionieas pensioni tõstab.</li></ul>' +
         '<p class="mb-0">Loe lähemalt: ' + a('https://tuleva.ee/', 'Tuleva') + ', ' + a('https://www.pensionikeskus.ee/', 'Pensionikeskus') + ', ' + a(SKA + '/et', 'SKA') + '.</p>',
     },
+    soodusYears: {
+      title: 'Miks pension väheneb, kui lähed varem pensionile?',
+      html: '<p>Laste või tervist kahjustava töö eest varem minnes <strong>pensioni vähenduskordajat ei rakendata</strong> (erinevalt eelpensionist, mis 5 aastat varem vähendab pensioni u 30% eluks ajaks).</p>' +
+        '<p>Kuumakse on siiski veidi väiksem, sest pension arvutatakse nende tööaastate järgi, mis sul pensionile minnes on. Iga aasta varem tähendab ühte tööaastat vähem: palga 4 000 € korral u 12 € kuus. Sotsiaalkindlustusameti kalkulaatoris: 3 last (1 a varem) 853 €, 4 last (3 a) 829 €, 5 last (5 a) 805 € tavalise 865 € asemel.</p>' +
+        '<p><strong>Kokku saad siiski rohkem:</strong> aasta varem minnes saad 12 kuu pensioni juurde (nt 12 × 853 € ≈ 10 200 €). Väiksema kuumakse tõttu jääb 20 aasta jooksul saamata u 2 900 €, seega jääd u 7 300 € plussi. Kui jätkad samal ajal tööd, lisandub tööaasta pensionile tagasi.</p>' +
+        '<p>Õigus ei kohusta: võid minna ka hiljem kui kõige varasem aeg, kuni tavalise pensionieani.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/RPKS', 'RPKS § 10') + ', ' + a('https://www.riigiteataja.ee/akt/SVPS', 'SVPS § 1') + ', SKA pensionikalkulaator (kontrollitud 16.10.2026).</p>',
+    },
+    household: {
+      title: 'Mis muutub, kui elad pensionil üksi?',
+      html: '<p>Üksi elades on kulud inimese kohta suuremad: kodu ja arved maksad ainult sina. Paaris elades on summad sinu osa paari kuludest.</p>' +
+        '<p><strong>Üksi elava pensionäri toetus:</strong> 200 € üks kord aastas, koos oktoobri pensioniga. Seda saab vanaduspensionieas inimene, kes elab rahvastikuregistri järgi üksi ja kelle kätte saadav pension on alla 992 € kuus (2026. a). Taotlema ei pea, SKA maksab ise. Hooldekodus elavale inimesele toetust ei maksta. Arvutus seda toetust ei lisa (u 17 € kuus).</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/muud-pensioniga-seotud-huvitised-ja-toetused/uksi-elava-pensionari', 'SKA: üksi elava pensionäri toetus') + ' (kontrollitud 16.10.2026).</p>',
+    },
+    gross: {
+      title: 'Kuidas palk arvutuses muutub?',
+      html: '<p>Eeldame, et <strong>palk tõuseb 3% aastas</strong> ja hinnad 2% aastas (Euroopa Keskpanga eesmärk). Tänases rahas kasvab palk seega umbes 1% aastas. II samba sissemaksed (sinu 2, 4 või 6% ja riigi 4%) on protsent palgast, seega kasvavad need tänases rahas samuti umbes 1% aastas.</p>' +
+        '<p>Kõik summad on tänastes eurodes. Riikliku pensioni prognoos tuleb SKA-st ja eeldab, et sinu palk keskmise palga suhtes jääb samaks.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://github.com/TulevaEE/onboarding-client', 'Tuleva kalkulaator (onboarding-client)') + ', ' + a('https://www.ecb.europa.eu/mopo/strategy/html/index.et.html', 'Euroopa Keskpank: inflatsioonieesmärk 2%') + '.</p>',
+    },
+    p3Monthly: {
+      title: 'Kuidas III samba sissemakse arvutuses muutub?',
+      html: '<p>Eeldame, et maksad III sambasse <strong>igal aastal sama summa eurodes</strong>. Tulumaksusoodustuse piir on 15% brutotulust, kuid mitte üle 6 000 € aastas, ja see piir ei tõuse koos hindadega. III samba makse ei ole protsent palgast, seega see ei kasva koos palgaga nagu II samba sissemakse (u 1% aastas). Kuna hinnad tõusevad 2% aastas, on sama summa tänases rahas igal aastal u 2% väiksem. See puudutab ainult uut sissemakset: sambas olev raha kasvab valitud tootluse võrra (vaikimisi 2% aastas pärast inflatsiooni).</p>' +
+        '<p>Kui tõstad makset koos hindadega, kasvab vara rohkem. Maksusoodustuse piir (6 000 € aastas) on seaduses kindel summa. Võimalik, et seda tulevikus hindade tõustes muudetakse, aga seda ei saa ette teada, seega arvutus kasutab praegust piiri.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.emta.ee/', 'EMTA: III samba maksusoodustus') + ', ' + a('https://github.com/TulevaEE/onboarding-client', 'Tuleva kalkulaator') + '.</p>',
+    },
     p2Rate: {
       title: 'Mida tähendab II samba sissemakse?',
-      html: '<ul><li><strong>2%</strong> brutopalgast on vaikimisi.</li><li><strong>4% või 6%</strong>: alates 2025 saad sissemakset vabatahtlikult tõsta. See ei vähenda sinu riikliku pensioni õigusi.</li>' +
-        '<li><strong>Riik</strong> lisab alati 4% sinu sotsiaalmaksust, sõltumata sinu valitud määrast.</li><li><strong>Puudub:</strong> sa ei ole II sambaga liitunud või lahkusid sellest.</li></ul>' +
-        '<p>Määra saab muuta üks kord aastas. Uus määr kehtib alati jaanuarist (avaldus 30. novembriks).</p>' +
-        '<p class="small-muted mb-0">Allikas: ' + a('https://www.pensionikeskus.ee/ii-sammas/sissemaksed/makse-maara-muutmine/', 'Pensionikeskus: makse määra muutmine') + ' (kontrollitud 16.10.2026).</p>',
+      html: '<ul><li><strong>2%</strong> brutopalgast on vaikimisi.</li><li><strong>4% või 6%</strong>: alates 2025. a saad sissemakset vabatahtlikult tõsta. See ei vähenda sinu riikliku pensioni õigusi.</li>' +
+        '<li><strong>Riik</strong> lisab II sambasse lisaks 4% sinu brutopalgast (sotsiaalmaksu arvelt), sõltumata sellest, kas maksad ise 2%, 4% või 6%.</li><li><strong>Puudub:</strong> sa ei ole II sambaga liitunud või lahkusid sellest.</li></ul>' +
+        '<p>Sissemakse määra (2%, 4% või 6%) saab muuta üks kord aastas. Uus määr kehtib jaanuarist, kui esitad avalduse 30. novembriks.</p>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.pensionikeskus.ee/ii-sammas/sissemaksed/makse-maara-muutmine/', 'Pensionikeskus: makse määra muutmine') + ' (kontrollitud 16.10.2026).</p>' +
+        '<p class="mt-3"><strong>Kas II samba raha saab enne pensioniiga välja võtta?</strong></p><ul>' +
+        '<li><strong>Alates 5 aastat enne pensioniiga</strong> saad raha kasutada pensionina: fondipension elada jäänud aastate peale on tulumaksuvaba, korraga välja võttes on tulumaks 10%.</li>' +
+        '<li><strong>Varem</strong> saad raha välja võtta 22% tulumaksuga. Alates 01.11.2026 saab seda teha <strong>ainult ühe korra</strong>. Siis lõpevad sinu ja riigi sissemaksed ning uuesti saad alustada 5 aasta pärast (varem 10 aastat).</li>' +
+        '<li><strong>Alates 2028. a</strong> saab välja võtta ka osa rahast. Kes lõpetas ainult maksed (raha välja võtmata), võib siis kohe uuesti alustada.</li>' +
+        '<li>Välja võetud raha ei kasva pensioniks edasi ja riigi 4% jääb saamata, seega pensioniks jääb vähem.</li></ul>' +
+        '<p class="small-muted mb-0">Allikas: ' + a('https://www.riigiteataja.ee/akt/KoPS', 'Kogumispensionide seadus § 27¹, § 27², § 43¹') + ' (redaktsioonid 01.11.2026 ja 01.01.2028, kontrollitud 16.10.2026).</p>',
     },
     p3Joined: {
       title: 'Miks on oluline, millal III sambaga liitusid?',
       html: '<p>Sellest sõltub, mis vanusest saad III samba raha välja võtta soodsama maksuga.</p>' +
-        '<ul><li><strong>Liitusid enne 2021:</strong> soodsam maks kehtib alates 55-aastaselt.</li><li><strong>Liitusid 2021 või hiljem:</strong> soodsam maks kehtib alates 60-aastaselt.</li></ul>' +
+        '<ul><li><strong>Liitusid enne 2021. a:</strong> soodsam maks kehtib alates 55-aastaselt.</li><li><strong>Liitusid 2021. a või hiljem:</strong> soodsam maks kehtib alates 60-aastaselt.</li></ul>' +
         '<p>Soodsam maks tähendab, et kogu raha korraga välja võttes on tulumaks 10% ja fondipensionina 0%. Enne seda vanust on tulumaks 22%. Kogumist peab olema vähemalt 5 aastat.</p>' +
         '<p class="mb-1"><strong>Kust näha, millal liitusid:</strong></p>' +
         '<ul class="mb-0"><li>Pensionikeskuse e-teenuses: vaata, millal said esimesed III samba osakud. ' + a('https://www.pensionikeskus.ee/', 'Pensionikeskus') + '</li>' +
-        '<li>Oma panga või Tuleva kontol III samba ülevaates.</li><li>Kui sa ei tea, vali „2021 või hiljem“. Siis ei arvesta lugu soodustust, mida sul pole.</li></ul>',
+        '<li>Oma panga või Tuleva kontol III samba ülevaates.</li><li>Kui sa ei tea, vali „2021. a või hiljem“. Siis ei arvesta lugu soodustust, mida sul pole.</li></ul>',
     },
     fundCur: {
       title: 'Mida tähendab „tootlus pärast inflatsiooni“?',
@@ -160,7 +198,7 @@
   root.ELUKAAR_KKK_FOND = [
     { q: 'Millal valida fondipension?',
       html: '<ul>' +
-        '<li><strong>Kui ootad pikka elu.</strong> 65-aastane naine elab keskmiselt veel 21,4 aastat (u 86-aastaseks), mees 16,3 aastat (u 81-aastaseks) (Statistikaamet 2025). See on keskmine: pooled elavad kauem, iga kümnes naine 97-aastaseks ja mees 93-aastaseks. Kui sammaste raha saab otsa, jääb alles ainult riiklik pension.</li>' +
+        '<li><strong>Kui ootad pikka elu.</strong> 65-aastane naine elab keskmiselt veel 21,4 aastat (u 86-aastaseks), mees 16,3 aastat (u 81-aastaseks) (Statistikaamet 2025. a). See on keskmine: pooled elavad kauem, iga kümnes naine 97-aastaseks ja mees 93-aastaseks. Kui sammaste raha saab otsa, jääb alles ainult riiklik pension.</li>' +
         '<li><strong>Fondipensioni lepingut saab igal aastal uuendada.</strong> Üks leping kestab elada jäänud aastad ja lõpeb. Kui sõlmid igal aastal uue lepingu järelejäänud raha peale (jälle elada jäänud aastate pikkusena), ei saa raha kunagi otsa ja makse jääb maksuvabaks, aga väga kõrges eas on kuumakse väiksem.</li>' +
         '<li><strong>Kui sul on muid sääste või investeeringuid,</strong> millest saad esimestel pensioniaastatel elada, võib samba raha jätta fondi kasvama ja fondipensioni alustada hiljem.</li>' +
         '<li><strong>Kõik korraga välja võtta on maksu mõttes kõige ebasoodsam:</strong> tulumaks on 10% (enne soodusiga 22%). Et väljavõetud raha teeniks sama palju kui fondis, peaks see 10% maksu tasa teenima, see tähendab riskantsemat investeeringut.</li>' +
@@ -178,7 +216,7 @@
         '<li><strong>Pärandamine.</strong> Fondis olevad II ja III samba osakud on sinu pärandvara. Pärijad saavad need oma pensionikontole või rahana (22% tulumaks); sina ei pea selleks avaldust tegema.</li></ul>' +
         '<p class="small-muted mb-0">Allikas: ' + a('https://tuleva.ee/pensioni-valjamaksed/', 'Tuleva: pensioni väljamaksed') + ' (loetud 17.10.2026).</p>' },
     { q: 'Kas fondipensioni saab alustada juba 60-aastaselt?',
-      html: '<p><strong>Jah.</strong> II samba fondipensioni saab alustada kuni 5 aastat enne pensioniiga. Kui periood on vähemalt soovitusliku pikkusega (elada jäänud aastad), on väljamaksed tulumaksuvabad. III sambast saad fondipensioni alates 55-aastaselt (liitusid enne 2021) või 60-aastaselt.</p>' +
+      html: '<p><strong>Jah.</strong> II samba fondipensioni saab alustada kuni 5 aastat enne pensioniiga. Kui periood on vähemalt soovitusliku pikkusega (elada jäänud aastad), on väljamaksed tulumaksuvabad. III sambast saad fondipensioni alates 55-aastaselt (liitusid enne 2021. a) või 60-aastaselt.</p>' +
         '<ul><li>Väljamaksete algus <strong>lõpetab II samba sissemaksed</strong>, ka riigi 4%. Kui töötad edasi, kaotad need.</li>' +
         '<li>Varem alustades on periood pikem ja kuumakse väiksem.</li>' +
         '<li><strong>Kehv tervis:</strong> kui ootad lühemat elu, võib varem alustamine olla mõistlik, sest saad raha kätte, kui seda vajad. Maksuvaba periood arvutatakse aga keskmise eluea järgi, mitte sinu tervise järgi. Täieliku puuduva töövõime korral saad II sambast pensionile jääda igas vanuses ja maksuvabalt.</li></ul>' +

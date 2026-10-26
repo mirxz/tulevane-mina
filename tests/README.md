@@ -7,11 +7,12 @@ Mida kontrollime, kuidas jooksutada ja mida testid **ei** tõesta. Viimati lisat
 ```
 npm run test:mootor      # kiired testid, brauserita (mootor, reeglid, golden master, invariandid)
 npm run test:brauser     # brauseritestid (graafik, UI, ligipääsetavus); vajab töötavat `wrangler dev` serverit (port 8787)
-npm test                 # mõlemad
+npm test                 # mõlemad (server peab juba jooksma)
+npm run test:koik        # mõlemad; käivitab wrangler dev ise, kui port 8787 on vaba, ja paneb pärast kinni
 npm run golden:uuenda    # kui arvud muutusid TEADLIKULT: kirjuta golden masterid uuesti ja vaata `git diff` üle
 ```
 
-CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla (GitHub Desktop/käsitsi, kaitstud kaust).
+CI: `.github/workflows/smoke.yml` jooksutab igal push'il ja pull requestil `npm test` (kõik ülaltoodud testid, sh stsenaariumid) kohaliku `wrangler dev` vastu. `tests/ci-test.yml.txt` on varuvariant, mis jagab sama eraldi tööks (mootor, brauser); seda pole vaja, kui `smoke.yml` jääb.
 
 ## Testid tähtsuse järjekorras (elukaar)
 
@@ -27,10 +28,11 @@ CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla
 | 8 | `elukaar-pohi.test.cjs` | Meelis Burget (tuleva-tulevik), porditud | 41 | Elada jäänud aastad, pensioniiga, edasilükkamise protsendid, kulutasemed. |
 | 9 | `elukaar-eripension.test.cjs` | Mirko, Kadi + Claude | 49* | Eripension (TLV-69): algusvanus, pensionieas makstakse suurem kahest (eripension või vanaduspension), eripensioni ei saa edasi lükata (`options().deferral` lukus). |
 | 10 | `elukaar-soodus.test.cjs` | Kadi + Claude | 38* | Soodustingimustel vanaduspension (lapsed, tervist kahjustav töö) muudab ainult pensionile minekut; töö soodustusega pensioni ajal (`soodusWork`, `workUntil`), III sissemakse pärast pensionile minekut (`p3After`). |
-| 11 | `elukaar-lapsed.test.cjs` | Kadi + Claude | 29* | Laste kaks õigust eraldi (varem pensionile, pensionilisa), lisa 1,5 / 3,5 aastahinnet, tervist kahjustav töö (nimekiri 1 ja 2), sugu „Muu“ (meeste ja naiste keskmine elutabel). |
+| 11 | `elukaar-lapsed.test.cjs` | Kadi + Claude | 40* | Laste kaks õigust eraldi (varem pensionile, pensionilisa). Pensionilisa RPKS § 24 lg 1¹ ja § 28 järgi (TLV-18, 16.10): enne 2013 sündinud 3,5 aastahinnet (enne 1981 sündinul 1,5 + 2 a staaži), 2013–08.2021 ilma II sambata ainult enne 1983 sündinud vanemale, 09.2021+ ilma II sambata 3,5; riigi sissemakse II sambasse alla 3-aastaste eest (KoPS § 10, `childPillar2`). Tervist kahjustav töö, sugu „Muu“. |
 | 12 | `elukaar-fondipension-algus.test.cjs` | Kadi + Claude | 11* | Fondipensioni algus pärast pensioniiga: kasvatan edasi kuni valitud vanuseni, siis leping (`fundFrom`, `p3Sep.start`). |
 | 13 | `elukaar-edasilykkamine.test.cjs` | Kadi + Claude | 6* | Elan sammastest, riiklik hiljem (C): `bestDeferral` leiab suurima edasilükkamise, millega kulud on kaetud. |
 | 14 | `elukaar-too-ja-pool.test.cjs` | Kadi + Claude | 17* | Töö pärast pensioniiga kõigil (`workOn`, `workUntil`): palk katab kulud, töö ajal kogu pension 22% maksuga, iga tööaasta tõstab pensioni; edasilükkamine tasub end töötades varem ära. Pool riiklikku pensioni (`scenario.half`): pool, siis täis + pool edasilükkamise tõusust; ei kehti eripensioni ja soodustusega. |
+| 15 | `elukaar-tuleva-vordlus.test.cjs` | Kadi + Claude | 9* | Elukaar = Tuleva kogumiskalkulaator samadel tingimustel (TLV-86): palk +3%, inflatsioon 2%, III makse nominaalselt sama; 3 juhtu Tuleva `project()` tulemuste vastu ±1% (kuu vs aasta arvutus). |
 
 \* `assert`-lausete arv koodis (test ei loenda kontrolle). Read 1–8: elukaare kontrolle kokku **51 906** (loetud 11.10; alloleval mõõtmise testid ei ole siin sees).
 
@@ -44,6 +46,8 @@ CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla
 | `elukaar-ui-edasilykkamine.mjs` | Hoiatus, kui edasilükkamiseks sammaste raha ei jätku, ja nupp „Muuda valik“. |
 | `elukaar-ui-abi.mjs` | „?“ selgitused: dialoog, fookus, Esc, axe. |
 | `elukaar-ui-too-ja-pool.mjs` | Töötamise valik on kõigil (vaikimisi 1 a), „Kohe täis / Pool / Lükkan edasi“ ja aastad (raadio `defer`), eripensioniga lukus. `--pilt fail.png` teeb 6. sammust pildi. |
+| `elukaar-ui-pensioniiga.mjs` | Pensioniiga seaduse valemi järgi (TLV-85): sünniaasta järgi nagu SKA, muutumatu vihje, käsitsi valik jääb alles, üks SKA viide, „?“ selgitus. |
+| `elukaar-ui-lapsed.mjs` | Laste väljad (TLV-18): 2013 – aug 2021 ja sept 2021+ eraldi, „neist alla 3-aastased“ (≤ 2021+ lapsi) ja riigi sissemakse vihje, „?“ viitab seadusele. |
 
 ## Mõõtmise testid (tulemuste leht, `/api/e`)
 
@@ -64,13 +68,17 @@ Testid tõestavad, et mootor, graafik ja tekstid teevad seda, mida me kirja pani
 
 Testid **ei** tõesta, et reeglid ise on õiged:
 
-- Edasilükkamise tabel (+7,93% esimese aasta kohta) on SKA-st kinnitamata ja erineb projekti kirjelduse "0,9% kuus" väitest (vt `reeglid.json`).
+- Edasilükkamise tabel (+7,93% esimese aasta kohta) klapib SKA iseteeninduse pensionikalkulaatoriga (16.10.2026: +7,93 / 16,88 / 27,01 / 38,5 / 51,57%), kuid erineb projekti kirjelduse "0,9% kuus" väitest (vt `reeglid.json`).
 - `reeglid.json` URL-id on praegu avalehed; enne avaldamist lisa täpsed lehelingid.
+- Pensioniiga pärast 2029: reegel annab 65 a 4 k (täisaastates 65), SKA prognoosib eluea järgi (nt sünd 1990 → 2056). Täpsem tulemus, kui kasutaja sisestab SKA pensionile jäämise aasta (TLV-85).
 - Mudel eeldab, et pensionäri maksuvaba tulu 776 € jääb tänastes eurodes konstantseks.
+- Palk kasvab 3% ja hinnad 2% aastas (Tuleva eeldus), III samba makse jääb nominaalselt samaks; mootor ilma nende sisenditeta palka ei kasvata (golden master). Riikliku pensioni SKA prognoos eeldab, et suhteline palk jääb samaks.
+- Tervist kahjustav töö, nimekiri nr 1: lisa 3,1% aastahindest tööaasta kohta ja allmaatöö eest 21,9% (SVPS § 3, TLV-88); kasutaja sisestab aastad.
 - Töö pensioni ajal tõstab pensioni lähendiga `workAccrual` (RPKS § 25, (kindlustusosak + solidaarosak) / 2 × aastahinne); palk on tänastes eurodes konstantne.
 - Töö ajal eeldame, et maksuvaba tulu kasutab palk, seega pension on tervenisti 22% maksuga. Palga maksu mudel ei arvuta (palk katab kulud).
 - Töö ajal samba väljamakseid ei tehta: II ja III sammas avanevad töö lõppedes (või valitud fondipensioni algusest, kui see on hiljem).
 - Edasilükkamine ja pool pensioni on täisaastates alates pensionile minekust. Juba makstava pensioni peatamist ja taasalustamist kuude kaupa mudel ei arvesta ([TLV-83](https://rendavesoy.atlassian.net/browse/TLV-83)); see on kirjas ka tulemuse otsustuspunktis.
+- Riigi sissemakse II sambasse alla 3-aastase lapse eest: SKA summa (2026: 76,12 €, 2027: 80,76 € kuus, `reeglid.json`), kuud sünnikuust lapse 3-aastaseks saamiseni; ilma sünnikuuta 18 kuud (ligikaudne). Tulevased aastad 2027 summaga (tänastes eurodes). RPKS § 24 lg 6 osalist lisa (< 36 kuud sissemakseid) mudel ei arvesta.
 - Pool pensioni: välja võtmata pool tõuseb nagu edasilükkamisel (pool täieliku edasilükkamise protsendist), SKA-st kinnitamata.
 
 ## Ülesehitus

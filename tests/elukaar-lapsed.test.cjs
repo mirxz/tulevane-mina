@@ -1,8 +1,9 @@
 // Lapsed ja tervist kahjustav töö elukaare mootoris (SKA, kontrollitud 16.10.2026).
 // Varem pensionile: 3 last 1 a, 4 last 3 a, 5+ last või puudega laps 5 a; õigust kasutab üks vanem (kirjalik kokkulepe).
 // Tervist kahjustav töö (SVPS): nimekiri nr 1 10 a, nimekiri nr 2 5 a varem; eraldi alus, mootor võtab suurema.
-// Pensionilisa (vanaduspensionile, mitte eripensionile): enne 1991 sündinud 1,5 aastahinnet, 1991–2012 3,5 aastahinnet,
-// 2013+ II samba sissemaksed (ilma II sambata 3,5 aastahinnet). Arvestatakse ainult siis, kui prognoos seda ei sisalda (inForecast 'no').
+// Pensionilisa (RPKS § 24 lg 1¹, § 28 lg 2 p 12; vanaduspensionile, mitte eripensionile): enne 2013 sündinud 3,5 aastahinnet
+// (enne 1991 sündinul 1,5 + 2 a staaži). 2013+ ja II sammas: riigi sissemakse II sambasse (KoPS § 10). Ilma II sambata 3,5:
+// 2013–08.2021 lapse eest ainult enne 1983 sündinud vanemale, 09.2021+ lapse eest kõigile. Arvestatakse ainult siis, kui prognoos seda ei sisalda (inForecast 'no').
 // Käivita: node tests/elukaar-lapsed.test.cjs
 const assert = require('assert');
 const fs = require('fs');
@@ -32,10 +33,29 @@ assert.strictEqual(P.simulate({ ...K({ b2012: 4 }), soodus: 0 }, T, { id: 'D' })
 
 // 3. Pensionilisa kuus.
 const A = P.AASTAHINNE;
-assert.ok(near(P.childSupplement(K({ b1991: 2 })), 3 * A), 'enne 1991: 1,5 aastahinnet lapse kohta');
+assert.ok(near(P.childSupplement(K({ b1991: 2 })), 7 * A), 'enne 1991: 1,5 lisa + 2 (2 a staaži) = 3,5 aastahinnet');
 assert.ok(near(P.childSupplement(K({ b2012: 2 })), 7 * A), '1991–2012: 3,5 aastahinnet');
 assert.ok(near(P.childSupplement(K({ b2013: 2 })), 0), '2013+ II sambaga: sissemaksed II sambasse, lisa pole');
-assert.ok(near(P.childSupplement({ ...K({ b2013: 2 }), p2: 0, p2Rate: 0 }), 7 * A), '2013+ ilma II sambata: 3,5 aastahinnet');
+assert.ok(near(P.childSupplement({ ...K({ b2013: 2 }), p2: 0, p2Rate: 0 }), 7 * A), '2013–08.2021 ilma II sambata, vanem sünd 1966 (< 1983): 3,5 aastahinnet');
+assert.ok(near(P.childSupplement({ ...K({ b2013: 2 }), birthYear: 1983, p2: 0, p2Rate: 0 }), 0), '2013–08.2021 ilma II sambata, vanem sünd 1983: lisa pole (RPKS § 24 lg 1¹ p 2)');
+assert.ok(near(P.childSupplement({ ...K({ b2021: 2 }), birthYear: 1990, p2: 0, p2Rate: 0 }), 7 * A), '09.2021+ ilma II sambata: 3,5 aastahinnet ka 1983+ sündinud vanemale (p 3)');
+assert.ok(near(P.childSupplement(K({ b2021: 2 })), 0), '09.2021+ II sambaga: lisa pole');
+assert.strictEqual(P.earlyYears(K({ b2013: 1, b2021: 2 })), 1, '09.2021+ lapsed loevad varem pensionile mineku arvus');
+// Riigi sissemakse II sambasse (KoPS § 10, SKA: 2026 76,12 €, 2027+ 80,76 € kuus) kuni lapse 3-aastaseks saamiseni.
+const M26 = 76.12, M27 = 80.76;
+assert.ok(near(P.childPillar2(K({ b2021: 2, u3: 1 })), 12 * M26 + 6 * M27), 'sünnikuuta 18 kuud: jaanuarist 12 × 2026 + 6 × 2027');
+assert.ok(near(P.childPillar2(K({ b2021: 1, u3: 3 })), 12 * M26 + 6 * M27), 'alla 3-aastaseid ei saa olla rohkem kui 09.2021+ lapsi');
+assert.ok(near(P.childPillar2(K({ b2021: 2, u3: 2, u3Left: [30, 3], monthNow: 9 })), (3 * M26 + 27 * M27) + 3 * M26), 'sünnikuu järgi: oktoobrist 30 kuud (3 + 27) ja 3 kuud');
+assert.ok(near(P.childPillar2(K({ b2021: 1, u3: 1, u3Left: [0] })), 0), '3-aastaseks saanud: sissemakseid enam pole');
+assert.strictEqual(P.childPillar2({ ...K({ b2021: 1, u3: 1 }), p2Rate: 0 }), 0, 'ilma II samba sissemakseta riik ei maksa');
+assert.strictEqual(P.childPillar2(K({ b2021: 1, u3: 1, supUser: 'other' })), 0, 'teine vanem saab');
+{
+  const young = { ...base, birthYear: 1994, p2Rate: 0.02, grossMonthly: 2000 };
+  const a = P.simulate({ ...young, kids: { b2021: 1, u3: 1, user: 'me', inForecast: 'no' } }, T, { id: 'D' });
+  const b = P.simulate(young, T, { id: 'D' });
+  const pa2 = P.retirementYears(young);
+  assert.ok(near(row(a, pa2).moneyLeft + row(a, pa2).i23 * 12 - row(b, pa2).moneyLeft - row(b, pa2).i23 * 12, 12 * M26 + 6 * M27, 1e-3), 'sissemakse jõuab II samba varasse');
+}
 assert.strictEqual(P.childSupplement(K({ b2012: 3, user: 'other' })), 0, 'teine vanem kasutab');
 // 4. Lisa riiklikule pensionile ainult siis, kui prognoos seda ei sisalda.
 const add = P.simulate(K({ b2012: 2 }), T, { id: 'E' }), no = P.simulate(K({ b2012: 2, inForecast: 'yes' }), T, { id: 'E' }), unk = P.simulate(K({ b2012: 2, inForecast: 'unknown' }), T, { id: 'E' });
@@ -57,6 +77,36 @@ assert.strictEqual(P.earlyYears(K({ b2012: 4, earlyUser: 'other', supUser: 'me' 
 assert.ok(near(P.childSupplement(K({ b2012: 4, earlyUser: 'other', supUser: 'me' })), 14 * A));
 assert.strictEqual(P.earlyYears(K({ b2012: 4, earlyUser: 'me', supUser: 'other' })), 3);
 assert.strictEqual(P.childSupplement(K({ b2012: 4, earlyUser: 'me', supUser: 'other' })), 0);
+// 9. Tervist kahjustava töö lisa (SVPS § 3): nimekiri nr 1 3,1% aastahindest tööaasta kohta, allmaatöö lisaks 21,9%.
+assert.ok(near(P.hazardSupplement({ hazard: 'list1', hazardYears: 20, undergroundYears: 5 }), A * (0.031 * 20 + 0.219 * 5)), 'nimekiri 1: 20 a, sh 5 a allmaa');
+assert.strictEqual(P.hazardSupplement({ hazard: 'list2', hazardYears: 20 }), 0, 'nimekiri 2: lisa pole');
+assert.ok(near(P.hazardSupplement({ hazard: 'list1', hazardYears: 10, undergroundYears: 30 }), A * (0.031 * 10 + 0.219 * 10)), 'allmaa ei saa olla rohkem kui nimekirja aastad');
+{
+  const h = { ...base, hazard: 'list1', hazardYears: 15, undergroundYears: 0 };
+  const sh = P.simulate(h, T, { id: 'D' });
+  assert.ok(near(row(sh, pa).i1g, 900 + A * 0.031 * 15), 'lisa jõuab riiklikku pensioni');
+  assert.ok(near(sh.hazardSupplement, A * 0.031 * 15));
+}
+// 10. SKA kalkulaatoriga sama (16.10.2026): varem pensionile laste eest, palk 4000 €, II 6%, prognoos 865 €.
+// Iga aasta varem = üks tööaasta vähem (u 12,2 € kuus); vähenduskordajat ei ole. SKA: 3 last 853 €, 4 last 829 €, 5 last 805 €.
+{
+  const ska = { birthYear: 1990, sex: 'X', p1Monthly: 865, p2: 33825, p3: 47973, grossMonthly: 4000, p2Rate: 0.06, p3Monthly: 0, needMonthly: 1500, realReturn: 0, depositReturn: -0.01, extraDeposit: 0 };
+  for (const [n, eur] of [[3, 853], [4, 829], [5, 805]]) {
+    const s = P.simulate({ ...ska, kids: { b2012: n, user: 'me', inForecast: 'yes' } }, T, { id: 'B' });
+    assert.ok(Math.abs(row(s, s.pensionStartAge).i1g - eur) <= 1.5, n + ' last (SKA ümardab eurodeni; tööaasta SKA-s ~12,0 €, workAccrual 12,2 €): elukaar ' + row(s, s.pensionStartAge).i1g.toFixed(1) + ' vs SKA ' + eur);
+  }
+// Paindlik pension SKA-s (16.10.2026): I sammas 3 a hiljem, töötab edasi → (865 + 3 × 12,2) × 1,2701 = 1145 €.
+// Suurendav kordaja rakendub ka edasilükkamise ajal teenitud osakutele (RPKS § 11¹ lg 4).
+{
+  const s = P.simulate({ ...ska, pensionAgeYears: 66, workOn: true, workUntil: 69 }, T, { id: 'C', deferral: 3, contract: 'yearly' });
+  assert.ok(Math.abs(row(s, 69).i1g - 1145) <= 1, 'paindlik +3 a töötades: elukaar ' + row(s, 69).i1g.toFixed(1) + ' vs SKA 1145');
+}
+// Pensionilisa SKA-s (Kadi kontroll 16.10.2026): 2 last (2011, 2012), prognoos 865 € → I sammas 939 €, II 757 € ei muutu.
+{
+  const s = P.simulate({ ...ska, kids: { b2012: 2, user: 'me', inForecast: 'no' } }, T, { id: 'B' });
+  assert.ok(Math.abs(row(s, s.pensionStartAge).i1g - 939) <= 1, '2 last pensionilisa: elukaar ' + row(s, s.pensionStartAge).i1g.toFixed(1) + ' vs SKA 939');
+}
+}
 console.log('Lapsed OK');
 // 7. Sugu „muu“ (X): meeste ja naiste elutabeli keskmine.
 {

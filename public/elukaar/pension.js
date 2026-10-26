@@ -32,6 +32,10 @@
   const AASTAHINNE = 10.477; // SKA, alates 1.04.2026
   const AVG_WAGE = 2092; // keskmine brutokuupalk 2025, Statistikaamet PA103
   const MIN_WAGE = 946; // töötasu alammäär alates 1.04.2026
+  // Tuleva kalkulaatori eeldused (TulevaEE/onboarding-client pensionCalculator/calculation.ts, TLV-86): palk +3% aastas nominaalselt,
+  // inflatsioon 2% (Euroopa Keskpanga eesmärk). UI kasutab neid vaikimisi; mootor ilma sisendita ei kasvata palka.
+  const WAGE_GROWTH = 0.03;
+  const INFLATION = 0.02;
   function workAccrual(grossMonthly, iiContributing, iiJoined) {
     if (!(grossMonthly > 0)) return 0;
     const share = iiContributing ? 0.8 : 1; // II sambaga liitunul läheb riiklikku kindlustusse 16% palgast (mitte 20%)
@@ -47,15 +51,37 @@
     return net <= allowance ? net : (net - TAX_SHORT * allowance) / (1 - TAX_SHORT);
   }
 
-  // Pensioniiga kalendriaasta järgi. 2028 ja 2029 on eelnõud; hilisemad on teadmata (ligikaudne).
+  // Pensioniiga (RPKS § 7, alates 2027; § 7¹ üleminek 2027–2029): aastal t on pensioniiga 65 a + (65-aastaste meeste ja naiste
+  // keskmine eeldatav eluiga aastatel t−8 … t−4) − (sama 2018–2022), kuu täpsusega, tõuseb kuni 3 kuud aastas (lg 8).
+  // Valem annab kehtestatud väärtused: 2027 65 a 1 k, 2028 65 a 3 k, 2029 65 a 4 k (kontrollitud 16.10.2026).
+  // Tulevikku keegi ei tea: nagu SKA kalkulaator eeldame, et eluiga jääb viimase avaldatud aasta tasemele (TLV-87).
+  // Andmed: Statistikaamet RV045 (scripts/fetch_elutabel.py → elutabel.js eluiga65; test kontrollib, et on samad).
+  const LIFE_EXP_65 = { 2018: 17.94, 2019: 18.245, 2020: 18.3, 2021: 17.06, 2022: 17.795, 2023: 18.52, 2024: 18.755, 2025: 18.88 };
+  const LAST_LE_YEAR = Math.max(...Object.keys(LIFE_EXP_65).map(Number));
+  const LE_BASE = [2018, 2019, 2020, 2021, 2022].reduce((s, y) => s + LIFE_EXP_65[y], 0) / 5;
+  const le65 = (y) => LIFE_EXP_65[Math.min(y, LAST_LE_YEAR)];
+  // Pensioniea kuud üle 65 aasta, mis kehtib kalendriaastal t (0 kuni 2026).
+  function pensionAgeMonthsIn(t) {
+    let m = 0;
+    for (let y = 2027; y <= t; y++) {
+      let src = 0;
+      for (let k = y - 8; k <= y - 4; k++) src += le65(k);
+      const target = Math.round((src / 5 - LE_BASE) * 12);
+      m = Math.min(target, m + 3); // tõus kuni 3 kuud aastas; ülejääk kandub järgmistesse aastatesse (target arvutatakse igal aastal uuesti)
+    }
+    return m;
+  }
+  // Isiku pensioniiga: kehtib selle aasta pensioniiga, millal inimene sellesse vanusesse jõuab (RPKS § 7 lg 10).
+  // Sünnikuud ei tea: eeldame jaanuari. 2029 ja varasemad väärtused on kehtestatud või eelnõus, hilisemad prognoos.
   function pensionAge(birthYear) {
-    const y65 = birthYear + 65;
-    let months = 0;
-    if (y65 === 2027) months = 1;
-    else if (y65 === 2028) months = 3;
-    else if (y65 >= 2029) months = 4;
-    const known = y65 <= 2027;
-    return { years: 65, months: months, known: known, label: (known ? '' : 'u ') + '65 a' + (months ? ' ' + months + ' k' : '') + (y65 > 2029 ? '+' : '') };
+    let year = birthYear + 65, months = 0;
+    for (let y = birthYear + 65; y <= birthYear + 72; y++) {
+      const m = pensionAgeMonthsIn(y);
+      if (birthYear + 65 + Math.floor(m / 12) === y) { year = y; months = m; break; }
+    }
+    const years = 65 + Math.floor(months / 12), mm = months % 12;
+    const known = year <= 2029;
+    return { years: years, months: mm, year: year, known: known, label: (known ? '' : 'u ') + years + ' a' + (mm ? ' ' + mm + ' k' : '') };
   }
 
   // Elutabeli veerg soo järgi; sugu 'X' (muu) = meeste ja naiste keskmine (Statistikaametil eraldi tabelit pole).
@@ -92,7 +118,26 @@
     return input.pensionAgeYears || pensionAge(input.birthYear).years;
   }
 
-  // Aastane sissemakse sammastesse kuni pensionini (tänastes eurodes, palk reaalselt ei kasva).
+  // Palga kasv ja III samba makse (TLV-86, sama mis Tuleva kalkulaatoris): palk kasvab input.wageGrowth (nominaalselt, nt 3%)
+  // ja inflatsioon on input.inflation (nt 2%), seega tänastes eurodes kasvab palk (1 + 3%) / (1 + 2%) − 1 ≈ 1% aastas.
+  // III samba makse jääb nominaalselt samaks (p3Indexed false; piir 6000 € aastas), tänastes eurodes kahaneb inflatsiooni võrra.
+  // Vaikimisi (sisendita) palk reaalselt ei kasva ja III makse on tänastes eurodes (vanad testid ja golden master).
+  // UI annab Tuleva eeldused (story.js readInput).
+  // Sissemaksed laekuvad aasta jooksul (kuu kaupa), hinnad tõusevad pidevalt: tänastes eurodes on aasta t makse väärt
+  // 1 / (1 + inflatsioon)^(t + 0,5) (aasta keskpaik). Palk tõuseb aasta lõpus nagu Tuleva kalkulaatoris (salary *= 1,03).
+  // Nii annab aastapõhine mootor Tuleva kuupõhise arvutusega sama tulemuse ±0,1% (tests/elukaar-tuleva-vordlus.test.cjs).
+  function yearsFromNow(input, age) { return Math.max(0, age - (CURRENT_YEAR - input.birthYear)) || 0; }
+  function wageFactor(input, age) {
+    if (!input.wageGrowth && !input.inflation) return 1;
+    const t = yearsFromNow(input, age);
+    return Math.pow(1 + (input.wageGrowth || 0), t) / Math.pow(1 + (input.inflation || 0), t + 0.5);
+  }
+  function p3Factor(input, age) {
+    if (input.p3Indexed !== false) return 1;
+    return 1 / Math.pow(1 + (input.inflation || 0), yearsFromNow(input, age) + 0.5);
+  }
+
+  // Aastane sissemakse sammastesse kuni pensionini (tänastes eurodes).
   // II sammas: töötaja 2/4/6% + riik 4% sotsiaalmaksust, kui II sammas on aktiivne. III sammas: oma kuumakse.
   // Vanusega (age), eripensioni ajal (algusvanusest): ilma tööta (spWork === false) lõpevad II samba sissemaksed,
   // uue palgaga (spGross) arvestatakse sissemakset uuest palgast. III sambasse maksad edasi.
@@ -100,15 +145,16 @@
     const rate = input.p2Rate || 0;
     const during = age !== undefined && (input.spMonthly || 0) > 0 && age >= specialStart(input);
     const gross = during ? (input.spWork === false ? 0 : input.spGross !== undefined ? input.spGross : input.grossMonthly || 0) : input.grossMonthly || 0;
-    return gross * 12 * (rate > 0 ? rate + 0.04 : 0) + (input.p3Monthly || 0) * 12;
+    const a = age !== undefined ? age : CURRENT_YEAR - input.birthYear;
+    return gross * 12 * (rate > 0 ? rate + 0.04 : 0) * wageFactor(input, a) + (input.p3Monthly || 0) * 12 * p3Factor(input, a);
   }
 
   // Varem pensionile ilma vähenduseta (SKA, kontrollitud 16.10.2026). Lapsed (input.kids, õigust kasutab üks vanem):
   // 3 last 1 a, 4 last 3 a, 5+ last või puudega laps 5 a. Tervist kahjustav töö (SVPS, input.hazard): nimekiri nr 1 10 a,
-  // nimekiri nr 2 5 a (staaž kuni 31.12.2030, põlevkivi 2049). Eraldi alused; mootor võtab suurema [inferred].
+  // nimekiri nr 2 5 a (staaž kuni 31.12.2030, põlevkivi 2049). Eraldi alused (RPKS § 10, SVPS § 1), kumbki loeb aastad tavalisest pensionieast; RPKS § 6: määratakse üks pension isiku valikul. Seega kehtib see, mis annab rohkem aastaid varem, aastad ei liitu.
   function earlyYears(input) {
     const k = input.kids || {};
-    const n = (k.b1991 || 0) + (k.b2012 || 0) + (k.b2013 || 0);
+    const n = (k.b1991 || 0) + (k.b2012 || 0) + (k.b2013 || 0) + (k.b2021 || 0);
     // Kaks eraldi õigust (SKA): varem pensionile (earlyUser) ja pensionilisa (supUser); kumbagi kasutab üks vanem.
     const earlyUser = k.earlyUser || k.user;
     const kidsY = earlyUser !== 'me' ? 0 : k.disabled ? 5 : n >= 5 ? 5 : n === 4 ? 3 : n === 3 ? 1 : 0;
@@ -116,14 +162,52 @@
     return Math.max(kidsY, hazardY);
   }
 
-  // Laste pensionilisa kuus (SKA): enne 1991 sündinud 1,5 aastahinnet, 1991–2012 3,5 aastahinnet; 2013+ sündinud lapse eest
-  // maksab riik II sambasse (ilma II sambata 3,5 aastahinnet). Ainult vanemale, kes õigust kasutab; eripensionile ei lisata.
-  // Enne 1991 sündinud lapse 2 a staaži mudel ei arvesta (konservatiivne).
+  // Laste pensionilisa kuus (RPKS § 24 lg 1¹ ja § 28 lg 2 p 12, kontrollitud 16.10.2026; laps kasvatatud ≥ 8 a):
+  // - enne 2013 sündinud laps (SKA): 1991–2012 sündinul 3,5 aastahinnet; enne 1991 sündinul 1,5 aastahinnet + 2 aastat staaži
+  //   (§ 28 lg 2 p 12; staažiaasta = 1 aastahinne, § 12). Kokku mõlemal 3,5, 1991 piir muudab ainult viisi.
+  // - 2013–08.2021 sündinud laps: 3,5 aastahinnet ainult enne 1983 sündinud vanemale, kes ei ole II sambas (p 2).
+  // - 09.2021+ sündinud laps: 3,5 aastahinnet, kui vanem ei ole lapse 3 esimesel aastal II sambas (p 3; mudel: II sammast pole).
+  // - 2013+ ja II sammas: lisa pole, riik maksab II sambasse (childPillar2). Lg 6 osalist lisa (< 36 kuud sissemakseid) ei arvesta.
+  // Ainult vanemale, kes õigust kasutab; eripensionile ei lisata.
   function childSupplement(input) {
     const k = input.kids || {};
     if ((k.supUser || k.user) !== 'me') return 0;
     const noII = !((input.p2 || 0) > 0 || (input.p2Rate || 0) > 0);
-    return AASTAHINNE * (1.5 * (k.b1991 || 0) + 3.5 * (k.b2012 || 0) + (noII ? 3.5 * (k.b2013 || 0) : 0));
+    const after2013 = noII ? (input.birthYear < 1983 ? k.b2013 || 0 : 0) + (k.b2021 || 0) : 0;
+    return AASTAHINNE * 3.5 * ((k.b1991 || 0) + (k.b2012 || 0) + after2013);
+  }
+
+  // Tervist kahjustava töö lisa (SVPS § 3, kontrollitud 16.10.2026): soodustingimustel vanaduspensionile nimekirja nr 1 alusel
+  // (SVPS § 1 p 1) lisandub 3,1% aastahindest iga nimekirja nr 1 tööaasta eest ja allmaatöödel lisaks 21,9% aastahindest
+  // iga allmaatöö aasta eest (TLV-88). SKA kalkulaatoris seda valikut pole, seega lisame alati (prognoos seda ei sisalda).
+  function hazardSupplement(input) {
+    if (input.hazard !== 'list1') return 0;
+    const y1 = Math.max(0, input.hazardYears || 0), yu = Math.min(y1, Math.max(0, input.undergroundYears || 0));
+    return AASTAHINNE * (0.031 * y1 + 0.219 * yu);
+  }
+
+  // Riigi täiendav sissemakse II sambasse (KoPS § 10): 4% Eesti keskmisest sotsiaalmaksuga maksustatavast kuutulust
+  // (PHS § 40 lg 2) iga kuni 3-aastase lapse kohta, ühele vanemale, kes on II sambas. Summa kuus SKA järgi (uuendatakse igal aastal,
+  // vt README „Igal aastal uuendatavad väärtused“). Tulevased maksed: kuud lapse 3-aastaseks saamiseni (k.u3Left, UI arvutab
+  // sünnikuust); kui sünnikuud pole, keskmiselt 18 kuud [inferred]. Varasemad sissemaksed on juba II samba summas.
+  const CHILD_II_MONTHLY = { 2026: 76.12, 2027: 80.76 }; // SKA „Perehüvitiste määrad ja maksmine“, uuendatud 18.09.2026
+  function childIIMonthly(year) {
+    const ys = Object.keys(CHILD_II_MONTHLY).map(Number).sort((a, b) => a - b);
+    return CHILD_II_MONTHLY[ys.filter((y) => y <= year).pop() || ys[0]];
+  }
+  function childPillar2(input) {
+    const k = input.kids || {};
+    if ((k.supUser || k.user) !== 'me' || !((input.p2Rate || 0) > 0)) return 0;
+    const n = Math.min(k.u3 || 0, k.b2021 || 0);
+    const monthNow = k.monthNow !== undefined ? k.monthNow : 0; // 0 = jaanuar; mitu kuud on jooksval aastal veel ees: 12 − monthNow
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+      const left = Math.max(0, Math.min(36, k.u3Left && k.u3Left[i] !== undefined ? k.u3Left[i] : 18));
+      const thisYear = Math.min(left, 12 - monthNow);
+      sum += thisYear * childIIMonthly(CURRENT_YEAR);
+      for (let m = thisYear, y = CURRENT_YEAR + 1; m < left; y++) { const c = Math.min(12, left - m); sum += c * childIIMonthly(y); m += c; }
+    }
+    return sum;
   }
 
   // Eripensioni algusvanus: kasutaja valik, vaikimisi pensioniiga.
@@ -178,8 +262,17 @@
     // Laste pensionilisa lisandub vanaduspensionile, kui prognoos seda veel ei sisalda (kids.inForecast 'no'; 'ei tea' → ei lisa).
     const kidsMonthly = childSupplement(input);
     const kidsApplied = kidsMonthly > 0 && (input.kids || {}).inForecast === 'no';
-    const p1Base = (input.p1Monthly + (kidsApplied ? kidsMonthly : 0)) * 12;
-    const p1Full = p1Base * (1 + DEFERRAL_INCREASE[deferral] + DEFERRAL_INCREASE[half] / 2); // enne tulumaksu
+    const hazardMonthly = hazardSupplement(input);
+    // Varem pensionile (lapsed, tervist kahjustav töö): SKA prognoos eeldab tööd kuni tavalise pensionieani. Kui lähed varem,
+    // jäävad need tööaastad pensionist välja: SKA kalkulaatoris u 12 € kuus aasta kohta (palk 4000 €, II sammas; kontrollitud
+    // 16.10.2026: 3/4/5 last → 853/829/805 € 865 asemel). Töö pensioni ajal lisab aastad tagasi (workedBefore, allpool).
+    const earlyMissing = soodus > 0 && currentAge < ret ? soodus : 0;
+    const earlyCut = earlyMissing * workAccrual(input.grossMonthly || 0, (input.p2Rate || 0) > 0, (input.p2Rate || 0) > 0);
+    const p1Base = (Math.max(0, input.p1Monthly - earlyCut) + (kidsApplied ? kidsMonthly : 0) + hazardMonthly) * 12;
+    // Suurendav kordaja rakendub kogu pensionile, ka edasilükkamise ajal töötades teenitud osakutele (RPKS § 11¹ lg 4:
+    // SKA arvutab pensioni §-de 11 ja 24 järgi ja rakendab siis kordaja). SKA kontroll 16.10.2026: (865 + 3 × 12,2) × 1,2701 = 1145 €.
+    const p1Factor = 1 + DEFERRAL_INCREASE[deferral] + DEFERRAL_INCREASE[half] / 2;
+    const p1Full = p1Base * p1Factor; // enne tulumaksu
     // Töötamine pensioni ajal (input.workOn kuni input.workUntil): palk katab kulud, riiklik pension läheb hoiusele,
     // II ja III sissemaksed jätkuvad, samba väljamaksed algavad töö lõppedes. Soodustusega pensionil on vana nimi
     // input.soodusWork (töö lõpp vaikimisi tavaline pensioniiga); muidu vaikimisi 1 aasta pärast pensionile minekut.
@@ -216,9 +309,9 @@
     // Ilma selleta on III sammas II sambaga ühes potis (senine käitumine).
     const sep = input.p3Sep || null;
     const c3 = sep ? (input.p3Monthly || 0) * 12 : 0;
-    let fund = input.p2 + input.p3;
+    let fund = input.p2 + input.p3 + childPillar2(input);
     let fund3 = sep ? sep.amount : 0;
-    for (let a = currentAge; a < workEnd; a++) { fund = fund * (1 + r) + yearlyContribution(input, a) - c3; fund3 = fund3 * (1 + r) + c3; }
+    for (let a = currentAge; a < workEnd; a++) { const c3a = c3 * p3Factor(input, a); fund = fund * (1 + r) + yearlyContribution(input, a) - c3a; fund3 = fund3 * (1 + r) + c3a; }
 
     // Hoius pensioni alguses: varem sambast välja võetud ja kõrvale pandud raha (valikuline, vaikimisi 0).
     let deposit = input.extraDeposit || 0;
@@ -251,7 +344,7 @@
       if (scenario.id === 'A' && age === firstRetAge) { deposit += lumpOut(fund); fund = 0; }
       if (sep && sep.mode === 'lump' && age === lump3Age) { deposit += lumpOut(fund3); fund3 = 0; }
       const fundStart = fund + fund3, depositStart = deposit;
-      const i1gross = age >= p1Start ? (age < ret + half ? p1Base / 2 : p1Year) + (spPaid ? 0 : accrualYear * workedBefore(age)) : 0;
+      const i1gross = age >= p1Start ? (age < ret + half ? p1Base / 2 : p1Year) + (spPaid ? 0 : accrualYear * workedBefore(age) * (age < ret + half ? 1 : p1Factor)) : 0;
       const work = age >= ret && age < workEnd;
       const ispg = spAt(age);
       // Maksuvaba tulu: pensionieas pensionäri oma, enne seda üldine (kui ei tööta). Korraga on ainult üks I samba pension.
@@ -340,6 +433,7 @@
     const res = summarize(rows, input, table, ret, p1Start, currentAge);
     res.ordinaryPensionAge = pa; // tavaline pensioniiga (pensionStartAge on soodustusega pensionile minek)
     res.childSupplement = kidsMonthly > 0 ? { monthly: kidsMonthly, applied: kidsApplied } : null;
+    res.hazardSupplement = hazardMonthly > 0 ? hazardMonthly : null;
     // Eripensioni ja vanaduspensioni võrdlus tulemuse selgituseks („Pensionieas makstakse sulle suurem kahest“).
     res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge', larger: spYear >= p1Full ? 'special' : 'oldAge' } : null;
     return res;
@@ -422,7 +516,7 @@
     { id: 'D', name: 'Leping igal aastal uuesti', short: 'Maksuvaba fondipension, mille lepingu sõlmid igal aastal uuesti. Ei saa otsa, aga väheneb vanas eas.' },
   ];
 
-  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, retirementYears, specialStart, earlyYears, childSupplement, yearlyContribution, survival, horizonAge, fundPensionTerm, INCOME_TAX, PENSIONER_ALLOWANCE, GENERAL_ALLOWANCE, AASTAHINNE, workAccrual, decisionMap, options, simulate, sustainableNeed, bestDeferral };
+  const api = { CURRENT_YEAR, DEFERRAL_INCREASE, SCENARIOS, pensionAge, pensionAgeMonthsIn, LIFE_EXP_65, retirementYears, specialStart, earlyYears, childSupplement, childPillar2, hazardSupplement, CHILD_II_MONTHLY, yearlyContribution, wageFactor, p3Factor, WAGE_GROWTH, INFLATION, survival, horizonAge, fundPensionTerm, INCOME_TAX, PENSIONER_ALLOWANCE, GENERAL_ALLOWANCE, AASTAHINNE, workAccrual, decisionMap, options, simulate, sustainableNeed, bestDeferral };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Pension = api;
 })(typeof window !== 'undefined' ? window : globalThis);

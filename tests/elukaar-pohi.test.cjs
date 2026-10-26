@@ -23,6 +23,16 @@ assert.ok(Math.abs(P.survival(table, 'M', 65, 81) - 0.51) < 0.01);
 assert.strictEqual(P.pensionAge(1961).label, '65 a');
 assert.strictEqual(P.pensionAge(1962).label, '65 a 1 k');
 assert.ok(P.pensionAge(1970).label.startsWith('u '));
+// RPKS § 7 valem (TLV-87): kehtestatud 2027–2029, edasi prognoos „eluiga jääb viimase avaldatud aasta tasemele“ (nagu SKA).
+assert.strictEqual(P.pensionAge(1963).label, '65 a 3 k');
+assert.strictEqual(P.pensionAge(1964).label, '65 a 4 k');
+assert.deepStrictEqual([P.pensionAge(1990).label, P.pensionAge(1990).year], ['u 66 a', 2056], 'sünd 1990 → pensionile 2056 nagu SKA kalkulaatoris');
+for (let y = 2027; y < 2060; y++) assert.ok(P.pensionAgeMonthsIn(y) - P.pensionAgeMonthsIn(y - 1) <= 3, 'tõus kuni 3 kuud aastas: ' + y);
+{
+  const fs = require('fs'), src = fs.readFileSync(require('path').join(__dirname, '../public/data/elutabel.js'), 'utf-8');
+  const el = JSON.parse(src.slice(src.indexOf('{'), src.lastIndexOf('}') + 1)).eluiga65;
+  assert.deepStrictEqual(Object.fromEntries(Object.entries(P.LIFE_EXP_65).map(([k, v]) => [String(k), v])), el, 'pension.js LIFE_EXP_65 = elutabel.js eluiga65 (uuenda pärast scripts/fetch_elutabel.py)');
+}
 
 // Riiklik pension 2 aastat hiljem on 16,88% suurem ja enne seda null.
 const c = P.simulate(base, table, Cx);

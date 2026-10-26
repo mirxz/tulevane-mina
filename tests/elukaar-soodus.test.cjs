@@ -86,7 +86,8 @@ for (let a = pa - 3; a < pa; a++) {
   assert.ok(x.work === true && near(x.spend, 1500) && x.shortfall === 0 && x.i2 === 0, 'töötab ' + a);
   assert.ok(near(x.tax1, TAX * x.i1g), 'töötades kasutab üldise maksuvaba tulu palk: ' + a);
 }
-assert.ok(near(row(w, pa - 3).i1g, 1200) && near(row(w, pa - 2).i1g, 1200 + acc) && near(row(w, pa).i1g, 1200 + 3 * acc), 'pension tõuseb tööaastatega');
+// SKA prognoos (1200) eeldab tööd kuni pensionieani: varem minnes jääb 3 aastat välja (−3 × acc), töö pensioni ajal lisab need tagasi.
+assert.ok(near(row(w, pa - 3).i1g, 1200 - 3 * acc) && near(row(w, pa - 2).i1g, 1200 - 2 * acc) && near(row(w, pa).i1g, 1200), 'pension tõuseb tööaastatega tagasi SKA prognoosini');
 assert.ok(row(w, pa).work === false && row(w, pa).i2 > 0, 'väljamaksed algavad töö lõppedes');
 const fundAtPa = row(w, pa).moneyLeft, saved = [pa - 3, pa - 2, pa - 1].reduce((t, a) => t + row(w, a).i1 * 12, 0);
 assert.ok(near(fundAtPa, 50000 + 2000 * 12 * 0.08 * (pa - 50) + saved, 1e-6), 'pott + hoius = sissemaksed + säästetud pension: ' + fundAtPa);

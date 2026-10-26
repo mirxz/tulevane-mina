@@ -44,6 +44,19 @@ if (hit) {
   const after = await warn();
   check(!after.shown || after.d === null, "pärast muutmist ei paku sama soovitust uuesti");
 }
+// Edasilükkamise märkus: SKA eeldab, et edasilükatud aastatel töötad edasi; Elukaar lisab staaži ainult „Töötan edasi“ valikuga.
+const note = () => page.evaluate(() => document.getElementById("deferWorkNote").textContent);
+const base = { birthYear: 1990, p1Monthly: 865, p2: 33825, p3: 0, p3Joined: "none", p3Monthly: 0, grossMonthly: 4000 };
+await setup(base, { p1Mode: "defer", defer: "3", soodusWork: "no" });
+let n = await note();
+check(/eeldavad, et vahepeal ei tööta/.test(n) && /„Töötan edasi“/.test(n) && /SKA/.test(n) && /u 1\d(,\d)? € kuus/.test(n), "ei tööta: märkus selgitab SKA eeldust: " + n);
+check((await page.evaluate(() => window.__elukaar.readInput())).workOn === false, "vaikimisi ei tööta (käitumine ei muutunud)");
+await setup(base, { p1Mode: "defer", defer: "3", soodusWork: "yes" });
+n = await note();
+{ const pa = (await page.evaluate(() => window.__elukaar.readInput())).pensionAgeYears; // RPKS § 7 valem
+  check(new RegExp("Töötad " + (pa + 1) + "-aastaseks").test(n) && new RegExp((pa + 3) + "-aastaseks").test(n), "töötab 1 a: märkus pakub tööd kogu edasilükatud aja: " + n); }
+await setup(base, { p1Mode: "full", soodusWork: "no" });
+check((await note()) === "", "kohe täis: märkust pole");
 check(errs.length === 0, "lehe vead: " + errs.join("; "));
 await browser.close();
 console.log(`\nEdasilükkamine (UI): ${passed} kontrolli läbis, ${failed} kukkus`);

@@ -32,7 +32,7 @@ Vastused ja mõõtmine lähevad Cloudflare D1 andmebaasi `mina-tagasiside`. Kasu
 1. **Otsus.** Mida muudame, on kirjas [otsuste logis](https://claude.ai/code/artifact/db97d812-22e1-4c5c-a076-89b7571d2a54). Ilma otsuseta toodangusse ei liigu midagi.
 2. **Ehitus.** Muudatus tehakse uues harus nimega `muudatus/<lühike-nimi>`, näiteks `muudatus/tagasiside`. Kiired katsetused võib teha enne claude.ai artefaktis.
 3. **Push.** Haru läheb GitHubi. Automaatselt käivituvad:
-   - GitHub Actions → suitsutest (telefon ja arvuti, kõik 5 sammu, põhiarvud);
+   - GitHub Actions → `.github/workflows/smoke.yml`: `wrangler deploy --dry-run` ja `npm test` (kõik mootori-, stsenaariumi- ja brauseritestid, vt [tests/README.md](tests/README.md));
    - Cloudflare → eelvaate-URL.
 4. **Test.** Üks inimene, mitte muudatuse tegija, mängib eelvaate telefonis läbi (kontrollnimekiri allpool).
 5. **Toodangusse.** Pull request → `main`, kui test on roheline ja eelvaade üle vaadatud. Cloudflare avaldab mõne minutiga.
@@ -41,7 +41,7 @@ Vastused ja mõõtmine lähevad Cloudflare D1 andmebaasi `mina-tagasiside`. Kasu
 ## Reeglid
 
 - `main` muutub ainult pull requesti kaudu: roheline suitsutest + keegi on eelvaate telefonis läbi mänginud.
-- Mäng on üks fail, väliseid skripte ei ole. Lubatud on ainult Google Fonts. Serveri liidesed on ainult need, mis on loetletud lehe alguses.
+- Väliseid skripte võimalikult vähe. Lubatud: Google Fonts ja elukaares Bootstrap 5.3.3 (CSS) ning Chart.js 4.4.1 jsDelivr CDN-ist, kindla versiooniga (testid suunavad need kohalikule `node_modules` koopiale). Uue välise skripti lisamine on otsus otsuste logis. Serveri liidesed on ainult need, mis on loetletud lehe alguses.
 - Ei analüütikateeke ega küpsiseid. Mõõdame ainult anonüümselt ja minimaalselt, vt [ANALUUTIKA.md](ANALUUTIKA.md); mõõtmise muutmine käib selle põhimõtete järgi.
 - Arvud tulevad allikast. Kui muudad kordajaid, suremusmudelit või pensioniiga, uuenda ka testi oodatud väärtust (`tests/smoke.mjs`) ja allikaviidet lehe jaluses.
 - Tuleva logo avalikul lehel ei kasuta. Silt „prototüüp“ ja lahtiütlus jäävad alles.
@@ -133,9 +133,10 @@ Siht WCAG 2.1 AA; põhimõtted on disainisüsteemi README-s („Ligipääsetavus
 ```
 npm install
 npx playwright install chromium
-npx wrangler dev            # http://localhost:8787 (mäng + /api/tts)
-npm test                    # teises aknas
+npm run test:koik           # mootor + brauser; käivitab wrangler dev ise ja paneb pärast kinni
 ```
+
+Käsitsi (nt arendades): `npx wrangler dev` ühes aknas, `npm test` teises. Tulemuste lehe testide jaoks pane faili `.dev.vars` rida `TULEMUSED_VOTI=proov` (gitignore'is); `test:koik` võtab parooli sealt.
 
 - **Wrangler** on Cloudflare'i käsureatööriist (`package.json` arendussõltuvus, seadistus `wrangler.jsonc`). `wrangler dev` käivitab sama Workeri sinu arvutis: lehed, `/api/*` liidesed, ümbersuunamised ja kohaliku D1 andmebaasi (kaust `.wrangler/`).
 - **Port 8787 peab olema vaba.** Kui seal jookseb mõni muu server (nt `python -m http.server 8787`), ei käivitu wrangler ja brauseritestid kukuvad vigadega 501 või TimeoutError. Kontroll: `lsof -i :8787`.
@@ -153,6 +154,36 @@ npm test                    # teises aknas
 3. **Tagasiside andmebaas:** Storage & databases → D1 → *Create database* → nimi `mina-tagasiside`. Kopeeri *Database ID* faili `wrangler.jsonc` (kaks kohta, `database_id`).
 4. **Tulemuste parool:** Workers & Pages → `mina` → Settings → Variables and Secrets → *Add* → tüüp *Secret*, nimi `TULEMUSED_VOTI`, väärtus parool.
 5. **Prototüübi parool (valikuline):** samas kohas *Secret* nimega `PROTO_VOTI`. Kui see on seatud, küsib sait parooli; ilma selleta on sait avatud.
+
+## Igal aastal uuendatavad väärtused (elukaar)
+
+Need arvud muutuvad seaduse või indekseerimise järgi. Vaata need üle **igal aastal**: jaanuaris (maksud, alampalk), aprillis (indekseerimine 1. aprillil) ja septembris–oktoobris (SKA avaldab järgmise aasta summad). Pärast muutmist uuenda `tests/reeglid.json` (väärtus, allikas, `kontrollitud`), käivita `npm test` ja vajadusel `npm run golden:uuenda`. Reeglite test kukub, kui mõni allikas on üle 400 päeva üle vaatamata.
+
+| Väärtus | Praegu | Millal muutub | Kus koodis | Allikas |
+| --- | --- | --- | --- | --- |
+| Arvestusaasta | 2026 | iga aasta | `CURRENT_YEAR`, `pension.js` | – |
+| Aastahinne | 10,477 € | 1. aprill (indekseerimine) | `AASTAHINNE`, `pension.js`; `reeglid.json` | SKA „Pensioni suurus“ |
+| Baasosa | 399,24 € | 1. aprill | `public/arhiiv/kalkulaator/andmed/kihid.js` (TLV-84) | SKA |
+| Pensioniiga | RPKS § 7 valem: 2027 65 a 1 k, 2028 65 a 3 k, 2029 65 a 4 k, edasi prognoos (eluiga jääb viimase aasta tasemele, nagu SKA) | igal aastal uus eluea aasta (Statistikaamet RV045) | `LIFE_EXP_65`, `pensionAge`, `pension.js` (uuenda elutabeli andmetest, test kontrollib); `abi.js` tabel | Riigi Teataja, SKA, Statistikaamet |
+| Paindliku pensioni kordajad (edasilükkamine, varem) | +7,93 … +51,57%, −7,17 … −30,67% | igal aastal (oodatav eluiga) | `DEFERRAL_INCREASE`, `pension.js`; `story.js` tekst | SKA paindlik pension, SKA kalkulaator |
+| Pensionäri maksuvaba tulu | 776 € kuus | riigieelarvega (jaanuar) | `PENSIONER_ALLOWANCE`; `reeglid.json` | EMTA |
+| Üldine maksuvaba tulu | 700 € kuus | riigieelarvega | `GENERAL_ALLOWANCE`; `reeglid.json` | EMTA |
+| Tulumaks | 22% | riigieelarvega | `INCOME_TAX`; `reeglid.json` | EMTA |
+| Palga kasv ja inflatsioon (Tuleva eeldus) | 3% ja 2% aastas | kui Tuleva kalkulaator muudab | `WAGE_GROWTH`, `INFLATION`, `pension.js`; `reeglid.json` | Tuleva onboarding-client, EKP |
+| III samba maksusoodustuse piir | 15% tulust, max 6 000 € | seadusemuudatusega (praegu ei indekseerita) | `story.js`, `abi.js` | EMTA |
+| Keskmine brutopalk | 2 092 € | igal aastal (Statistikaamet PA103) | `AVG_WAGE`, `pension.js` | Statistikaamet |
+| Töötasu alammäär | 946 € | jaanuar/aprill | `MIN_WAGE`, `pension.js` | VV määrus |
+| Riigi II samba sissemakse lapse eest | 2026: 76,12 €, 2027: 80,76 € kuus | igal aastal (SKA avaldab ette) | `CHILD_II_MONTHLY`, `pension.js`; `reeglid.json`; `abi.js` | SKA „Perehüvitiste määrad ja maksmine“ |
+| Laste pensionilisa kordajad | 3,5 aastahinnet (sünniaja ja II samba järgi) | seadusemuudatusega | `childSupplement`; `reeglid.json` | RPKS § 24 lg 1¹, § 28 lg 2 p 12 |
+| Tervist kahjustava töö staaži tähtaeg | 31.12.2030 (põlevkivi 2049) | seadusemuudatusega | `abi.js`, `docs/otsustusmudel.drawio` | SVPS |
+| III samba maksusoodustus | 15% tulust, max 6 000 € | seadusemuudatusega | `story.js` | EMTA |
+| Elutabel | Statistikaamet 2025 | igal aastal (RV045, RV046) | `public/data/elutabel.js` (genereeritud) | Statistikaamet |
+| Kulutasemed | Statistikaamet LE205, LE211, IA002 | igal aastal | `public/data/kulud.js` (genereeritud) | Statistikaamet |
+| Üksi elava pensionäri toetus | 200 € aastas, pension alla 992 € (2026) | igal aastal (sotsiaalministri määrus) | `abi.js` (household) | SKA |
+| Hooldekodu omaosalus | u 1 000 € (kohatasu 1 603 €) | igal aastal | `story.js` | SKA, ERR |
+| Eelprofiilide riiklik pension | `p1Monthly` | 1. aprill (indekseerimine) | `public/elukaar/profiilid.js` | SKA kalkulaator |
+
+Andmefailid `public/data/elutabel.js` ja `public/data/kulud.js` genereeritakse Statistikaameti avatud API-st Meelise skriptidega (`scripts/fetch_elutabel.py`, `scripts/fetch_kulud.py` repos [meelisb/tuleva-tulevik](https://github.com/meelisb/tuleva-tulevik)). Pärast uuendamist käivita `npm run test:koik`.
 
 ## Allikad
 

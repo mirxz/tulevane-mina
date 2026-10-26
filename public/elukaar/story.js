@@ -60,7 +60,7 @@
   // Vanuse tekstid: „65 a“ ja „65-aastaselt“ (kuud on toetatud, aga lugu näitab täisaastaid).
   const ageTxt = (y, m) => y + ' a' + (m ? ' ' + m + ' k' : '');
   const ageAt = (y, m) => (m ? y + ' a ' + m + ' k vanuselt' : y + '-aastaselt');
-  // Pensioniea reegel (pension.js). Alates 2029 on see seotud elueaga.
+  // Pensioniea reegel (pension.js). Alates 2027. a on see seotud elueaga, kehtestatud on 2027. ja 2028. a.
   function ruleAge(birthYear) {
     const r = P.pensionAge(birthYear);
     return { years: r.years, months: r.months };
@@ -284,9 +284,14 @@
       spGross: $('spHas').value === 'yes' && !spPast() && radio('spWork') !== 'no' && radio('spPay') === 'change' && $('spGross').value !== '' ? num('spGross') : undefined,
       kids: kidsInput(), // lapsed sünniaja järgi, puue, kes kasutab, kas prognoos sisaldab pensionilisa
       hazard: $('hazard').value, // tervist kahjustav töö (SVPS): 'list1' 10 a, 'list2' 5 a varem
+      // SVPS § 3 lisa (TLV-88): nimekirja nr 1 tööaastad ja neist allmaatöö aastad.
+      hazardYears: $('hazard').value === 'list1' ? Math.max(0, Math.min(50, parseInt($('hazardYears').value, 10) || 0)) : 0,
+      undergroundYears: $('hazard').value === 'list1' ? Math.max(0, Math.min(50, parseInt($('undergroundYears').value, 10) || 0)) : 0,
       soodus: soodusNow(), // varem pensionile ilma vähenduseta (pension.js earlyYears: suurem lastest ja tervist kahjustavast tööst)
       paMonths: 0, // vanused näidatakse täisaastates (65 a), kuid ei kasutata
       grossMonthly: num('grossMonthly'),
+      // Tuleva kalkulaatori eeldused (TLV-86): palk +3% aastas, inflatsioon 2%, III samba makse nominaalselt sama (piir 6000 €).
+      wageGrowth: P.WAGE_GROWTH, inflation: P.INFLATION, p3Indexed: false,
       p2Rate: parseFloat($('p2Rate').value),
       p3Monthly: p3Monthly,
       fund18: fund18,
@@ -457,7 +462,7 @@
     $('pkgDefaultTotal').textContent = eur(input.pkgTotal);
     $('pkgCustomTotal').textContent = eur(input.needMonthly);
     $('resetPkg').classList.toggle('d-none', !input.edited);
-    $('pkgSource').innerHTML = '<span class="src-chip stat ms-0">Statistikaamet</span> ' + K.tasemed[input.pkg.id] + ', ' + K.leibkonnad[input.household].toLowerCase() + ', uuring ' + K.uuringuaasta + ', hinnad ' + K.hinnad + '.' +
+    $('pkgSource').innerHTML = '<span class="src-chip stat ms-0">Statistikaamet</span> ' + K.tasemed[input.pkg.id] + ', ' + K.leibkonnad[input.household].toLowerCase() + '. Leibkonna eelarve uuring ' + K.uuringuaasta + ' (viimane avaldatud), summad on viidud tänastesse hindadesse (' + K.hinnad + '): hinnad on tõusnud keskmiselt ' + Math.round((K.kordaja_kokku - 1) * 100) + '%, iga kulu oma hinnaindeksiga.' +
       (input.pkg.id === 'kokkuhoidlik' ? '' : ' Kvintiili suhe on kõigi leibkondade andmetest, sest pensionäride kohta tulukvintiilide kaupa avalikke andmeid pole.') +
       ' Kingitused, annetused jm on Statistikaameti „muud kulutused“: raha kinkimine, annetused, alimendid ja ülalpidamisraha, trahvid.';
   }
@@ -522,7 +527,7 @@
       $('p3AfterWrap').classList.toggle('d-none', !(p3On && p3Change));
 
     }
-    if (input.soodus > 0) $('soodusNote').innerHTML = ret + '-aastaselt (' + (input.birthYear + ret) + ') lähed pensionile soodustingimustel, ' + input.soodus + ' a enne tavalist pensioniiga (' + pa + ' a). Pension ei vähene. ' +
+    if (input.soodus > 0) $('soodusNote').innerHTML = ret + '-aastaselt (' + (input.birthYear + ret) + ') lähed pensionile soodustingimustel, ' + input.soodus + ' a enne tavalist pensioniiga (' + pa + ' a). Riiklikku pensioni ei vähendata (vähenduskordajat ei rakendata). ' +
       'Kuni ' + pa + '. eluaastani on maksuvaba tulu 700 € kuus, siis 776 €.' + (ret < pa - 5 ? ' II sammas avaneb alles ' + (pa - 5) + '-aastaselt.' : '') +
       ' <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda soodustust<span class="visually-hidden"> sinu andmetes</span></button>';
 
@@ -557,21 +562,32 @@
       : '<span class="hh-emoji" aria-hidden="true">🧍</span><span><strong>Elad pensionil üksi.</strong> Summad on üksi elava pensionäri kulud: kodu ja arved maksad ainult sina.</span>';
 
     // Varem pensionile ja erijuhud: laste lisaväljad, prognoosi küsimus ja kokkuvõte.
-    const kn = input.kids.b1991 + input.kids.b2012 + input.kids.b2013;
+    const kn = input.kids.b1991 + input.kids.b2012 + input.kids.b2013 + input.kids.b2021;
     $('kidsDetails').classList.toggle('d-none', $('kidsHas').value !== 'yes');
+    $('kidsU3Wrap').classList.toggle('d-none', !(input.kids.b2021 > 0));
+    renderU3Births(input.kids.u3);
     // Kaks eraldi õigust: valik avaneb ainult siis, kui õigus sinu laste järgi tekib.
     const asMe = Object.assign({}, input, { kids: Object.assign({}, input.kids, { earlyUser: 'me', supUser: 'me', user: 'me' }) });
     $('kidsEarlyWrap').classList.toggle('d-none', !(P.earlyYears({ kids: asMe.kids }) > 0));
-    $('kidsSupWrap').classList.toggle('d-none', !(P.childSupplement(asMe) > 0));
-    const sup = P.childSupplement(input);
+    $('kidsSupWrap').classList.toggle('d-none', !(P.childSupplement(asMe) > 0 || P.childPillar2(asMe) > 0));
+    const sup = P.childSupplement(input), ii2 = P.childPillar2(input);
+    const guess = input.kids.u3Left.some((v) => v === undefined);
+    $('kidsU3Hint').textContent = ii2 > 0
+      ? 'Riik maksab nende eest II sambasse veel u ' + eur(ii2) + ' (' + P.CHILD_II_MONTHLY[P.CURRENT_YEAR].toLocaleString('et-EE', { minimumFractionDigits: 2 }) + ' € kuus kuni 3-aastaseks saamiseni' + (guess ? '; ilma sünnikuuta eeldame 18 kuud' : '') + ').'
+      : 'Riik maksab II sambasse ainult II sambas olevale vanemale.';
     $('kidsForecastWrap').classList.toggle('d-none', !(sup > 0));
     $('kidsForecastHint').textContent = sup > 0 ? 'Laste pensionilisa on u ' + eur(sup) + ' kuus (' + one(P.AASTAHINNE) + ' € aastahinne). SKA määrab selle avalduse alusel. Kui ei tea, ei lisa me seda.' : '';
     const why = [];
+    const l1 = input.hazard === 'list1';
+    $('hazardYearsWrap').classList.toggle('d-none', !l1);
+    $('undergroundWrap').classList.toggle('d-none', !l1);
+    const hz = P.hazardSupplement(input);
+    $('hazardYearsHint').textContent = l1 ? (input.hazardYears < 10 ? 'Nimekirja nr 1 alusel on vaja vähemalt 10 aastat.' : 'Lisandub pensionile u ' + eur(hz) + ' kuus (SVPS § 3).') : '';
     const kidsY = P.earlyYears({ kids: input.kids }), hazY = P.earlyYears({ kids: {}, hazard: input.hazard });
     if (kidsY) why.push('lapsed: ' + kidsY + ' a varem');
     if (hazY) why.push('tervist kahjustav töö: ' + hazY + ' a varem');
     $('soodusSummary').innerHTML = input.soodus > 0
-      ? 'Saad pensionile <strong>' + input.soodus + ' a varem</strong>, ' + retAge(input) + '-aastaselt (' + (input.birthYear + retAge(input)) + '), pension ei vähene (' + why.join(', ') + (kidsY && hazY ? '; arvestame suurema' : '') + ').'
+      ? 'Saad pensionile <strong>' + input.soodus + ' a varem</strong>, ' + retAge(input) + '-aastaselt (' + (input.birthYear + retAge(input)) + '), riiklikku pensioni ei vähendata (' + why.join(', ') + (kidsY && hazY ? '; kui on mõlemad, kehtib see, mis annab rohkem aastaid varem, aastad ei liitu' : '') + ').'
       : kn > 0 && input.kids.earlyUser === 'other' && P.earlyYears({ kids: asMe.kids }) > 0 ? 'Varem pensionile mineku õigust kasutab teine vanem, sinu pensioniiga ei muutu.' : '';
     $('soodusSummary').classList.toggle('d-none', !$('soodusSummary').innerHTML);
 
@@ -596,7 +612,7 @@
       $('spCalcHint').classList.toggle('d-none', already);
       $('spSameJobNote').classList.toggle('d-none', already);
       if (already) {
-        const iiNow = P.yearlyContribution(Object.assign({}, input, { p3Monthly: 0 }), input.currentAge) / 12;
+        const iiNow = P.yearlyContribution(Object.assign({}, input, { p3Monthly: 0, wageGrowth: 0, inflation: 0 }), input.currentAge) / 12; // tänane makse
         $('spPastNote').innerHTML = '<strong>Need valikud tegid juba ' + sp + '-aastaselt.</strong> Eripensioni algust ja tööd sel ajal muuta ei saa. ' +
           'Sinu tänased II ja III samba summad sisaldavad juba kõike, mis vahepeal laekus. Edasi arvutame praeguse olukorra järgi: ' +
           (input.grossMonthly > 0 ? 'töötad, brutopalk ' + eur(input.grossMonthly) + ' kuus' + (input.p2Rate > 0 ? ', II sambasse laekub kuni pensionini ' + eur(iiNow) + ' kuus.' : ', II samba sissemakset pole.') : 'ei tööta, II sambasse ei laeku.') +
@@ -608,7 +624,7 @@
       $('spPaySet').classList.toggle('d-none', !payOn);
       $('spPaySameTxt').textContent = eur(input.grossMonthly) + ' kuus, nagu sinu andmetes';
       // II samba sissemakse eripensioni ajal (sama arvutus mis mootoris): töötades palgast, ilma tööta 0.
-      const ii = P.yearlyContribution(Object.assign({}, input, { p3Monthly: 0, spWork: true }), sp) / 12;
+      const ii = P.yearlyContribution(Object.assign({}, input, { p3Monthly: 0, spWork: true, wageGrowth: 0, inflation: 0 }), sp) / 12; // tänane makse, palga kasvuta
       const rate = input.p2Rate || 0;
       $('spIIYes').textContent = rate > 0 ? 'II sambasse laekub ' + eur(ii) + ' kuus (' + one(rate * 100) + '% sinult + 4% riigilt).' : 'II sambasse ei laeku: sul pole II samba sissemakset.';
       $('spIINo').textContent = 'II sambasse laekub 0 € kuus.';
@@ -631,7 +647,7 @@
       const refund = Math.min(yearly, 0.15 * input.grossMonthly * 12, 6000) * 0.22;
       const future = input.p3OpenAge > input.currentAge;
       $('p3WorkNote').innerHTML = (future ? 'Avad III samba ' + input.p3OpenAge + '-aastaselt, seni sissemakseid pole. Tänast III samba summat ei arvestata. ' : '') +
-        (input.p3Before2021 ? 'Avatud enne 2021: ' : 'Avatud 2021 või hiljem: ') + 'soodusmaks kehtib alates <strong>' + input.p3Open + '-aastaselt</strong>' +
+        (input.p3Before2021 ? 'Avatud enne 2021. a: ' : 'Avatud 2021. a või hiljem: ') + 'soodusmaks kehtib alates <strong>' + input.p3Open + '-aastaselt</strong>' +
         (input.p3Open > (input.p3Before2021 ? 55 : 60) ? ' (kogumist peab olema vähemalt 5 aastat)' : '') + '. ' +
         (refund > 0 ? 'Sissemaksetelt saad tulumaksu tagasi umbes <strong>' + eur(refund) + ' aastas</strong> (22%, kuni 15% brutotulust ja 6000 €). Arvutus seda sambasse ei lisa.' : '');
     } else {
@@ -642,7 +658,7 @@
     const pa0 = P.retirementYears(input);
     const soon = input.p3Age >= input.p3Open; // kas väljavõtu ajal kehtib soodusmaks
     const basic = input.p3Before2021 ? 55 : 60;
-    $('p3Info').innerHTML = !input.p3Has ? '' : '<p class="mb-2">' + (input.p3Kind === 'have' ? 'Liitusid III sambaga ' + (input.p3Before2021 ? 'enne 2021' : '2021 või hiljem') : 'Avad III samba ' + input.p3OpenAge + '-aastaselt (' + (input.birthYear + input.p3OpenAge) + ')') + ', seega kehtib soodusmaks alates <strong>' + input.p3Open + '-aastaselt (' + (input.birthYear + input.p3Open) + ')</strong>.' +
+    $('p3Info').innerHTML = !input.p3Has ? '' : '<p class="mb-2">' + (input.p3Kind === 'have' ? 'Liitusid III sambaga ' + (input.p3Before2021 ? 'enne 2021. a' : '2021. a või hiljem') : 'Avad III samba ' + input.p3OpenAge + '-aastaselt (' + (input.birthYear + input.p3OpenAge) + ')') + ', seega kehtib soodusmaks alates <strong>' + input.p3Open + '-aastaselt (' + (input.birthYear + input.p3Open) + ')</strong>.' +
       (input.p3Open > basic ? ' Põhjus: kogumist peab olema vähemalt 5 aastat.' : '') + (input.p3Open > 55 ? ' Enne seda läheb väljavõetud rahast 22% tulumaksuks.' : '') + '</p>' +
       '<ul class="mb-0 small">' +
         '<li><strong>Kogu raha korraga välja võttes</strong> läheb tulumaksuks ' + (input.p3Open <= 55 ? '10%.' : '22%, alates ' + input.p3Open + '-aastaselt 10%.') + '</li>' +
@@ -720,6 +736,16 @@
         '<small>' + (isHalf && d ? 'Siis ' : '') + eur(input.p1Monthly * (1 + inc)) + ' kuus enne maksu' + (d ? ' (+' + one(inc * 100) + '%)' : '') + '</small></span></label>';
     }).join('');
     $('deferChoices').querySelectorAll('input').forEach((el) => el.addEventListener('change', update));
+    // SKA paindliku pensioni arvutus eeldab, et edasilükatud aastatel töötad edasi (staaž tõstab pensioni lisaks).
+    // Elukaar lisab staaži ainult „Töötan edasi“ valikuga; vaikimisi ei tööta. Selgitame, et summad oleksid võrreldavad.
+    {
+      const acc = P.workAccrual(input.grossMonthly, input.p2Rate > 0, input.p2Rate > 0);
+      const accTxt = input.grossMonthly > 0 ? ' veel u ' + one(acc) + ' € kuus' : '';
+      const end = input.workUntil !== undefined ? input.workUntil : pa + 1;
+      $('deferWorkNote').textContent = mode === 'full' ? ''
+        : !input.workOn ? 'Need summad eeldavad, et vahepeal ei tööta. Kui töötad edasi, tõstab iga tööaasta pensioni' + accTxt + ': vali ülal „Töötan edasi“. SKA paindliku pensioni arvutus eeldab, et töötad edasi.'
+        : 'Töötad ' + end + '-aastaseks. Iga tööaasta tõstab pensioni' + accTxt + ', see on arvutuses sees.' + (end < pa + curDef ? ' Kui töötad kogu edasilükatud aja, vali ülal „Töötan kuni“ ' + (pa + curDef) + '-aastaseks.' : '');
+    }
 
     // 66+: fondipensioni algus, kui mõni sammas kasvab pensionieas edasi (ainult üks vanus mõlemale sambale).
     const p3Grows = input.p3Has && input.p3Plan === 'keep' && input.p3pa === 'grow';
@@ -890,12 +916,12 @@
     const when = (y, mm) => ageAt(y, mm) + ' · ' + (by + y);
     // Sammast, mida sul pole (summa ja sissemakse 0), kaardil ei mainita.
     const items = [];
-    const early = [input.p2Has ? 'II samba raha saab välja võtta 22% tulumaksuga. Siis lõpevad sissemaksed ja uuesti saab liituda alles 10 aasta pärast.' : '',
+    const early = [input.p2Has ? 'II samba raha saab enne pensioniiga välja võtta 22% tulumaksuga, ainult ühe korra (KoPS § 43¹, alates 01.11.2026). Siis lõpevad sissemaksed ja uuesti saab liituda 5 aasta pärast (varem 10). Alates 2028. a saab välja võtta ka osa rahast.' : '',
       input.p3Has ? 'III sammas enne soodusiga: 22%. III samba sissemaksetelt saad 22% tulumaksu tagasi (kuni 15% brutotulust, kuni 6000 € aastas).' : ''].filter(Boolean).join(' ');
     if (early) items.push([when(input.currentAge, 0).replace(/-aastaselt/, '-aastaselt, täna'), 'Igal ajal enne pensioniiga', early, null]);
     if (input.p3Has) items.push([when(input.p3Open, 0), 'III sammas soodusmaksuga',
       'Korraga või lühem väljamakse 10%, eluaegne või elada jäänud aastate pikkune väljamakse (fondipension) 0%. Tingimus: kogumist on vähemalt 5 aastat. ' +
-      (input.p3Before2021 ? 'Alates 55, sest liitusid enne 2021.' : 'Alates 60, sest liitusid 2021 või hiljem.'),
+      (input.p3Before2021 ? 'Alates 55, sest liitusid enne 2021. a.' : 'Alates 60, sest liitusid 2021. a või hiljem.'),
       { keep: 'Jätan kasvama', lump: 'Võtan korraga välja', fund: 'Fondipension' }[input.p3Plan]]);
     items.push([when(pa - 5, m), input.p2Has ? 'II sammas ja paindlik riiklik pension' : 'Paindlik riiklik pension',
       (input.p2Has ? 'II sammas: korraga 10%, fondipension soovitusliku perioodi peale (vähemalt 4 makset aastas) 0%, lühem periood 10%. Kui hakkad raha välja võtma, lõpevad II samba sissemaksed. ' : '') +
@@ -904,14 +930,14 @@
     // Laste pensionilisa (vanaduspensionile, kasutab üks vanem): arvestatud ainult siis, kui prognoos seda ei sisalda.
     const supM = P.childSupplement(input);
     if (supM > 0) items.push([when(pa - (input.soodus || 0), 0), 'Laste pensionilisa',
-      'Enne 1991 sündinud lapse eest 1,5 aastahinnet (ja 2 a staaži), 1991–2012 sündinud lapse eest 3,5 aastahinnet; 2013+ sündinud lapse eest maksab riik II sambasse. Eripensionile lisa ei lisata. SKA määrab lisa avalduse alusel.',
+      'Enne 1991. a sündinud lapse eest 1,5 aastahinnet (ja 2 a staaži), 1991.–2012. a sündinud lapse eest 3,5 aastahinnet; 2013+ sündinud lapse eest maksab riik II sambasse. Eripensionile lisa ei lisata. SKA määrab lisa avalduse alusel.',
       '+' + eur(supM) + ' kuus' + (input.kids.inForecast === 'no' ? '' : input.kids.inForecast === 'yes' ? ' (prognoosis juba sees)' : ' (ei arvestatud: ei tea, kas prognoosis on)')]);
-    if (input.soodus > 0) items.push([when(pa - input.soodus, 0), 'Soodustingimustel vanaduspension', 'Pensionile saab minna ' + input.soodus + ' aastat enne tavalist pensioniiga (' + (P.earlyYears({ kids: input.kids }) >= P.earlyYears({ kids: {}, hazard: input.hazard }) ? 'lapsed' : 'tervist kahjustav töö') + ') ja pension ei vähene. Sinu pensioniiga on ' + pa + ' a. Kontrolli oma õigust SKA lehelt.', input.soodus + ' a varem']);
-    if (input.spMonthly > 0) items.push([when(P.specialStart(input), 0), 'Eripension', 'Eripension (politsei, kaitsevägi, kohtunik, Riigikogu jt) on riiklik pension (I sammas). Kahte riiklikku pensioni korraga ei maksta: pensionieas makstakse suurem kahest, eripension või vanaduspension (SKA kontrollib seda sinu soovil). Eripensioni ei saa edasi lükata, varem võtta ega peatada. II ja III samba vanusepiirid on samad mis kõigil. Uutele teenistujatele (politsei, kaitsevägi, prokurörid alates 2020) enam ei teki. Kontrolli oma õigust SKA lehelt.', eur(input.spMonthly) + ' kuus enne maksu' + (input.spStartAge !== undefined ? ', alates ' + input.spStartAge + '-aastaselt' : '')]);
+    if (input.soodus > 0) items.push([when(pa - input.soodus, 0), 'Soodustingimustel vanaduspension', 'Pensionile saab minna ' + input.soodus + ' aastat enne tavalist pensioniiga (' + (P.earlyYears({ kids: input.kids }) >= P.earlyYears({ kids: {}, hazard: input.hazard }) ? 'lapsed' : 'tervist kahjustav töö') + ') ja riiklikku pensioni ei vähendata. Sinu pensioniiga on ' + pa + ' a. Kontrolli oma õigust SKA lehelt.', input.soodus + ' a varem']);
+    if (input.spMonthly > 0) items.push([when(P.specialStart(input), 0), 'Eripension', 'Eripension (politsei, kaitsevägi, kohtunik, Riigikogu jt) on riiklik pension (I sammas). Kahte riiklikku pensioni korraga ei maksta: pensionieas makstakse suurem kahest, eripension või vanaduspension (SKA kontrollib seda sinu soovil). Eripensioni ei saa edasi lükata, varem võtta ega peatada. II ja III samba vanusepiirid on samad mis kõigil. Uutele teenistujatele (politsei, kaitsevägi, prokurörid alates 2020. a) enam ei teki. Kontrolli oma õigust SKA lehelt.', eur(input.spMonthly) + ' kuus enne maksu' + (input.spStartAge !== undefined ? ', alates ' + input.spStartAge + '-aastaselt' : '')]);
     items.push([when(pa, m), 'Riiklik pension täissummas (' + ageTxt(pa, m) + ')',
-      'Vähemalt 15 aastat Eesti staaži. Pensionieas on maksuvaba tulu 776 € kuus (2026), sellest suuremalt osalt on tulumaks 22%. ' +
-      'Kuni 1998 andis iga tööaasta sama palju, alates 2021 tuleb pool pensioni kasvust palga järgi ja pool kõigile võrdselt; II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. ' + (input.p2Has || input.p3Has ? 'Kindlustusseltsi eluaegne pension on maksuvaba. ' : '') +
-      (by + 65 >= 2029 ? 'Alates 2029 seotakse pensioniiga oodatava elueaga, seega see on ligikaudne.' : ''),
+      'Vähemalt 15 aastat Eesti staaži. Pensionieas on maksuvaba tulu 776 € kuus (2026. a), sellest suuremalt osalt on tulumaks 22%. ' +
+      'Kuni 1998. a andis iga tööaasta sama palju, alates 2021. a tuleb pool pensioni kasvust palga järgi ja pool kõigile võrdselt; II sambaga liitunul on riiklik pension väiksem, sest 4% palgast läheb II sambasse. ' + (input.p2Has || input.p3Has ? 'Kindlustusseltsi eluaegne pension on maksuvaba. ' : '') +
+      (by + 65 >= 2029 ? 'Pensioniiga on seotud oodatava elueaga ja pärast 2028. a ei ole see veel kehtestatud, seega see on ligikaudne.' : ''),
       input.p2Has && input.payout === 'grow' ? { grow: 'Kasvatan edasi', lump: 'Kõik korraga', fund: 'Fondipension' }[input.method] : null]);
     const p2F = input.p2Has && input.method === 'fund', p3F = !!(input.p3Sep && input.p3Sep.mode === 'fund');
     const lepTxt = (c) => (c === 'yearly' ? 'Uus leping igal aastal' : 'Üks leping');
@@ -920,8 +946,8 @@
       [p2F ? (p3F ? 'II: ' : '') + lepTxt(input.contract) : '', p3F ? (p2F ? 'III: ' : 'III sammas: ') + lepTxt(input.contract3) : ''].filter(Boolean).join(', ')]);
     const deferOpt = P.options(input).deferral;
     items.push([when(pa + 1, m) + '…' + (by + pa + 5), 'Riikliku pensioni edasilükkamine',
-      'Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks: +7,93% (1 a), +16,88% (2 a), +27,01% (3 a), +38,50% (4 a), +51,57% (5 a), 2026 keskmised. Kui võtad pool pensioni, tõuseb pension pool sellest. ' +
-        'Elukaar arvestab edasilükkamist ja poolt pensioni täisaastates alates pensionile minekust. Kui saad riiklikku pensioni juba, saad selle ka peatada ja hiljem uuesti alustada; seda Elukaar ei arvesta. Küsi SKA-lt, kui palju sinu pension siis tõuseb.' + (deferOpt.open ? '' : ' ' + deferOpt.reason),
+      'Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks: +7,93% (1 a), +16,88% (2 a), +27,01% (3 a), +38,50% (4 a), +51,57% (5 a), 2026. a keskmised. Kui võtad pool pensioni, tõuseb pension pool sellest. ' +
+        'Elukaar arvestab edasilükkamist ja poolt pensioni täisaastates alates pensionile minekust. Edasilükatud aastatel tõstab pensioni ka töö (staaž), kui valid „Töötan edasi“; SKA paindliku pensioni arvutus eeldab, et töötad edasi. Kui saad riiklikku pensioni juba, saad selle ka peatada ja hiljem uuesti alustada; seda Elukaar ei arvesta. Küsi SKA-lt, kui palju sinu pension siis tõuseb.' + (deferOpt.open ? '' : ' ' + deferOpt.reason),
       !deferOpt.open ? 'Ei kehti' : input.deferral ? 'Lükkan ' + input.deferral + ' aastat edasi: ' + eur(input.p1Monthly * (1 + P.DEFERRAL_INCREASE[input.deferral])) + ' kuus'
         : input.half ? 'Pool ' + input.half + ' aastat: ' + eur(input.p1Monthly / 2) + ', siis ' + eur(input.p1Monthly * (1 + P.DEFERRAL_INCREASE[input.half] / 2)) + ' kuus' : 'Võtan kohe']);
     const pillars = input.p2Has && input.p3Has ? 'II ja III samba' : input.p2Has ? 'II samba' : input.p3Has ? 'III samba' : '';
@@ -1415,19 +1441,59 @@
     const has = $('kidsHas').value === 'yes';
     const n = (id) => (has ? Math.max(0, Math.min(20, parseInt($(id).value, 10) || 0)) : 0);
     const early = $('kidsEarlyUser').value, sup = $('kidsSupUser').value;
-    return { b1991: n('kidsB1991'), b2012: n('kidsB2012'), b2013: n('kidsB2013'), disabled: has && $('kidsDisabled').value === 'yes', earlyUser: early, supUser: sup, user: early, inForecast: $('kidsInForecast').value };
+    const b2021 = n('kidsB2021'), u3 = Math.min(b2021, n('kidsU3'));
+    // Riigi II samba sissemakse kestab lapse 3-aastaseks saamiseni: jäänud kuud sünnikuust (tühi → mootor eeldab 18 kuud).
+    const now = new Date(), nowM = now.getFullYear() * 12 + now.getMonth();
+    const u3Left = [];
+    for (let i = 0; i < u3; i++) {
+      const el = $('kidsU3Born' + i), m = el && /^(\d{4})-(\d{2})$/.exec(el.value);
+      u3Left.push(m ? Math.max(0, Math.min(36, 36 - (nowM - (parseInt(m[1], 10) * 12 + parseInt(m[2], 10) - 1)))) : undefined);
+    }
+    return { b1991: n('kidsB1991'), b2012: n('kidsB2012'), b2013: n('kidsB2013'), b2021: b2021, u3: u3, u3Left: u3Left, monthNow: now.getMonth(), disabled: has && $('kidsDisabled').value === 'yes', earlyUser: early, supUser: sup, user: early, inForecast: $('kidsInForecast').value };
+  }
+  // Iga alla 3-aastase lapse sünnikuu (kuni 5 välja; olemasolevad väärtused jäävad alles).
+  function renderU3Births(n) {
+    const box = $('kidsU3Births'), cnt = Math.min(5, n);
+    box.classList.toggle('d-none', cnt === 0);
+    const now = new Date(), pad = (v) => String(v).padStart(2, '0');
+    const max = now.getFullYear() + '-' + pad(now.getMonth() + 1), min = (now.getFullYear() - 3) + '-' + pad(now.getMonth() + 1);
+    const cur = box.querySelectorAll('input[type="month"]').length;
+    if (cur === cnt) return;
+    const keep = [...box.querySelectorAll('input[type="month"]')].map((el) => el.value);
+    box.innerHTML = '<div class="row g-3">' + Array.from({ length: cnt }, (_, i) =>
+      '<div class="col-6 col-md-3"><label class="form-label" for="kidsU3Born' + i + '">' + (cnt > 1 ? (i + 1) + '. lapse sünnikuu' : 'Lapse sünnikuu') + '</label>' +
+      '<input class="form-control" type="month" id="kidsU3Born' + i + '" min="' + min + '" max="' + max + '" value="' + (keep[i] || '') + '" aria-describedby="kidsU3Hint"></div>').join('') + '</div>';
   }
   // Varem pensionile (aastad): lapsed või tervist kahjustav töö, suurem kahest (pension.js earlyYears).
-  function soodusNow() { return P.earlyYears({ kids: kidsInput(), hazard: $('hazard').value }); }
+  function soodusMax() { return P.earlyYears({ kids: kidsInput(), hazard: $('hazard').value }); }
+  // Mitu aastat varem inimene tegelikult läheb (0 … õiguse maksimum); vaikimisi maksimum. Õigus ei kohusta minema kõige varem.
+  function soodusNow() {
+    const max = soodusMax(), v = $('soodusYears').value;
+    return v === '' ? max : Math.min(max, Math.max(0, parseInt(v, 10) || 0));
+  }
+  function renderSoodusYears() {
+    const max = soodusMax(), sel = $('soodusYears'), cur = sel.value;
+    $('soodusYearsWrap').classList.toggle('d-none', max === 0);
+    if (sel.dataset.max !== String(max)) {
+      sel.innerHTML = Array.from({ length: max + 1 }, (_, i) => max - i).map((y) =>
+        '<option value="' + y + '">' + (y === max ? y + ' a (kõige varem)' : y === 0 ? 'ei lähe varem (tavalises pensionieas)' : y + ' a') + '</option>').join('');
+      sel.dataset.max = String(max);
+      // Kasutaja enda valik jääb, kui see mahub uude vahemikku; muidu kõige varem.
+      sel.value = sel.dataset.touched && cur !== '' && parseInt(cur, 10) <= max ? cur : String(max);
+    }
+  }
+  $('soodusYears').addEventListener('change', (e) => { if (e.isTrusted || e.detail !== 'auto') $('soodusYears').dataset.touched = '1'; });
   // Pensionile minek (soodustusega varem). Tavaline pensioniiga on input.pensionAgeYears.
   function pensionAgeValue() { return parseInt($('pensionAgeYears').value, 10) - soodusNow(); }
   function syncPensionAge() {
+    renderSoodusYears();
     const rule = P.pensionAge(parseInt($('birthYear').value, 10) || 1980);
     if (!paTouched) $('pensionAgeYears').value = String(rule.years);
     const sd = soodusNow();
-    $('paHint').textContent = 'Reegli järgi ' + rule.years + ' a' + (sd ? ', soodustingimustel ' + (parseInt($('pensionAgeYears').value, 10) - sd) + ' a' : '');
+    $('soodusAge').textContent = sd ? 'Pensionile lähed siis ' + (parseInt($('pensionAgeYears').value, 10) - sd) + '-aastaselt.' : '';
   }
-  $('pensionAgeYears').addEventListener('change', () => { paTouched = true; });
+  // Käsitsi valitud pensioniiga jääb alles ka siis, kui sünniaasta muutub.
+  $('pensionAgeYears').addEventListener('change', () => { paTouched = true; syncPensionAge(); });
   $('birthYear').addEventListener('input', () => { $('birthYearNote').textContent = ''; syncPensionAge(); });
   // Väljaspool vahemikku sisestatud aasta asendatakse lähima lubatud aastaga (pärast sisestuse lõppu, mitte trükkimise ajal).
   // Teade on nähtamatu role="status" piirkonnas: nägija näeb muutust väljas, ekraanilugeja kasutaja kuuleb seda.
@@ -1440,7 +1506,7 @@
     el.dispatchEvent(new Event('input', { bubbles: true }));
     $('birthYearNote').textContent = 'Muudetud aastaks ' + fixed + '.';
   });
-  ['kidsB1991', 'kidsB2012', 'kidsB2013', 'kidsDisabled', 'kidsEarlyUser', 'kidsHas', 'hazard'].forEach((id) => { $(id).addEventListener('change', syncPensionAge); $(id).addEventListener('input', syncPensionAge); });
+  ['kidsB1991', 'kidsB2012', 'kidsB2013', 'kidsB2021', 'kidsDisabled', 'kidsEarlyUser', 'kidsHas', 'hazard', 'soodusYears'].forEach((id) => { $(id).addEventListener('change', syncPensionAge); $(id).addEventListener('input', syncPensionAge); });
 
   // ---------- Sündmused ----------
   ['fund18Fund', 'fundNew'].forEach((id) => {
@@ -1551,7 +1617,7 @@
     if (none && $('p3').value !== '0') { $('p3').dataset.prev = $('p3').value; $('p3').value = 0; }
     if (!none && $('p3').dataset.prev) { $('p3').value = $('p3').dataset.prev; delete $('p3').dataset.prev; }
     $('p3OpenWrap').classList.toggle('d-none', !none);
-    $('p3JoinedHint').textContent = none ? 'Kui plaanid III samba avada, sisesta sissemakse ja vanus, millal avad.' : 'Enne 2021 liitunul lisandub 55 a otsustuskoht.';
+    $('p3JoinedHint').textContent = none ? 'Kui plaanid III samba avada, sisesta sissemakse ja vanus, millal avad.' : 'Enne 2021. a liitunul lisandub 55 a otsustuskoht.';
   }
   $('p3Joined').addEventListener('change', () => { syncP3Fields(); go(skipped(step) ? shownSteps().find((i) => i > step) : step, false); });
   syncP3Fields();
@@ -1628,7 +1694,7 @@
   // Nupp on sildi või grupi pealkirja kõrval (mitte sildi sees). Dialoog: showModal() → klaviatuurilõks, inertne taust
   // (ekraanilugeja ei loe muud lehte), Esc sulgeb; nimi = pealkiri (aria-labelledby); sulgedes fookus tagasi nupule.
   const ABI = window.ELUKAAR_ABI || {};
-  const HELP_AT = { sex: 'label[for="sex"]', pensionAge: 'label[for="pensionAgeYears"]', p1: 'label[for="p1Monthly"]',
+  const HELP_AT = { sex: 'label[for="sex"]', pensionAge: 'label[for="pensionAgeYears"]', p1: 'label[for="p1Monthly"]', gross: 'label[for="grossMonthly"]', household: 'label[for="household"]', soodusYears: 'label[for="soodusYears"]', p3Monthly: 'label[for="p3Monthly"]',
     hazard: 'label[for="hazard"]', sp: 'label[for="spHas"]', spStart: 'label[for="spStartAge"]', p2Rate: 'label[for="p2Rate"]', p3Joined: 'label[for="p3Joined"]', fundCur: 'label[for="fundCur"]',
     kidsEarly: 'label[for="kidsEarlyUser"]', kidsSup: 'label[for="kidsSupUser"]', kidsWho: 'label[for="kidsHas"]' };
   const LEGEND_HELP = { 'Lapsed': 'kids', 'Sambad ja töö': 'pillars' };
