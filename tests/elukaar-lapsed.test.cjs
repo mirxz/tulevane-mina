@@ -24,6 +24,9 @@ assert.strictEqual(P.earlyYears(K({ b1991: 2, b2013: 2 })), 3, 'sünniaeg ei loe
 assert.strictEqual(P.earlyYears(K({ b2012: 5, user: 'other' })), 0, 'teine vanem kasutab');
 // 2. Tervist kahjustav töö eraldi; suurem kahest.
 assert.strictEqual(P.earlyYears({ ...base, hazard: 'list1' }), 10);
+// Nimekiri nr 1: tingimuste eest vastutab inimene; mootor ei piira (alla 10 a: UI hoiatab), lisa arvutatakse aastate järgi.
+assert.strictEqual(P.earlyYears({ ...base, hazard: 'list1', hazardYears: 5 }), 10, 'nimekiri nr 1, 5 a → mootor ei piira');
+assert.ok(near(P.hazardSupplement({ hazard: 'list1', hazardYears: 5, undergroundYears: 0 }), P.AASTAHINNE * 0.031 * 5), 'nimekiri nr 1, 5 a → lisa 5 aasta eest');
 assert.strictEqual(P.earlyYears({ ...base, hazard: 'list2' }), 5);
 assert.strictEqual(P.earlyYears({ ...K({ b2012: 3 }), hazard: 'list2' }), 5);
 assert.strictEqual(P.earlyYears(base), 0);
@@ -54,7 +57,8 @@ assert.strictEqual(P.childPillar2(K({ b2021: 1, u3: 1, supUser: 'other' })), 0, 
   const a = P.simulate({ ...young, kids: { b2021: 1, u3: 1, user: 'me', inForecast: 'no' } }, T, { id: 'D' });
   const b = P.simulate(young, T, { id: 'D' });
   const pa2 = P.retirementYears(young);
-  assert.ok(near(row(a, pa2).moneyLeft + row(a, pa2).i23 * 12 - row(b, pa2).moneyLeft - row(b, pa2).i23 * 12, 12 * M26 + 6 * M27, 1e-3), 'sissemakse jõuab II samba varasse');
+  // moneyLeft = vara aasta alguses (enne väljamakset); i23 lisamine liidaks esimese aasta väljamakse topelt.
+  assert.ok(near(row(a, pa2).moneyLeft - row(b, pa2).moneyLeft, 12 * M26 + 6 * M27, 1e-3), 'sissemakse jõuab II samba varasse: ' + (row(a, pa2).moneyLeft - row(b, pa2).moneyLeft).toFixed(2) + ' vs ' + (12 * M26 + 6 * M27).toFixed(2));
 }
 assert.strictEqual(P.childSupplement(K({ b2012: 3, user: 'other' })), 0, 'teine vanem kasutab');
 // 4. Lisa riiklikule pensionile ainult siis, kui prognoos seda ei sisalda.
@@ -107,11 +111,21 @@ assert.ok(near(P.hazardSupplement({ hazard: 'list1', hazardYears: 10, undergroun
   assert.ok(Math.abs(row(s, s.pensionStartAge).i1g - 939) <= 1, '2 last pensionilisa: elukaar ' + row(s, s.pensionStartAge).i1g.toFixed(1) + ' vs SKA 939');
 }
 }
+// RPKS § 24 lg 6: sept 2021+ laps (üle 3 a), riik tegi II sambasse lisamakseid alla 36 kuu → osaline lisa (SKA: 12 kuud → 2/3).
+{
+  const II = { ...base, birthYear: 1990, p2: 10000, p2Rate: 0.02 };
+  const kid = (k) => ({ ...II, kids: { b2021: 2, u3: 0, supUser: 'me', ...k } });
+  assert.ok(near(P.childSupplement(kid({})), 0), 'II sambas, vaikimisi 36 kuud lisamakseid → lisa pole');
+  assert.ok(near(P.childSupplement(kid({ iiMonths: [12, 36] })), P.AASTAHINNE * 3.5 * 2 / 3, 1e-9), '12 kuud → 2/3 lisast, 36 kuud → 0');
+  assert.ok(near(P.childSupplement(kid({ iiMonths: [0, 18] })), P.AASTAHINNE * 3.5 * 1.5, 1e-9), '0 kuud → täis, 18 kuud → pool');
+  assert.ok(near(P.childSupplement({ ...II, p2: 0, p2Rate: 0, kids: { b2021: 1, u3: 0, supUser: 'me' } }), P.AASTAHINNE * 3.5, 1e-9), 'II sambata vaikimisi 0 kuud → täis lisa');
+}
 console.log('Lapsed OK');
-// 7. Sugu „muu“ (X): meeste ja naiste elutabeli keskmine.
+// 7. Sugu „muu“ (X): Statistikaameti kogu rahvastiku veerg K (ellujäämine ja horisont).
 {
   const e = (sx) => P.fundPensionTerm(T, sx, 65);
-  assert.strictEqual(e('X'), Math.max(1, Math.round((T.elada_jaanud.M[65] + T.elada_jaanud.N[65]) / 2)));
+  assert.strictEqual(e('X'), Math.round(T.elada_jaanud.K[65]));
+  assert.ok(Math.abs(P.survival(T, 'X', 65, 81) - T.ellujaajad.K[81] / T.ellujaajad.K[65]) < 1e-12, 'X ellujäämine K veerust');
   const sx = P.simulate({ ...base, sex: 'X' }, T, { id: 'D' });
   assert.ok(sx.horizonAge >= P.simulate({ ...base, sex: 'M' }, T, { id: 'D' }).horizonAge && sx.horizonAge <= P.simulate({ ...base, sex: 'N' }, T, { id: 'D' }).horizonAge, 'X horisont M ja N vahel');
   console.log('Sugu muu OK');

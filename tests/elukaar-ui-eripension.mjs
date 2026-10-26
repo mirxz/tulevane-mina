@@ -16,7 +16,16 @@ const page = await ctx.newPage();
 const errs = [];
 page.on("pageerror", (e) => errs.push(e.message));
 const base = { birthYear: 1976, sex: "M", p1Monthly: 1000, p2: 40000, p3: 0, p3Joined: "none", grossMonthly: 3000, p2Rate: "0.04", p3Monthly: 0 };
+// Lapsed: rühmade arv → sünniaastad (vorm küsib iga lapse sünniaastat; 2024 = alla 3-aastane).
+const KID_YEAR = { kidsB1991: 1985, kidsB2012: 2000, kidsB2013: 2015, kidsB2021: 2024 };
+function expandKids(v) {
+  const out = {}, births = [];
+  for (const [k, val] of Object.entries(v)) { if (k in KID_YEAR) for (let i = 0; i < val; i++) births.push(KID_YEAR[k]); else out[k] = val; }
+  if (births.length) { out.kidsCount = births.length; births.forEach((y, i) => { out["kidsBorn" + i] = y; }); }
+  return out;
+}
 async function setup(vals) {
+  vals = expandKids(vals);
   await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => window.__elukaar);
   await page.evaluate((v) => {
@@ -236,7 +245,7 @@ check(/töötan kuni \d+-aastaseks/.test(await text("#recap")), "kokkuvõte: tö
 
 // 4. Varem pensionile: valiku all on vanus, millal pensionile lähed (pensioniea vihje on muutumatu).
 await setup({ ...base, kidsHas: "yes", kidsB2012: 4 });
-check(/Pensionile lähed siis \d\d-aastaselt/.test(await text("#soodusYearsHint")) && !/\d/.test(await text("#paHint")), "varem pensionile: vanus valiku all, pensioniea vihje muutumatu");
+check(/Pensionile lähed siis \d\d-aastaselt/.test(await text("#soodusYearsHint")), "varem pensionile: vanus valiku all");
 check(errs.length === 0, "lehe vead: " + errs.join("; "));
 await browser.close();
 console.log(`\nEripension (UI): ${passed} kontrolli läbis, ${failed} kukkus`);

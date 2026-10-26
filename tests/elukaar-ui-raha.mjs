@@ -45,7 +45,8 @@ for (const plan of ["keep", "fund", "lump"]) {
 {
   const i = await setup(base, { p3plan: "fund" });
   const pa = 65, a0 = i.currentAge; let exp = 0;
-  for (let a = a0; a < pa; a++) exp -= i.p3Monthly * 12 / Math.pow(1 + i.realReturn, a - a0 + 1);
+  // Jooksval aastal ainult ülejäänud kuude sissemaksed (i.firstYearShare).
+  for (let a = a0; a < pa; a++) exp -= i.p3Monthly * 12 * (a === a0 ? i.firstYearShare : 1) / Math.pow(1 + i.realReturn, a - a0 + 1);
   check(near(i.c3Adj, exp, 1e-6 * Math.abs(exp) + 1e-6) , `fund: c3Adj ${i.c3Adj.toFixed(2)} = −Σ sissemaksed (${exp.toFixed(2)})`);
   // Kui avatud sammas ei ole 'fund', siis c3Adj on 0 (kõik sissemaksed lähevad ühisesse potti) – 'keep' avatud sambaga.
   const k = await setup(base, { p3plan: "keep" });

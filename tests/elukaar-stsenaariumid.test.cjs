@@ -107,6 +107,9 @@ for (const { label, input } of personas.filter((_, k) => k % 4 === 0)) {
 // 7. Ristkontroll kalkulaatoriga (kalkulaatori prototüüp 1 on testifikstuur tests/fixtures/kalkulaator-pension.js; Elukaar arvutatakse ilma tulumaksuta,
 //    sest kalkulaator tulumaksu ei arvesta). B on teadlik erand, vt allpool: ilma sissemakseteta, hoius vaikimisi −1% mõlemas, töö lõpeb pensionieas → sama tulemus.
 //    Elukaar A, B, D, C(+2 a) = kalkulaator lump, fund, renew, renew + riiklik 2 a hiljem.
+//    Kalkulaatori prototüüp kasutab fondipensioni perioodiks soo järgi eluiga; Elukaar soost sõltumatut (veerg K). Ristkontrollis
+//    anname Elukaarele elutabeli ilma K veeruta (T0), et võrrelda sama loogikat.
+const T0 = { ...T, elada_jaanud: { M: T.elada_jaanud.M, N: T.elada_jaanud.N } };
 for (const { label, input } of personas.filter((p) => E.CURRENT_YEAR - p.input.birthYear >= 55)) {
   const pa = E.retirementYears(input);
   const k = { ...input, grossMonthly: 0, p2Rate: 0, p3Monthly: 0, pensionAgeYears: pa, workUntil: pa, tkf: 0, savings: 0, tkfMonthly: 0, care: { on: false } };
@@ -118,9 +121,9 @@ for (const { label, input } of personas.filter((p) => E.CURRENT_YEAR - p.input.b
     // tootlusega. Lepingu lõpuni on need võrdsed ainult 0% juures, seega võrdleme B-d vaid siis.
     if (id === 'B' && input.realReturn !== 0) continue;
     const plan = { stateOffset: off, p2: { method: m, start: kStart }, p3: { method: m, start: kStart } };
-    const ks = K.simulate(k, T, plan), es = E.simulate(e, T, SC[id]);
+    const ks = K.simulate(k, T, plan), es = E.simulate(e, T0, SC[id]);
     check(ks.lastsUntil === es.coversNeedUntil, label + '/' + id + ': katmine kalkulaator ' + ks.lastsUntil + ' vs elukaar ' + es.coversNeedUntil);
-    const kl = K.sustainableNeed(k, T, plan), el = E.sustainableNeed(e, T, SC[id]);
+    const kl = K.sustainableNeed(k, T, plan), el = E.sustainableNeed(e, T0, SC[id]);
     check(Math.abs(kl - el) <= 10, label + '/' + id + ': jätkusuutlik kulu kalkulaator ' + kl + ' vs elukaar ' + el);
   }
 }

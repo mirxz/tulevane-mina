@@ -104,5 +104,19 @@
   "url": "https://github.com/TulevaEE/onboarding-client",
   "kontrollitud": "2026-10-16",
   "kommentaar": "TLV-86. Elukaare UI kasutab neid vaikimisi; mootor ilma sisendita mitte."
+ },
+ "paindlik_varem": {
+  "tabel": {
+   "0": 0,
+   "1": 0.0717,
+   "2": 0.1378,
+   "3": 0.1988,
+   "4": 0.255,
+   "5": 0.3067
+  },
+  "allikas": "SKA iseteeninduse pensionikalkulaator, paindlik pension (riikliku pensioni vähendus varem minnes, eluks ajaks)",
+  "url": "https://iseteenindus.sotsiaalkindlustusamet.ee/self-service/pension-calculator",
+  "kontrollitud": "2026-10-17",
+  "kommentaar": "Kadi andmetel 3 a varem: 664 € = (865 − 3 × 12,2) × (1 − 19,88%)."
  }
 }

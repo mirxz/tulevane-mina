@@ -394,14 +394,16 @@ html.scroll-locked { overflow: hidden; }
 
 /* „?“ reas kohe teksti järel (nagu Tuleva InfoTooltip): ka kaherealise sildi korral viimase sõna kõrval. 44 px puutеala, rida ei kõrgene. */
 .label-row { display: block; margin-bottom: 0.5rem; }
-.label-row .form-label { display: inline; margin: 0; }
+.label-row .form-label { display: inline; margin: 0; white-space: normal; }
 .label-row .help-btn, legend .help-btn { display: inline-grid; width: 44px; height: 44px; margin: -12px -12px -12px -6px; vertical-align: middle; }
 .label-row .help-btn .ico, legend .help-btn .ico { width: 1.25rem; height: 1.25rem; }
 
-/* Joondus: „?“ sildi viimase rea kõrval; lauaarvutis on rea sildid sama kõrged ja all, nii et lahtrid on ühel joonel. */
-.label-row { display: flex; align-items: flex-end; gap: 0.1rem; margin-bottom: 0.5rem; }
-.label-row .form-label { display: block; margin: 0; }
-.label-row .help-btn { flex: 0 0 44px; margin: -10px -12px -11px -6px; }
+/* Joondus: rea sildid sama kõrged (JS alignLabels) ja sisu all, nii et lahtrid on ühel joonel. „?“ on sildiga samas lõigus,
+   seega kaherealise sildi korral viimase sõna järel. */
+.label-row { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 0; margin-bottom: 0.5rem; }
+.label-row .label-line { display: block; white-space: nowrap; } /* sildi ja „?“ vahel ei murdu */
+.label-row .form-label { display: inline; margin: 0; white-space: normal; }
+.label-row .help-btn { display: inline-grid; width: 44px; height: 44px; margin: -12px -12px -12px -6px; vertical-align: middle; }
 
 
 /* Tuleva _base.scss annab <small> elemendile teksti värvi; tumedal ribal pärib see riba värvi (kontrast). */

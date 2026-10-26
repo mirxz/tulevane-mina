@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tulevane Mina · lugu</title>
-  <meta name="description" content="Sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
+  <title>Elukaar · Tulevane Mina</title>
+  <meta name="description" content="Elukaar: sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Tulevane Mina · kas raha jätkub?">
-  <meta property="og:description" content="Sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
+  <meta property="og:title" content="Elukaar · kas raha jätkub?">
+  <meta property="og:description" content="Elukaar: sinu pensionilugu tänasest elu lõpuni: valikud igas eluetapis, kulupakett ja tulemus.">
   <meta property="og:image" content="https://mina.tulevane.workers.dev/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -23,7 +23,7 @@
   <main class="container py-4">
     <header class="mb-3">
       <h1 class="mb-1">Tulevane Mina</h1>
-      <p class="lead text-secondary mb-0">Sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
+      <p class="lead text-secondary mb-0"><strong>Elukaar</strong>: sinu pensionilugu tänasest elu lõpuni. Kas raha jätkub?</p>
     </header>
 
     <!-- Eluteekond: navigeerimine etappide vahel -->
@@ -41,7 +41,7 @@
           <h2 id="h0" tabindex="-1">Kes sa oled ja mis sul juba on?</h2>
         </div>
       </div>
-      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb. Kõik summad on <strong>tänastes eurodes</strong>: hinnatõus on arvesse võetud, nii et saad neid võrrelda tänaste hindadega.</p>
+      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb. Kõik summad on <strong>tänastes eurodes</strong>: arvutus arvestab hinnatõusu (2% aastas), nii et saad summasid võrrelda tänaste hindadega.</p>
       <fieldset class="field-group mb-4">
         <legend class="h5 section-title">Sina</legend>
         <div class="row g-3 fields">
@@ -63,10 +63,9 @@
         <div class="row g-3 fields">
         <div class="col-6 col-md-3">
           <label class="form-label" for="pensionAgeYears">Pensioniiga</label>
-          <select class="form-select" id="pensionAgeYears" aria-describedby="paHint">
+          <select class="form-select" id="pensionAgeYears">
             <option value="65">65 a</option><option value="66">66 a</option><option value="67">67 a</option><option value="68">68 a</option><option value="69">69 a</option><option value="70">70 a</option>
           </select>
-          <div class="form-text" id="paHint">Seaduse järgi.</div>
         </div>
         <div class="col-12 col-sm-6 col-md-3">
           <label class="form-label" for="p1Monthly">Riiklik pension</label>
@@ -134,29 +133,14 @@
         </div>
         </div>
         <div class="row g-3 fields mt-0 d-none" id="kidsDetails">
-        <div class="col-12"><p class="form-label fw-medium mb-0" id="kidsTitle">Laste arv sünniaja järgi</p></div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB1991">enne 1991. a</label>
-          <input class="form-control" id="kidsB1991" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="kidsCount">Mitu last?</label>
+          <input class="form-control" id="kidsCount" type="number" inputmode="numeric" min="0" step="1" value="1">
         </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB2012">1991.–2012. a</label>
-          <input class="form-control" id="kidsB2012" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB2013">2013. a – aug 2021. a</label>
-          <input class="form-control" id="kidsB2013" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB2021">sept 2021. a või hiljem</label>
-          <input class="form-control" id="kidsB2021" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-4 col-md-2 d-none" id="kidsU3Wrap">
-          <label class="form-label" for="kidsU3">neist alla 3-aastased</label>
-          <input class="form-control" id="kidsU3" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsU3Hint">
-          <div class="form-text" id="kidsU3Hint">Riik maksab nende eest II sambasse.</div>
-        </div>
-        <div class="col-12 d-none" id="kidsU3Births" role="group" aria-label="Alla 3-aastaste laste sünnikuud"></div>
+        <div class="col-12" id="kidsList" role="group" aria-label="Laste sünniajad"></div>
+        <div class="col-12 d-none" id="kidsU3Wrap"><div class="form-text mt-0" id="kidsU3Hint"></div></div>
+        <div class="col-12 d-none" id="kidsIIWrap"><div class="form-text mt-0" id="kidsIIHint">Riigi lisamakse II sambasse: mitu kuud tegi riik lapse esimesel 3 aastal sinu II sambasse lisamakseid. Kui alla 36, saad ülejäänud kuude eest osa pensionilisast. Kui ei tea: II sambas olles 36, muidu 0.</div></div>
+        <div class="col-12 d-none" id="kidsMissingWrap"><div class="form-text mt-0" id="kidsMissing">Sisesta iga lapse sünniaasta: pensionilisa sõltub sellest. Ilma sünniaastata loeme last ainult varem pensionile mineku õiguse juures.</div></div>
         <div class="col-6 col-md-3" id="kidsDisabledWrap">
           <label class="form-label" for="kidsDisabled">Mõni laps on puudega</label>
           <select class="form-select" id="kidsDisabled"><option value="no" selected>ei</option><option value="yes">jah (keskmine, raske või sügav puue)</option></select>
@@ -175,21 +159,21 @@
         <legend class="h5 section-title">Töö olemusest tulenevad erandid</legend>
         <p class="small-muted mb-2">Tervist kahjustav töö annab vähendamata pensioni varem. Eripension on eraldi pension (nt kaitsevägi, politsei).</p>
         <div class="row g-3 fields">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-3">
           <label class="form-label" for="hazard">Tervist kahjustav töö</label>
           <select class="form-select" id="hazard" aria-describedby="hazardHint">
             <option value="no" selected>ei</option>
-            <option value="list1">nimekiri nr 1: 10 a varem</option>
-            <option value="list2">nimekiri nr 2: 5 a varem</option>
+            <option value="list1">nimekiri nr 1</option>
+            <option value="list2">nimekiri nr 2</option>
           </select>
           <div class="form-text" id="hazardHint">Riigi kinnitatud nimekirja töö. Tingimused leiad küsimärgi alt.</div>
         </div>
-        <div class="col-6 col-md-3 d-none" id="hazardYearsWrap">
+        <div class="col-12 col-sm-6 col-md-5 d-none" id="hazardYearsWrap">
           <label class="form-label" for="hazardYears">Mitu aastat töötasid nimekirja nr 1 tööl?</label>
           <input class="form-control" id="hazardYears" type="number" min="0" max="50" step="1" value="10" aria-describedby="hazardYearsHint">
-          <div class="form-text" id="hazardYearsHint">Vähemalt 10 aastat. Iga aasta lisab pensionile 3,1% aastahindest.</div>
+          <div class="form-text" id="hazardYearsHint">Selle järgi arvutame pensionilisa: iga aasta lisab 3,1% aastahindest.</div>
         </div>
-        <div class="col-6 col-md-3 d-none" id="undergroundWrap">
+        <div class="col-12 col-sm-6 col-md-4 d-none" id="undergroundWrap">
           <label class="form-label" for="undergroundYears">Neist allmaatööl (aastat)</label>
           <input class="form-control" id="undergroundYears" type="number" min="0" max="50" step="1" value="0" aria-describedby="undergroundHint">
           <div class="form-text" id="undergroundHint">Nt kaevanduses maa all. Iga aasta lisab veel 21,9% aastahindest.</div>
@@ -212,11 +196,11 @@
         </div>
         </div>
       </fieldset>
-      <div class="row g-3 fields mb-3 d-none" id="soodusYearsWrap">
-        <div class="col-12 col-sm-6 col-md-4">
+      <div class="row g-3 fields mb-3" id="soodusYearsWrap">
+        <div class="col-12 col-md-6">
           <label class="form-label" for="soodusYears">Mitu aastat varem plaanid pensionile minna?</label>
           <select class="form-select" id="soodusYears" aria-describedby="soodusYearsHint"></select>
-          <div class="form-text" id="soodusYearsHint"><span id="soodusAge"></span> Õigus ei kohusta: võid minna ka hiljem, kuni tavalise pensionieani.</div>
+          <div class="form-text" id="soodusYearsHint"><span id="soodusAge"></span> Laste või tervist kahjustava töö eest varem minnes pensioni ei vähendata.</div>
         </div>
       </div>
       <div class="story-note mb-4 d-none" id="soodusSummary" aria-live="polite"></div>
@@ -370,7 +354,7 @@
           <div class="faq-body">
             <p>Fondipension tähendab, et võtad III samba raha välja osamaksetena, näiteks iga kuu. Raha, mida veel välja ei võtnud, jääb fondi ja kasvab edasi.</p>
             <ul>
-              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg, on väljamaksed <strong>tulumaksuvabad</strong>.</li>
+              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg Statistikaameti andmetel, on väljamaksed <strong>tulumaksuvabad</strong>.</li><li>Kui soovid raha jagada pikema aja peale, sõlmi igal aastal uus leping (maksuvaba) või võta raha välja osade kaupa (10% tulumaks).</li>
               <li>Fondis olev raha läheb pärijatele.</li>
             </ul>
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
@@ -411,9 +395,9 @@
           <label class="choice"><input type="radio" name="p3pa" value="grow" checked>
             <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌱</span><strong>Jätkan kasvatamist</strong><small>Raha jääb fondi. Pensionieas võtad välja ainult nii palju, kui vaja (10% tulumaks).</small></span></label>
           <label class="choice"><input type="radio" name="p3pa" value="fund">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Igakuine maksuvaba väljamakse elada jäänud aastate peale. Ülejäänud raha kasvab edasi.</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🗓️</span><strong>Fondipension</strong><small>Alustad nüüd igakuise maksuvaba väljamaksega elada jäänud aastate peale, ka töötamise ajal. Ülejäänud raha kasvab edasi.</small></span></label>
           <label class="choice"><input type="radio" name="p3pa" value="lump">
-            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>III sammas ühekordselt välja pensionieas, 10% tulumaks. Raha on hoiusel.</small></span></label>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">💰</span><strong>Kõik korraga</strong><small>Võtad III samba nüüd ühekordselt välja, 10% tulumaks. Raha on hoiusel.</small></span></label>
         </div>
       </fieldset>
       <section class="faq mt-4" aria-labelledby="faq60Title">
@@ -423,7 +407,7 @@
           <div class="faq-body">
             <p>Fondipension tähendab, et võtad II või III samba raha välja osamaksetena, näiteks iga kuu. Raha, mida veel välja ei võtnud, jääb fondi ja kasvab edasi.</p>
             <ul>
-              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg, on väljamaksed <strong>tulumaksuvabad</strong>.</li>
+              <li>Kui väljamaksete periood on vähemalt nii pikk kui sinu eeldatav elada jäänud aeg Statistikaameti andmetel, on väljamaksed <strong>tulumaksuvabad</strong>.</li><li>Kui soovid raha jagada pikema aja peale, sõlmi igal aastal uus leping (maksuvaba) või võta raha välja osade kaupa (10% tulumaks).</li>
               <li>Fondis olev raha läheb pärijatele.</li>
             </ul>
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
@@ -656,7 +640,7 @@
           <div class="form-text" id="spGrossUnit">eurot kuus, alates eripensioni algusest</div>
         </div>
       </fieldset>
-      <div class="note mb-3" id="spSameJobNote">Samas ametis töötades eripensioni sageli ei maksta (sõltub ametist). Siis pane eripensioni alguseks vanus, millal ametist lahkud. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda algusvanust<span class="visually-hidden"> sinu andmetes</span></button></div>
+      <div class="note mb-3" id="spSameJobNote">Samas ametis töötamise ajal eripensioni ei maksta. Pane eripensioni alguseks vanus, mil ametist lahkud. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda algusvanust<span class="visually-hidden"> sinu andmetes</span></button></div>
       <p class="small-muted mb-0">Eripensioni ei saa edasi lükata, varem võtta, peatada ega pooles mahus võtta. II ja III sammas avanevad samadel vanustel mis kõigil. Laste pensionilisa eripensionile ei lisata.</p>
     </section>
 

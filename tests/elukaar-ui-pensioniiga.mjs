@@ -1,4 +1,4 @@
-// Pensioniiga seaduse valemi järgi (RPKS § 7, TLV-85): sünniaasta järgi nagu SKA, käsitsi valik jääb alles, vihje on muutumatu.
+// Pensioniiga seaduse valemi järgi (RPKS § 7, TLV-85): sünniaasta järgi nagu SKA, käsitsi valik jääb alles, .
 // Kasutus: node tests/elukaar-ui-pensioniiga.mjs [URL]
 import { chromium } from "playwright";
 import { readFileSync } from "fs";
@@ -19,7 +19,7 @@ await page.goto(url + "/elukaar/", { waitUntil: "domcontentloaded" });
 await page.waitForFunction(() => window.__elukaar);
 
 const set = (id, val, ev = "input") => page.evaluate(([id, val, ev]) => { const el = document.getElementById(id); el.value = String(val); el.dispatchEvent(new Event(ev, { bubbles: true })); }, [id, val, ev]);
-const state = () => page.evaluate(() => ({ pa: window.__elukaar.readInput().pensionAgeYears, sel: document.getElementById("pensionAgeYears").value, hint: document.getElementById("paHint").textContent }));
+const state = () => page.evaluate(() => ({ pa: window.__elukaar.readInput().pensionAgeYears, sel: document.getElementById("pensionAgeYears").value }));
 
 check(await page.evaluate(() => !document.getElementById("paYear")), "SKA aasta välja enam pole");
 check(await page.evaluate(() => /Sotsiaalkindlustusameti kalkulaatorist/.test(document.getElementById("p1Ska").textContent) && !!document.querySelector("#p1Ska a[href*='pension-calculator']")), "riikliku pensioni plokis üks SKA viide");
@@ -27,11 +27,11 @@ check(await page.evaluate(() => /Sotsiaalkindlustusameti kalkulaatorist/.test(do
 await set("birthYear", 1990);
 let s = await state();
 check(s.pa === 66 && s.sel === "66", "sünd 1990 → 66 a (2056) nagu SKA: " + JSON.stringify(s));
-check(s.hint === "Seaduse järgi.", "vihje on muutumatu: " + JSON.stringify(s));
+check(await page.evaluate(() => !document.getElementById("paHint")), "pensioniea väljal vihjet pole (selgitus on „?“ all)");
 
 await set("birthYear", 1960);
 s = await state();
-check(s.pa === 65 && s.hint === "Seaduse järgi.", "sünd 1960 → 65 a, vihje sama: " + JSON.stringify(s));
+check(s.pa === 65, "sünd 1960 → 65 a: " + JSON.stringify(s));
 
 await set("pensionAgeYears", 68, "change");
 await set("birthYear", 1990);

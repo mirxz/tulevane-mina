@@ -14,8 +14,11 @@ const Cx = { ...C, deferral: 2 };
 // Elutabel vastab Statistikaameti 2025 numbritele.
 assert.strictEqual(table.elada_jaanud.M[65], 16.33);
 assert.strictEqual(table.elada_jaanud.N[65], 21.43);
-assert.strictEqual(P.fundPensionTerm(table, 'M', 65), 16);
-assert.strictEqual(P.fundPensionTerm(table, 'N', 65), 21);
+// Fondipensioni periood on soost sõltumata (kogu rahvastik, veerg K): 65-aastaselt 19,31 → 19 a, nagu SKA ja Tuleva.
+assert.strictEqual(table.elada_jaanud.K[65], 19.31);
+assert.strictEqual(P.fundPensionTerm(table, 'M', 65), 19);
+assert.strictEqual(P.fundPensionTerm(table, 'N', 65), 19);
+assert.strictEqual(P.fundPensionTerm(table, 'X', 66), 19);
 // Ellujäämine: 65-aastasest mehest elab 81-aastaseks umbes 51%.
 assert.ok(Math.abs(P.survival(table, 'M', 65, 81) - 0.51) < 0.01);
 
@@ -42,7 +45,7 @@ assert.strictEqual(c.rows.find((x) => x.age === 65).i1, 0);
 // Väike vajadus: ühe lepinguga (B) lõpeb samba raha perioodi lõpus, igal aastal uuendades (D) mitte.
 const small = { ...base, needMonthly: 900 };
 const b = P.simulate(small, table, B), d = P.simulate(small, table, D);
-assert.ok(b.rows.find((x) => x.age === 85).i23 > 0 && b.rows.find((x) => x.age === 86).i23 === 0, 'B väljamakse lõpeb 86-aastaselt (21 a)');
+assert.ok(b.rows.find((x) => x.age === 83).i23 > 0 && b.rows.find((x) => x.age === 84).i23 === 0, 'B väljamakse lõpeb 84-aastaselt (19 a, soost sõltumata)');
 assert.ok(d.rows.find((x) => x.age === 100).i23 > 0, 'D maksab ka 100-aastaselt');
 
 // Ühine kulureegel: keegi ei kuluta üle vajaduse ega alla nulli.

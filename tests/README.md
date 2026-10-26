@@ -43,11 +43,13 @@ CI: `.github/workflows/smoke.yml` jooksutab igal push'il ja pull requestil `npm 
 | `elukaar-ui-valikud.mjs` | Lukustatud valikud puuduva samba korral, II ja III fondipension eraldi lepingutena, C vaikimisi uus leping igal aastal. |
 | `elukaar-ui-eripension.mjs` | Eripension ja soodustingimustel pension liideses: sammud, lukud, töö eripensioni ja soodustuse ajal. |
 | `elukaar-ui-fondipension.mjs` | Fondipensioni algus pensionipõlve sammus (66+). |
+| `elukaar-ska-vordlus.test.cjs` | Elukaar = SKA pensionikalkulaator Kadi andmetega (17.10.2026): I sammas ±1 €, II ja III ±1,5% (baas, II 2/4%, III 450 €, paindlik +3 a ja −3 a). |
+| `elukaar-ui-iii-varem.mjs` | III sammas pensioniea − 5 sammus: fondipension või korraga algab selle sammu vanusest (ka 2021+ liitunul, töötamise ajal), mitte enne soodusvanust. |
 | `elukaar-ui-edasilykkamine.mjs` | Hoiatus, kui edasilükkamiseks sammaste raha ei jätku, ja nupp „Muuda valik“. |
 | `elukaar-ui-abi.mjs` | „?“ selgitused: dialoog, fookus, Esc, axe. |
 | `elukaar-ui-too-ja-pool.mjs` | Töötamise valik on kõigil (vaikimisi 1 a), „Kohe täis / Pool / Lükkan edasi“ ja aastad (raadio `defer`), eripensioniga lukus. `--pilt fail.png` teeb 6. sammust pildi. |
-| `elukaar-ui-pensioniiga.mjs` | Pensioniiga seaduse valemi järgi (TLV-85): sünniaasta järgi nagu SKA, muutumatu vihje, käsitsi valik jääb alles, üks SKA viide, „?“ selgitus. |
-| `elukaar-ui-lapsed.mjs` | Laste väljad (TLV-18): 2013 – aug 2021 ja sept 2021+ eraldi, „neist alla 3-aastased“ (≤ 2021+ lapsi) ja riigi sissemakse vihje, „?“ viitab seadusele. |
+| `elukaar-ui-pensioniiga.mjs` | Pensioniiga seaduse valemi järgi (TLV-85): sünniaasta järgi nagu SKA, vihjet pole, käsitsi valik jääb alles, üks SKA viide, „?“ selgitus. |
+| `elukaar-ui-lapsed.mjs` | Laste väljad (TLV-18): laste arv (piiranguta) ja iga lapse sünniaasta, kuu ainult 2021. a ja alla 3-aastasel; rühmad sünniajast, sünniaastata laps, riigi II samba sissemakse vihje, „?“ viitab seadusele. |
 
 ## Mõõtmise testid (tulemuste leht, `/api/e`)
 
