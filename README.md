@@ -199,9 +199,6 @@ Mobiilisõbralik leht: vikerkaareratas, esimene keerutus määrab seitsme küsim
 - Andmed: `/api/r`, tabelid `ratas_sundmused` (anonüümne seansi tunnus, vastused, vabatekst; e-posti- ja pika numbri-sarnane tekst maskitakse) ja `ratas_meilid` (e-post ilma seansi tunnuseta, eraldi, et ei saaks vastustega siduda). Tulemused: `/tulemused` (osa „Õnneratas“), e-postid: `/tulemused-meilid.csv` (sama parool).
 - FB/sotsiaalmeedia pilt: `public/ratas/og.png` (1200×630), `og:` märgendid on `index.html`-is.
 - Test: `node tests/ratas.mjs <URL>`.
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 
 ## Kalkulaator (`/kalkulaator/`)
 
@@ -216,7 +213,6 @@ Täielik pensionikalkulaator Tuleva pensionikalkulaatori välimuses: sama kaart,
 ### Riiklik pension (/kalkulaator/)
 
 Kalkulaator arvutab riikliku pensioni seaduse valemiga (`public/kalkulaator/riiklik.js`): baasosa 399,24 € + 10,477 € × (staaž kuni 1998 + aastakoefitsientide summa), 1.4.2026 väärtustega. Tulemus on mootori sisend `p1Monthly` (tänased väärtused), mida mootor indekseerib `p1Growth` võrra. Vaikimisi reaalindekseerimine 1,5% on projekti eeldus, mitte seadus. Tead täpset summa SKA kalkulaatorist, vali „Sisesta ise“.
->>>>>>> Stashed changes
 
 ## Tagasiside leht (`/tagasiside/`, 10.10)
 

@@ -17,6 +17,8 @@ for (const [k, v] of Object.entries(R)) {
 }
 check(P.INCOME_TAX === R.tulumaks.vaartus, 'tulumaks mootoris ≠ reeglites');
 check(P.PENSIONER_ALLOWANCE === R.pensionari_maksuvaba_tulu_kuus.vaartus * 12, 'maksuvaba tulu mootoris ≠ reeglites');
+check(P.GENERAL_ALLOWANCE === R.yldine_maksuvaba_tulu_kuus.vaartus * 12, 'üldine maksuvaba tulu mootoris ≠ reeglites');
+check(P.AASTAHINNE === R.aastahinne.vaartus, 'aastahinne mootoris ≠ reeglites');
 check(JSON.stringify(P.DEFERRAL_INCREASE) === JSON.stringify(R.edasilykkamine.tabel), 'edasilükkamise tabel mootoris ≠ reeglites');
 check(Math.max(...Object.keys(P.DEFERRAL_INCREASE).map(Number)) === R.edasilykkamise_maksimum_aastad.vaartus, 'edasilükkamise maksimum ≠ 5 aastat');
 

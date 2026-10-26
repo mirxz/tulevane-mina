@@ -65,9 +65,10 @@ check(/Object\.keys\(b\)\.some\(\(x\) => !E_KEYS\.has\(x\)\)\) return json\(\{ v
 check(/JSON\.stringify\(\{ sid: sid, ev: ev, k: k, p: o\.p \|\| "", samm: o\.samm == null \? null : o\.samm, nimi: o\.nimi \|\| "" \}\)/.test(moot), "mootmine.js saadab täpselt need kuus välja");
 // kõik minaMoot-kutsed on teadaolevad vormid; uus kutse peab läbima ülevaatuse (siia lisamine)
 const lubatudKutsed = [
-  /minaMoot\('samm', \{ samm: step \}\)/, /minaMoot\('elukaar', \{ p: profiil \}\)/,
-  /minaMoot\('klikk', \{ samm: step, nimi: nimi\('r:' \+ t\.name \+ '=' \+ t\.value\) \}\)/, /minaMoot\('klikk', \{ samm: step, nimi: nimi\('s:p3Joined=' \+ t\.value\) \}\)/,
-  /minaMoot\('klikk', \{ samm: step, nimi: 'b:rada' \}\)/, /minaMoot\('klikk', \{ samm: step, nimi: nimi\('b:' \+ b\.id\) \}\)/,
+  // mootSamm(step): sama sammu number (tulemus 9), eripensioni samm ei lähe mõõtmisse. Uusi andmeid ei lisandu.
+  /minaMoot\('samm', \{ samm: mootSamm\(step\) \}\)/, /minaMoot\('elukaar', \{ p: profiil \}\)/,
+  /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('r:' \+ t\.name \+ '=' \+ t\.value\) \}\)/, /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('s:p3Joined=' \+ t\.value\) \}\)/,
+  /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: 'b:rada' \}\)/, /minaMoot\('klikk', \{ samm: mootSamm\(step\), nimi: nimi\('b:' \+ b\.id\) \}\)/,
 ];
 for (const r of story.split("\n").filter((r) => /window\.minaMoot\('/.test(r))) for (const m of r.matchAll(/window\.minaMoot\('[^;]*?\}\)/g)) check(lubatudKutsed.some((re) => re.test(m[0])), "elukaare uus mõõtmiskutse vajab ülevaatust: " + m[0]);
 check(story.split("\n").filter((r) => /window\.minaMoot\('/.test(r)).length >= 5, "elukaare mõõtmiskutsed leitud");
