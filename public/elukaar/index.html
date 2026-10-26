@@ -14,10 +14,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://mina.tulevane.workers.dev/og.png">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400..700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="../css/tuleva.css?v=20261010h" rel="stylesheet">
-  <link href="story.css?v=20261010h" rel="stylesheet">
+  <link href="../css/tuleva.css?v=20261017t" rel="stylesheet">
+  <link href="story.css?v=20261018a" rel="stylesheet">
 </head>
 <body>
   <main class="container py-4">
@@ -41,7 +41,7 @@
           <h2 id="h0" tabindex="-1">Kes sa oled ja mis sul juba on?</h2>
         </div>
       </div>
-      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb.</p>
+      <p class="intro-note">Järgnevad sammud võtavad aluseks allpool olevad andmed. Sammaste summad on tänased. Nende, sissemaksete ja tootluse põhjal arvutame, kui palju sul pensioniks koguneb. Kõik summad on <strong>tänastes eurodes</strong>: hinnatõus on arvesse võetud, nii et saad neid võrrelda tänaste hindadega.</p>
       <fieldset class="field-group mb-4">
         <legend class="h5 section-title">Sina</legend>
         <div class="row g-3 fields">
@@ -53,7 +53,7 @@
         </div>
         <div class="col-6 col-md-3">
           <label class="form-label" for="sex">Sugu</label>
-          <select class="form-select" id="sex"><option value="N">Naine</option><option value="M">Mees</option></select>
+          <select class="form-select" id="sex"><option value="N">Naine</option><option value="M">Mees</option><option value="X">Muu</option></select>
         </div>
         </div>
       </fieldset>
@@ -77,58 +77,6 @@
           <select class="form-select" id="kidsInForecast" aria-describedby="kidsForecastHint"><option value="unknown" selected>ei tea</option><option value="no">ei</option><option value="yes">jah</option></select>
           <div class="form-text" id="kidsForecastHint"></div>
         </div>
-        </div>
-      </fieldset>
-      <fieldset class="field-group mb-4">
-        <legend class="h5 section-title">Varem pensionile ja erijuhud</legend>
-        <p class="small-muted mb-2">Vähendamata pension varem: lapsed või tervist kahjustav töö. Eripension on eraldi pension.</p>
-        <div class="row g-3 fields">
-        <div class="col-12"><p class="form-label fw-medium mb-0" id="kidsTitle">Lapsed, keda oled kasvatanud (vähemalt 8 aastat)</p></div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB1991">enne 1991</label>
-          <input class="form-control" id="kidsB1991" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB2012">1991–2012</label>
-          <input class="form-control" id="kidsB2012" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label" for="kidsB2013">2013 või hiljem</label>
-          <input class="form-control" id="kidsB2013" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
-        </div>
-        <div class="col-6 col-md-3 d-none" id="kidsDisabledWrap">
-          <label class="form-label" for="kidsDisabled">Mõni laps on puudega</label>
-          <select class="form-select" id="kidsDisabled"><option value="no" selected>ei</option><option value="yes">jah (keskmine, raske või sügav puue)</option></select>
-        </div>
-        <div class="col-6 col-md-3 d-none" id="kidsUserWrap">
-          <label class="form-label" for="kidsUser">Laste soodustusi kasutab</label>
-          <select class="form-select" id="kidsUser" aria-describedby="kidsUserHint"><option value="me" selected>mina</option><option value="other">teine vanem</option></select>
-          <div class="form-text" id="kidsUserHint">Varem pensionile mineku ja pensionilisa õigust saab kasutada üks vanem, kirjaliku kokkuleppega. Kokkuleppe puudumisel jagatakse võrdselt. <a href="https://sotsiaalkindlustusamet.ee/en/pension-and-benefits/pension-amount/raising-children-impacts-pensions" target="_blank" rel="noopener">SKA</a></div>
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label" for="hazard">Tervist kahjustav töö</label>
-          <select class="form-select" id="hazard" aria-describedby="hazardHint">
-            <option value="no" selected>ei</option>
-            <option value="list1">nimekiri nr 1: 10 a varem</option>
-            <option value="list2">nimekiri nr 2: 5 a varem</option>
-          </select>
-          <div class="form-text" id="hazardHint">Nr 1: vähemalt 20 a staaži, sellest 10 a nimekirja tööl. Nr 2: üle 25 a staaži, sellest 12,5 a. Täiskohaga ja sellelt tööl enam ei tööta. Staaži arvestatakse kuni 2030 (põlevkivi 2049). <a href="https://sotsiaalkindlustusamet.ee/en/pension-and-benefits/types-pensions/old-age-pension-under-favourable-conditions" target="_blank" rel="noopener">SKA tingimused</a></div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-3" id="spWrap">
-          <label class="form-label" for="spHas">Eripension</label>
-          <select class="form-select" id="spHas" aria-describedby="spHasHint">
-            <option value="no" selected>ei</option>
-            <option value="yes">jah</option>
-          </select>
-          <div class="form-text" id="spHasHint">Saad või hakkad saama, nt kaitseväelane, politseinik, kohtunik, prokurör, päästja või väljateenitud aastate pension. <a href="https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid" target="_blank" rel="noopener">SKA eripensionid</a></div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-3 d-none" id="spStartWrap">
-          <label class="form-label" for="spStartAge">Eripension alates</label>
-          <input class="form-control" id="spStartAge" type="number" min="35" max="70" step="1" required aria-describedby="spStartUnit">
-          <div class="invalid-feedback">Sisesta vanus, millest eripension algab.</div>
-          <div class="form-text"><span id="spStartUnit">vanus (nt kaitseväelane 50, politseinik 55). Kui saad seda juba, pane vanus, millest see algas.</span> <span id="spStartYear"></span></div>
-        </div>
-        <div class="col-12"><div class="story-note" id="soodusSummary" aria-live="polite"></div></div>
         </div>
       </fieldset>
       <fieldset class="field-group mb-4">
@@ -176,41 +124,76 @@
         </div>
         </div>
       </fieldset>
+      <fieldset class="field-group mb-4">
+        <legend class="h5 section-title">Lapsed</legend>
+        <div class="row g-3 fields">
+        <div class="col-12 col-sm-6 col-md-3">
+          <label class="form-label" for="kidsHas">Oled kasvatanud lapsi vähemalt 8 aastat?</label>
+          <select class="form-select" id="kidsHas"><option value="no" selected>ei</option><option value="yes">jah</option></select>
+        </div>
+        </div>
+        <div class="row g-3 fields mt-0 d-none" id="kidsDetails">
+        <div class="col-12"><p class="form-label fw-medium mb-0" id="kidsTitle">Laste arv sünniaja järgi</p></div>
+        <div class="col-4 col-md-2">
+          <label class="form-label" for="kidsB1991">enne 1991</label>
+          <input class="form-control" id="kidsB1991" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
+        </div>
+        <div class="col-4 col-md-2">
+          <label class="form-label" for="kidsB2012">1991–2012</label>
+          <input class="form-control" id="kidsB2012" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
+        </div>
+        <div class="col-4 col-md-2">
+          <label class="form-label" for="kidsB2013">2013 või hiljem</label>
+          <input class="form-control" id="kidsB2013" type="number" min="0" max="20" step="1" value="0" aria-describedby="kidsTitle">
+        </div>
+        <div class="col-6 col-md-3" id="kidsDisabledWrap">
+          <label class="form-label" for="kidsDisabled">Mõni laps on puudega</label>
+          <select class="form-select" id="kidsDisabled"><option value="no" selected>ei</option><option value="yes">jah (keskmine, raske või sügav puue)</option></select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 d-none" id="kidsEarlyWrap">
+          <label class="form-label" for="kidsEarlyUser">Varem pensionile mineku õigust kasutab</label>
+          <select class="form-select" id="kidsEarlyUser"><option value="me" selected>mina</option><option value="other">teine vanem</option></select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 d-none" id="kidsSupWrap">
+          <label class="form-label" for="kidsSupUser">Pensionilisa õigust kasutab</label>
+          <select class="form-select" id="kidsSupUser"><option value="me" selected>mina</option><option value="other">teine vanem</option></select>
+        </div>
+        </div>
+      </fieldset>
+      <fieldset class="field-group mb-4">
+        <legend class="h5 section-title">Töö olemusest tulenevad erandid</legend>
+        <p class="small-muted mb-2">Tervist kahjustav töö annab vähendamata pensioni varem. Eripension on eraldi pension (nt kaitsevägi, politsei).</p>
+        <div class="row g-3 fields">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="hazard">Tervist kahjustav töö</label>
+          <select class="form-select" id="hazard" aria-describedby="hazardHint">
+            <option value="no" selected>ei</option>
+            <option value="list1">nimekiri nr 1: 10 a varem</option>
+            <option value="list2">nimekiri nr 2: 5 a varem</option>
+          </select>
+          <div class="form-text" id="hazardHint">Riigi kinnitatud nimekirja töö. Tingimused leiad küsimärgi alt.</div>
+        </div>
+        </div>
+        <div class="row g-3 fields mt-0">
+        <div class="col-12 col-sm-6 col-md-3" id="spWrap">
+          <label class="form-label" for="spHas">Eripension</label>
+          <select class="form-select" id="spHas" aria-describedby="spHasHint">
+            <option value="no" selected>ei</option>
+            <option value="yes">jah</option>
+          </select>
+          <div class="form-text" id="spHasHint">Saad või hakkad saama, nt kaitseväelane, politseinik, kohtunik, prokurör, päästja või väljateenitud aastate pension. <a href="https://sotsiaalkindlustusamet.ee/pension-ja-seotud-huvitised/pensioni-liigid/eripensionid" target="_blank" rel="noopener">SKA eripensionid</a></div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 d-none" id="spStartWrap">
+          <label class="form-label" for="spStartAge">Eripension alates <span class="req" aria-hidden="true">*</span></label>
+          <input class="form-control" id="spStartAge" type="number" min="35" max="70" step="1" required aria-describedby="spStartUnit">
+          <div class="invalid-feedback">Sisesta vanus, millest eripension algab.</div>
+          <div class="form-text"><span id="spStartUnit">vanus (nt kaitseväelane 50, politseinik 55). Kui saad seda juba, pane vanus, millest see algas.</span> <span id="spStartYear"></span></div>
+        </div>
+        </div>
+      </fieldset>
+      <div class="story-note mb-4 d-none" id="soodusSummary" aria-live="polite"></div>
       <div class="story-note mt-3" id="workNote" aria-live="polite"></div>
 
-      <section class="faq mt-4" aria-labelledby="faqTitle">
-        <h3 class="h5 section-title" id="faqTitle">Korduma kippuvad küsimused</h3>
-        <details class="faq-item">
-          <summary class="fw-medium">Miks on oluline, millal III sambaga liitusin, ja kust ma seda näen?</summary>
-          <div class="faq-body">
-            <p>Sellest sõltub, mis vanusest saad III samba raha välja võtta soodsama maksuga.</p>
-            <ul>
-              <li><strong>Liitusid enne 2021:</strong> soodsam maks kehtib alates 55-aastaselt.</li>
-              <li><strong>Liitusid 2021 või hiljem:</strong> soodsam maks kehtib alates 60-aastaselt.</li>
-            </ul>
-            <p>Soodsam maks tähendab, et kogu raha korraga välja võttes on tulumaks 10% ja fondipensionina 0%. Enne seda vanust on tulumaks 22%. Kogumist peab olema vähemalt 5 aastat.</p>
-            <p class="mb-1"><strong>Kust näha, millal liitusid:</strong></p>
-            <ul class="mb-0">
-              <li>Pensionikeskuse e-teenuses (sisene ID-kaardi, Mobiil-ID või Smart-ID-ga): vaata, millal said esimesed III samba osakud. <a href="https://www.pensionikeskus.ee/" target="_blank" rel="noopener">Pensionikeskus</a></li>
-              <li>Oma panga või Tuleva kontol III samba ülevaates.</li>
-              <li>Kui sa ei tea, vali „2021 või hiljem“. Siis ei arvesta lugu soodustust, mida sul pole.</li>
-            </ul>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary class="fw-medium">Mida tähendab „tootlus pärast inflatsiooni“?</summary>
-          <div class="faq-body">
-            <p>See näitab, kui palju sinu raha ostujõud aastas päriselt kasvab, kui fondi kasvust lahutada hindade tõus ja fonditasud.</p>
-            <p><strong>Näide:</strong> fond kasvab aastas 6%, hinnad tõusevad 4%. Tootlus pärast inflatsiooni on siis umbes 2%: saad aasta pärast 2% rohkem osta kui täna.</p>
-            <ul>
-              <li><strong>0%:</strong> raha hoiab väärtust, aga ei kasva.</li>
-              <li><strong>2%:</strong> ettevaatlik eeldus.</li>
-              <li><strong>4%:</strong> optimistlik eeldus, pikaajaline aktsiafond madala tasuga.</li>
-            </ul>
-            <p class="mb-0">Seetõttu on kõik summad selles loos <strong>tänastes eurodes</strong>: saad neid võrrelda tänaste hindadega. Tootlus on eeldus, mitte lubadus.</p>
-          </div>
-        </details>
-      </section>
       <!-- Kasvu valikud on peidus: arvutus kasutab vaikeeeldusi (vt jalus). -->
       <div id="growthOpts" hidden>
       <h3 class="h5 section-title mt-4">Kuidas kogud edasi?</h3>
@@ -365,6 +348,7 @@
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
           </div>
         </details>
+        <div class="kkk-fond"></div>
       </section>
     </section>
 
@@ -417,6 +401,7 @@
             <p class="mb-0"><a href="https://tuleva.ee/pensioni-valjamaksed/" target="_blank" rel="noopener">Loe Tuleva lehelt pensioni väljamaksete kohta</a></p>
           </div>
         </details>
+        <div class="kkk-fond"></div>
       </section>
     </section>
 
@@ -430,7 +415,7 @@
         </div>
       </div>
       <p class="intro-note d-none" id="soodusNote"></p>
-      <div id="soodusWorkWrap" class="d-none">
+      <div id="soodusWorkWrap">
         <fieldset id="soodusWorkSet" class="mb-3">
           <legend class="h5 section-title">Kas töötad pensioni ajal edasi?</legend>
           <div class="choices">
@@ -455,19 +440,38 @@
               <span class="choice-body"><strong>Muutub</strong><small>Sisesta uus summa (0 = lõpetan)</small></span></label>
           </div>
           <div class="mt-2 d-none" id="p3AfterWrap" style="max-width: 16rem">
-            <label class="form-label" for="p3After">Uus III samba sissemakse</label>
-            <input class="form-control" id="p3After" type="number" min="0" step="10" aria-describedby="p3AfterUnit">
+            <label class="form-label" for="p3After">Uus III samba sissemakse <span class="req" aria-hidden="true">*</span></label>
+            <input class="form-control" id="p3After" type="number" min="0" step="10" required aria-describedby="p3AfterUnit">
             <div class="invalid-feedback">Sisesta summa (0 = lõpetan).</div>
             <div class="form-text" id="p3AfterUnit">eurot kuus</div>
           </div>
         </fieldset>
       </div>
-      <h3 class="h5 section-title" id="deferTitle">Millal võtad riikliku pensioni?</h3>
-      <p class="intro-note" id="deferIntro">Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks. Vahepealsed aastad elad II ja III samba rahast. Seda nimetatakse paindlikuks pensioniks.</p>
+      <div id="fpChoiceWrap" class="mb-4 d-none">
+        <h3 class="h5 section-title">Eripension või vanaduspension?</h3>
+        <p class="intro-note" id="fpChoiceIntro"></p>
+        <fieldset id="fpChoiceSet">
+          <legend class="visually-hidden">Kumba pensioni valid?</legend>
+          <div class="choices" id="fpChoices"></div>
+        </fieldset>
+      </div>
+      <h3 class="h5 section-title" id="deferTitle">Kuidas võtad riikliku pensioni?</h3>
+      <p class="intro-note" id="deferIntro">Võid võtta kohe täis, pool või lükata edasi. Iga edasilükatud aasta tõstab riiklikku pensioni eluks ajaks, pool pensioni tõstab pool sellest. Vahepealsed aastad elad palgast või II ja III samba rahast. Seda nimetatakse paindlikuks pensioniks.</p>
       <div id="deferLocked" class="note mb-3 d-none"><span id="deferLockedTxt"></span> <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0"><span id="deferLockedBtn">Muuda eripensioni</span><span class="visually-hidden"> sinu andmetes</span></button></div>
       <fieldset id="deferSet">
-        <legend class="visually-hidden">Millal võtad riikliku pensioni?</legend>
-        <div class="choices choices-sm" id="deferChoices"></div>
+        <legend class="visually-hidden">Kuidas võtad riikliku pensioni?</legend>
+        <div class="choices" id="p1ModeChoices">
+          <label class="choice"><input type="radio" name="p1Mode" value="full" checked>
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🏛️</span><strong>Kohe täis</strong><small id="p1FullTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="p1Mode" value="half">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">🌓</span><strong>Pool</strong><small id="p1HalfTxt"></small></span></label>
+          <label class="choice"><input type="radio" name="p1Mode" value="defer">
+            <span class="choice-body"><span class="choice-emoji" aria-hidden="true">⏳</span><strong>Lükkan edasi</strong><small id="p1DeferTxt"></small></span></label>
+        </div>
+        <fieldset id="deferYearsWrap" class="mt-3 d-none">
+          <legend class="h6 text-navy" id="deferYearsLegend">Mitu aastat lükkad edasi?</legend>
+          <div class="choices choices-sm" id="deferChoices"></div>
+        </fieldset>
       </fieldset>
       <h3 class="h5 section-title mt-4" id="paPillarsTitle">Kuidas hakkad samba raha kasutama?</h3>
       <fieldset id="payoutPaSet" class="mb-4 d-none">
@@ -496,6 +500,10 @@
         </div>
       </fieldset>
       <div id="paIIINote" class="note mb-2 d-none"></div>
+      <section class="faq mt-4" aria-labelledby="faq65Title">
+        <h3 class="h5 section-title" id="faq65Title">Korduma kippuvad küsimused</h3>
+        <div class="kkk-fond"></div>
+      </section>
     </section>
 
     <!-- 7. 66+ -->
@@ -573,8 +581,10 @@
         </div>
       </div>
       <p class="intro-note" id="spIntro"></p>
+      <h3 class="h5 section-title">Mis saab pensionieas?</h3>
+      <p id="spPaTxt"></p>
       <div class="mb-4" style="max-width: 20rem">
-        <label class="form-label fw-medium" for="spMonthly" id="spMonthlyLabel">Eripensioni suurus</label>
+        <label class="form-label fw-medium" for="spMonthly"><span id="spMonthlyLabel">Eripensioni suurus</span> <span class="req" aria-hidden="true">*</span></label>
         <input class="form-control" id="spMonthly" type="number" min="0" step="10" required aria-describedby="spUnit">
         <div class="invalid-feedback">Sisesta eripensioni suurus.</div>
         <div class="form-text" id="spUnit">eurot kuus, enne tulumaksu. <span id="spCalcHint">Kui see on tulevikus, arvuta ise: kaitseväel ja politseil 50% ametipalgast 20 teenistusaasta eest, iga lisaaasta +2,5%, kuni 75%.</span></div>
@@ -599,15 +609,13 @@
             <span class="choice-body"><strong>Brutopalk muutub</strong><small>Sisesta uus palk</small></span></label>
         </div>
         <div class="mt-2 d-none" id="spGrossWrap" style="max-width: 16rem">
-          <label class="form-label" for="spGross">Uus brutopalk</label>
-          <input class="form-control" id="spGross" type="number" min="0" step="50" aria-describedby="spGrossUnit">
+          <label class="form-label" for="spGross">Uus brutopalk <span class="req" aria-hidden="true">*</span></label>
+          <input class="form-control" id="spGross" type="number" min="0" step="50" required aria-describedby="spGrossUnit">
           <div class="invalid-feedback">Sisesta uus brutopalk.</div>
           <div class="form-text" id="spGrossUnit">eurot kuus, alates eripensioni algusest</div>
         </div>
       </fieldset>
       <div class="note mb-3" id="spSameJobNote">Samas ametis töötades eripensioni sageli ei maksta (sõltub ametist). Siis pane eripensioni alguseks vanus, millal ametist lahkud. <button type="button" class="btn btn-link p-0 align-baseline" data-goto="0">Muuda algusvanust<span class="visually-hidden"> sinu andmetes</span></button></div>
-      <h3 class="h5 section-title">Mis saab pensionieas?</h3>
-      <p id="spPaTxt"></p>
       <p class="small-muted mb-0">Eripensioni ei saa edasi lükata, varem võtta, peatada ega pooles mahus võtta. II ja III sammas avanevad samadel vanustel mis kõigil. Laste pensionilisa eripensionile ei lisata.</p>
     </section>
 
@@ -626,8 +634,14 @@
       <figure class="chart-figure mb-3" aria-labelledby="chartTitle">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
           <h3 class="h6 mb-0" id="chartTitle">Sissetulek ja kulud vanuse järgi</h3>
-          <button type="button" class="btn btn-outline-primary btn-sm" id="chartToggle" aria-expanded="false" aria-controls="chartTableWrap">Näita tabelina</button>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="label-row" id="nominalRow">
+              <button type="button" class="btn btn-outline-primary btn-sm" id="nominalToggle" aria-pressed="false">Näita tuleviku hindades</button>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="chartToggle" aria-expanded="false" aria-controls="chartTableWrap">Näita tabelina</button>
+          </div>
         </div>
+        <p class="small-muted mb-2" id="moneyNote" aria-live="polite">Summad on tänastes eurodes.</p>
         <ul class="chart-summary list-unstyled" id="chartSummary"></ul>
         <details class="chart-explain mb-3" id="chartExplainWrap">
           <summary class="fw-medium">Selgitus: kuidas graafikut lugeda</summary>
@@ -676,13 +690,22 @@
       <p class="small-muted"><a href="/tagasiside/" id="tagasisideLink2">Anna tagasisidet</a> · anonüümne, umbes kaks minutit. <a href="/privaatsus/">Privaatsus</a></p>
     </footer>
   </main>
+  <!-- Selgitused („?“): lauaarvutis külgpaneel, mobiilis modaal. showModal() annab klaviatuurilõksu, inertse tausta ja Esc-sulgemise. -->
+  <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+    <div class="help-head">
+      <h2 class="h5 mb-0" id="helpTitle" tabindex="-1"></h2>
+      <button type="button" class="help-close" id="helpClose"><span class="visually-hidden">Sulge selgitus</span></button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/mootmine.js?v=20261011a"></script>
   <script src="../data/elutabel.js?v=20261010h"></script>
   <script src="../data/kulud.js?v=20261010h"></script>
   <script src="profiilid.js?v=20261010h"></script>
-  <script src="pension.js?v=20261017a"></script>
-  <script src="story.js?v=20261017a"></script>
+  <script src="pension.js?v=20261017g"></script>
+  <script src="abi.js?v=20261018a"></script>
+  <script src="story.js?v=20261018a"></script>
 </body>
 </html>

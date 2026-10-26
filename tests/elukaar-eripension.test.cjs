@@ -78,7 +78,7 @@ for (const [sp, p1] of [[1500, 1200], [800, 1200], [1200, 1200], [1000, 0]]) {
 }
 // Kokkuvõttes on eripensioni ja riikliku pensioni võrdlus.
 const cmp = P.simulate({ ...base, p1Monthly: 1200, spMonthly: 800, spStartAge: 55 }, T, E);
-assert.deepStrictEqual(cmp.firstPillar, { special: 800, oldAge: 1200, paid: 'oldAge' });
+assert.deepStrictEqual(cmp.firstPillar, { special: 800, oldAge: 1200, paid: 'oldAge', larger: 'oldAge' });
 assert.strictEqual(P.simulate(base, T, E).firstPillar, null);
 
 // 4. Edasilükkamine ei kehti: C koos edasilükkamisega arvutab nagu ilma (riiklik pension algab pensioniast, ilma +%-ta).
@@ -112,4 +112,14 @@ assert.strictEqual(P.sustainableNeed({ ...base, spMonthly: 800 }, T, E), P.susta
 const asP1 = P.simulate({ ...base, p1Monthly: 1500, spMonthly: 0 }, T, E), asSp = P.simulate({ ...base, p1Monthly: 0, spMonthly: 1500 }, T, E);
 assert.ok(near(row(asP1, pa).i1, row(asSp, pa).isp, 1e-6));
 assert.ok(near(row(asP1, pa).spend, row(asSp, pa).spend, 1e-6));
+// 8. Kasutaja valik pensionieas (firstPillarChoice): võib valida ka väiksema; vaikimisi suurem.
+{
+  const inp = { ...base, p1Monthly: 1200, spMonthly: 800, spStartAge: 55 };
+  const pick = (c) => P.simulate({ ...inp, firstPillarChoice: c }, T, E);
+  assert.ok(near(row(pick('special'), pa).ispg, 800) && row(pick('special'), pa).i1g === 0, 'valis eripensioni');
+  assert.ok(near(row(pick('oldAge'), pa).i1g, 1200) && row(pick('oldAge'), pa).ispg === 0, 'valis vanaduspensioni');
+  assert.deepStrictEqual(pick(undefined).rows, pick('oldAge').rows, 'vaikimisi suurem');
+  assert.strictEqual(pick('special').firstPillar.larger, 'oldAge');
+  assert.ok(P.sustainableNeed({ ...inp, firstPillarChoice: 'special' }, T, E) <= P.sustainableNeed(inp, T, E), 'väiksem valik ei anna paremat tulemust');
+}
 console.log('Eripension OK');

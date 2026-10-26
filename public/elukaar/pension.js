@@ -58,9 +58,19 @@
     return { years: 65, months: months, known: known, label: (known ? '' : 'u ') + '65 a' + (months ? ' ' + months + ' k' : '') + (y65 > 2029 ? '+' : '') };
   }
 
+  // Elutabeli veerg soo järgi; sugu 'X' (muu) = meeste ja naiste keskmine (Statistikaametil eraldi tabelit pole).
+  const avgCols = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  function col(table, key, sex) {
+    if (sex !== 'X') return table[key][sex];
+    let c = avgCols && avgCols.get(table);
+    if (!c) { c = {}; if (avgCols) avgCols.set(table, c); }
+    if (!c[key]) c[key] = table[key].M.map((v, i) => (v + table[key].N[i]) / 2);
+    return c[key];
+  }
+
   // Tõenäosus olla elus vanuses `age`, kui praegu ollakse elus vanuses `fromAge`.
   function survival(table, sex, fromAge, age) {
-    const s = table.ellujaajad[sex];
+    const s = col(table, 'ellujaajad', sex);
     if (age > MAX_AGE) return 0;
     if (age <= fromAge) return 1;
     return s[age] / s[fromAge];
@@ -74,7 +84,7 @@
 
   // Fondipensioni soovituslik (maksuvaba) periood: elada jäänud aastad vanuse ja soo järgi, täisaastateks ümardatud.
   function fundPensionTerm(table, sex, age) {
-    return Math.max(1, Math.round(table.elada_jaanud[sex][Math.min(age, MAX_AGE)]));
+    return Math.max(1, Math.round(col(table, 'elada_jaanud', sex)[Math.min(age, MAX_AGE)]));
   }
 
   // Pensioniiga aastates: kasutaja (või Tuleva konto) antud väärtus või ligikaudne reegel.
@@ -99,7 +109,9 @@
   function earlyYears(input) {
     const k = input.kids || {};
     const n = (k.b1991 || 0) + (k.b2012 || 0) + (k.b2013 || 0);
-    const kidsY = k.user !== 'me' ? 0 : k.disabled ? 5 : n >= 5 ? 5 : n === 4 ? 3 : n === 3 ? 1 : 0;
+    // Kaks eraldi õigust (SKA): varem pensionile (earlyUser) ja pensionilisa (supUser); kumbagi kasutab üks vanem.
+    const earlyUser = k.earlyUser || k.user;
+    const kidsY = earlyUser !== 'me' ? 0 : k.disabled ? 5 : n >= 5 ? 5 : n === 4 ? 3 : n === 3 ? 1 : 0;
     const hazardY = input.hazard === 'list1' ? 10 : input.hazard === 'list2' ? 5 : 0;
     return Math.max(kidsY, hazardY);
   }
@@ -109,7 +121,7 @@
   // Enne 1991 sündinud lapse 2 a staaži mudel ei arvesta (konservatiivne).
   function childSupplement(input) {
     const k = input.kids || {};
-    if (k.user !== 'me') return 0;
+    if ((k.supUser || k.user) !== 'me') return 0;
     const noII = !((input.p2 || 0) > 0 || (input.p2Rate || 0) > 0);
     return AASTAHINNE * (1.5 * (k.b1991 || 0) + 3.5 * (k.b2012 || 0) + (noII ? 3.5 * (k.b2013 || 0) : 0));
   }
@@ -159,19 +171,29 @@
     const ret = pa - soodus;
     const deferral = spYear > 0 || soodus > 0 ? 0 : (scenario.deferral || 0); // C: sild fondipensioniga; teised stsenaariumid võivad samuti edasi lükata
     const p1Start = ret + deferral;
+    // Pool riiklikku pensioni (scenario.half aastat, SKA paindlik pension): pensionieast makstakse pool, siis täis.
+    // Välja võtmata pool kasvab nagu edasilükkamisel, seega hilisem tõus on pool sama pika edasilükkamise omast.
+    // Ainult koos „võtan kohe“ valikuga; eripensionile ja soodustusega pensionile ei kehti (nagu edasilükkamine).
+    const half = deferral === 0 && spYear === 0 && soodus === 0 ? Math.min(5, Math.max(0, scenario.half || 0)) : 0;
     // Laste pensionilisa lisandub vanaduspensionile, kui prognoos seda veel ei sisalda (kids.inForecast 'no'; 'ei tea' → ei lisa).
     const kidsMonthly = childSupplement(input);
     const kidsApplied = kidsMonthly > 0 && (input.kids || {}).inForecast === 'no';
-    const p1Full = (input.p1Monthly + (kidsApplied ? kidsMonthly : 0)) * (1 + DEFERRAL_INCREASE[deferral]) * 12; // enne tulumaksu
-    // Töötamine soodustusega pensioni ajal (input.soodusWork, kuni input.workUntil, vaikimisi tavaline pensioniiga):
-    // palk katab kulud, riiklik pension läheb hoiusele, II ja III sissemaksed jätkuvad, samba väljamaksed algavad töö lõppedes.
-    const workEnd = soodus > 0 && input.soodusWork ? Math.max(ret, input.workUntil !== undefined ? input.workUntil : pa) : ret;
+    const p1Base = (input.p1Monthly + (kidsApplied ? kidsMonthly : 0)) * 12;
+    const p1Full = p1Base * (1 + DEFERRAL_INCREASE[deferral] + DEFERRAL_INCREASE[half] / 2); // enne tulumaksu
+    // Töötamine pensioni ajal (input.workOn kuni input.workUntil): palk katab kulud, riiklik pension läheb hoiusele,
+    // II ja III sissemaksed jätkuvad, samba väljamaksed algavad töö lõppedes. Soodustusega pensionil on vana nimi
+    // input.soodusWork (töö lõpp vaikimisi tavaline pensioniiga); muidu vaikimisi 1 aasta pärast pensionile minekut.
+    const workOn = input.workOn !== undefined ? !!input.workOn : soodus > 0 && !!input.soodusWork;
+    const workEnd = workOn ? Math.max(ret, input.workUntil !== undefined ? input.workUntil : soodus > 0 ? pa : ret + 1) : ret;
     const iiJoined = (input.p2Rate || 0) > 0;
     const accrualYear = 12 * workAccrual(input.grossMonthly || 0, iiJoined, iiJoined);
     const workedBefore = (age) => Math.max(0, Math.min(age, workEnd) - Math.max(ret, currentAge));
     // Pärast töö lõppu III samba sissemakse (p3After, vaikimisi sama) kuni tavalise pensionieani; tuleb sissetulekust [inferred].
     const c3After = soodus > 0 ? (input.p3After !== undefined ? input.p3After : input.p3Monthly || 0) * 12 : 0;
-    const spPaid = spYear > 0 && spYear >= p1Full; // pensionieas jätkub eripension (võrdse summa korral uut rida ei teki)
+    // Pensionieas (või soodustusega varem) valib inimene ühe: eripension või vanaduspension (input.firstPillarChoice).
+    // Vaikimisi suurem; võrdse summa korral jätkub eripension (uut rida ei teki).
+    const choice = input.firstPillarChoice;
+    const spPaid = spYear > 0 && (choice === 'special' ? true : choice === 'oldAge' ? false : spYear >= p1Full);
     const p1Year = spPaid ? 0 : p1Full;
     const taxOn = input.incomeTax !== false;
     const allowance = taxOn ? PENSIONER_ALLOWANCE : 0;
@@ -182,7 +204,8 @@
     const working = input.spWork !== false && (input.spGross !== undefined ? input.spGross : input.grossMonthly) > 0;
     // Üldine maksuvaba tulu enne tavalist pensioniiga: kui ei tööta (eripensioni ajal tööga kasutab selle palk).
     const generalAt = (age) => (taxOn && !(age < ret && working) && !(age >= ret && age < workEnd) ? GENERAL_ALLOWANCE : 0);
-    const allowAt = (age) => (age >= pa ? allowance : generalAt(age));
+    // Töö ajal kasutab maksuvaba tulu palk, seega pension (ka eripension) on tervenisti 22% maksuga [inferred, EMTA: üks maksuvaba tulu].
+    const allowAt = (age) => (taxOn && age >= ret && age < workEnd ? 0 : age >= pa ? allowance : generalAt(age));
     // Sammaste avanemine: II sammas (ja ühine pott) 5 a enne tavalist pensioniiga, eraldi III sammas 55 (enne 2021) või 60.
     // Enne pensionile minekut (ret) väljamakseid mudelis pole.
     const open2 = Math.max(workEnd, pa - 5);
@@ -203,7 +226,7 @@
     // Ühekordne väljavõte tehakse siis, kui sammas avaneb. Maksuvaba tulu arvestatakse ainult pensionieas (enne seda konservatiivselt 0).
     const firstRetAge = Math.max(open2, startAge); // II samba (ühise poti) ühekordse väljavõtu aasta
     const lump3Age = Math.max(open3, startAge); // eraldi III samba ühekordse väljavõtu aasta
-    let allowAtPa = firstRetAge >= pa ? Math.max(0, allowance - (firstRetAge >= p1Start ? p1Year : 0) - spAt(firstRetAge)) : 0;
+    let allowAtPa = firstRetAge >= pa ? Math.max(0, allowance - (firstRetAge >= p1Start ? (firstRetAge < ret + half ? p1Base / 2 : p1Year) : 0) - spAt(firstRetAge)) : 0;
     const lumpNet = (gross) => {
       const used = Math.min(allowAtPa, gross);
       allowAtPa -= used;
@@ -228,7 +251,7 @@
       if (scenario.id === 'A' && age === firstRetAge) { deposit += lumpOut(fund); fund = 0; }
       if (sep && sep.mode === 'lump' && age === lump3Age) { deposit += lumpOut(fund3); fund3 = 0; }
       const fundStart = fund + fund3, depositStart = deposit;
-      const i1gross = age >= p1Start ? p1Year + (spPaid ? 0 : accrualYear * workedBefore(age)) : 0;
+      const i1gross = age >= p1Start ? (age < ret + half ? p1Base / 2 : p1Year) + (spPaid ? 0 : accrualYear * workedBefore(age)) : 0;
       const work = age >= ret && age < workEnd;
       const ispg = spAt(age);
       // Maksuvaba tulu: pensionieas pensionäri oma, enne seda üldine (kui ei tööta). Korraga on ainult üks I samba pension.
@@ -308,7 +331,7 @@
         extra: (extraNet + extra3) / 12, // lisaväljamakse sambast vajaduse katmiseks (10% tulumaks), kätte
         dep: fromDeposit / 12,
         spend: spend / 12,
-        work: work, // töötad soodustusega pensioni ajal (palk katab kulud)
+        work: work, // töötad pensioni ajal (palk katab kulud)
         shortfall: age >= ret ? Math.max(0, needYear - spend) / 12 : 0,
         moneyLeft: fundStart + depositStart,
         alive: survival(table, input.sex, currentAge, age),
@@ -318,7 +341,7 @@
     res.ordinaryPensionAge = pa; // tavaline pensioniiga (pensionStartAge on soodustusega pensionile minek)
     res.childSupplement = kidsMonthly > 0 ? { monthly: kidsMonthly, applied: kidsApplied } : null;
     // Eripensioni ja vanaduspensioni võrdlus tulemuse selgituseks („Pensionieas makstakse sulle suurem kahest“).
-    res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge' } : null;
+    res.firstPillar = spYear > 0 ? { special: spYear / 12, oldAge: p1Full / 12, paid: spPaid ? 'special' : 'oldAge', larger: spYear >= p1Full ? 'special' : 'oldAge' } : null;
     return res;
   }
 

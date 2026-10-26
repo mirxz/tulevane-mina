@@ -1,6 +1,6 @@
 # Elukaare automaattestid
 
-Mida kontrollime, kuidas jooksutada ja mida testid **ei** tõesta. Loetud 2026-10-11 seisuga.
+Mida kontrollime, kuidas jooksutada ja mida testid **ei** tõesta. Viimati lisatud (töö pärast pensioniiga, pool pensioni, eripension, soodustus, lapsed, fondipensioni algus).
 
 ## Jooksutamine
 
@@ -25,8 +25,25 @@ CI fail on `tests/ci-test.yml.txt`; tõsta see `.github/workflows/test.yml` alla
 | 6 | `elukaar-ui-raha.mjs` | Mirko + Claude | 45 | `story.js` loogika: III samba plaanid ja fondivahetus ei tekita ega kaota raha (`c3Adj`, `switchAdj`, `p3RemNow`). Kasutab testikonksu `window.__ELUKAAR_TEST`. |
 | 7 | `elukaar-mootor.mjs` | Mirko + Claude | 102 | Fondipensioni makse järgib fondi väärtust (osakud / veel tegemata väljamaksed, KoPS § 52³ ja § 60¹), III samba langus, tulumaks ja maksuvaba tulu. |
 | 8 | `elukaar-pohi.test.cjs` | Meelis Burget (tuleva-tulevik), porditud | 41 | Elada jäänud aastad, pensioniiga, edasilükkamise protsendid, kulutasemed. |
+| 9 | `elukaar-eripension.test.cjs` | Mirko, Kadi + Claude | 49* | Eripension (TLV-69): algusvanus, pensionieas makstakse suurem kahest (eripension või vanaduspension), eripensioni ei saa edasi lükata (`options().deferral` lukus). |
+| 10 | `elukaar-soodus.test.cjs` | Kadi + Claude | 38* | Soodustingimustel vanaduspension (lapsed, tervist kahjustav töö) muudab ainult pensionile minekut; töö soodustusega pensioni ajal (`soodusWork`, `workUntil`), III sissemakse pärast pensionile minekut (`p3After`). |
+| 11 | `elukaar-lapsed.test.cjs` | Kadi + Claude | 29* | Laste kaks õigust eraldi (varem pensionile, pensionilisa), lisa 1,5 / 3,5 aastahinnet, tervist kahjustav töö (nimekiri 1 ja 2), sugu „Muu“ (meeste ja naiste keskmine elutabel). |
+| 12 | `elukaar-fondipension-algus.test.cjs` | Kadi + Claude | 11* | Fondipensioni algus pärast pensioniiga: kasvatan edasi kuni valitud vanuseni, siis leping (`fundFrom`, `p3Sep.start`). |
+| 13 | `elukaar-edasilykkamine.test.cjs` | Kadi + Claude | 6* | Elan sammastest, riiklik hiljem (C): `bestDeferral` leiab suurima edasilükkamise, millega kulud on kaetud. |
+| 14 | `elukaar-too-ja-pool.test.cjs` | Kadi + Claude | 17* | Töö pärast pensioniiga kõigil (`workOn`, `workUntil`): palk katab kulud, töö ajal kogu pension 22% maksuga, iga tööaasta tõstab pensioni; edasilükkamine tasub end töötades varem ära. Pool riiklikku pensioni (`scenario.half`): pool, siis täis + pool edasilükkamise tõusust; ei kehti eripensioni ja soodustusega. |
 
-Elukaare kontrolle kokku: **51 906** (alloleval mõõtmise testid ei ole siin sees).
+\* `assert`-lausete arv koodis (test ei loenda kontrolle). Read 1–8: elukaare kontrolle kokku **51 906** (loetud 11.10; alloleval mõõtmise testid ei ole siin sees).
+
+### Brauseritestid (UI)
+
+| Fail | Mida tõestab |
+|---|---|
+| `elukaar-ui-valikud.mjs` | Lukustatud valikud puuduva samba korral, II ja III fondipension eraldi lepingutena, C vaikimisi uus leping igal aastal. |
+| `elukaar-ui-eripension.mjs` | Eripension ja soodustingimustel pension liideses: sammud, lukud, töö eripensioni ja soodustuse ajal. |
+| `elukaar-ui-fondipension.mjs` | Fondipensioni algus pensionipõlve sammus (66+). |
+| `elukaar-ui-edasilykkamine.mjs` | Hoiatus, kui edasilükkamiseks sammaste raha ei jätku, ja nupp „Muuda valik“. |
+| `elukaar-ui-abi.mjs` | „?“ selgitused: dialoog, fookus, Esc, axe. |
+| `elukaar-ui-too-ja-pool.mjs` | Töötamise valik on kõigil (vaikimisi 1 a), „Kohe täis / Pool / Lükkan edasi“ ja aastad (raadio `defer`), eripensioniga lukus. `--pilt fail.png` teeb 6. sammust pildi. |
 
 ## Mõõtmise testid (tulemuste leht, `/api/e`)
 
@@ -50,7 +67,11 @@ Testid **ei** tõesta, et reeglid ise on õiged:
 - Edasilükkamise tabel (+7,93% esimese aasta kohta) on SKA-st kinnitamata ja erineb projekti kirjelduse "0,9% kuus" väitest (vt `reeglid.json`).
 - `reeglid.json` URL-id on praegu avalehed; enne avaldamist lisa täpsed lehelingid.
 - Mudel eeldab, et pensionäri maksuvaba tulu 776 € jääb tänastes eurodes konstantseks.
-- Pensioniea järel töötamine riiklikku pensioni ei suurenda (SKA kalkulaatoris on see sees).
+- Töö pensioni ajal tõstab pensioni lähendiga `workAccrual` (RPKS § 25, (kindlustusosak + solidaarosak) / 2 × aastahinne); palk on tänastes eurodes konstantne.
+- Töö ajal eeldame, et maksuvaba tulu kasutab palk, seega pension on tervenisti 22% maksuga. Palga maksu mudel ei arvuta (palk katab kulud).
+- Töö ajal samba väljamakseid ei tehta: II ja III sammas avanevad töö lõppedes (või valitud fondipensioni algusest, kui see on hiljem).
+- Edasilükkamine ja pool pensioni on täisaastates alates pensionile minekust. Juba makstava pensioni peatamist ja taasalustamist kuude kaupa mudel ei arvesta ([TLV-83](https://rendavesoy.atlassian.net/browse/TLV-83)); see on kirjas ka tulemuse otsustuspunktis.
+- Pool pensioni: välja võtmata pool tõuseb nagu edasilükkamisel (pool täieliku edasilükkamise protsendist), SKA-st kinnitamata.
 
 ## Ülesehitus
 

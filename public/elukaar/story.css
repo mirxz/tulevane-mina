@@ -336,3 +336,89 @@ fieldset.is-off .choice-body strong, fieldset.is-off .choice-body small { color:
 @media (max-width: 767.98px) {
   .fields > .col-6 > .form-label { display: flex; align-items: flex-end; min-height: 3em; }
 }
+
+/* Kohustuslikud väljad ja lukus sammud */
+.req { color: #b42318; font-weight: 700; margin-left: 0.15rem; }
+.req-note { margin-bottom: 0.75rem; }
+.req-error a { color: inherit; font-weight: 600; }
+.path li.locked .path-dot, .path li.locked .path-label { opacity: 0.45; }
+.path li.locked button { cursor: not-allowed; }
+.path-lock { background: var(--gray-border-2, #c8d0d8); color: var(--navy); }
+.field-group { border: 0; padding: 0; margin-left: 0; margin-right: 0; min-width: 0; }
+
+/* Selgitused: „?“ nupp ja dialoog (lauaarvutis külgpaneel, mobiilis modaal) */
+.label-row { display: flex; align-items: center; gap: 0.25rem; }
+.label-row .form-label { margin-bottom: 0.5rem; }
+.help-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; margin: -0.6rem -0.5rem -0.1rem 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--bright-blue, #0081ee); cursor: pointer; vertical-align: middle; }
+.help-btn .ico { width: 1.25rem; height: 1.25rem; }
+.help-btn:hover { background: var(--blue-bg-1, #eef6ff); }
+.help-btn:focus-visible { outline: 3px solid var(--navy, #002f63); outline-offset: -3px; }
+legend .help-btn { margin-top: -0.5rem; }
+.help-dialog { width: min(100% - 2rem, 32rem); max-height: 85dvh; padding: 0; border: 0; border-radius: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); color: inherit; }
+.help-dialog::backdrop { background: rgba(0, 20, 50, 0.45); }
+.help-head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1rem 0.75rem 1.25rem; background: #fff; border-bottom: 1px solid var(--gray-border-2, #dde3e8); }
+.help-head h2:focus { outline: none; }
+.help-head h2:focus-visible { outline: 3px solid var(--navy, #002f63); outline-offset: 2px; }
+.help-close { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: var(--navy, #002f63); cursor: pointer; }
+.help-close:hover { background: var(--blue-bg-1, #eef6ff); }
+.help-close:focus-visible { outline: 3px solid var(--navy, #002f63); }
+.help-body { padding: 1rem 1.25rem 1.5rem; overflow-y: auto; }
+.help-body table { font-size: 0.95rem; }
+@media (min-width: 768px) {
+  .help-dialog { margin: 0 0 0 auto; width: 30rem; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+}
+/* „?“ nupp Tuleva kalkulaatori stiilis: täidetud sinine ring, valge küsimärk */
+.help-btn { color: #1f63d3; }
+.help-btn .ico { width: 1.4rem; height: 1.4rem; }
+.help-btn:hover { background: none; color: #164ea8; }
+/* „?“ olekud (Tuleva kalkulaatori järgi): tavaolek heledam sinine, hover tumedam, fookus tumedam + hele sinine ring ümber */
+.help-btn { color: #4b8ef0; }
+.help-btn:hover { color: #1f63d3; background: none; }
+.help-btn:focus { outline: none; }
+.help-btn:focus-visible { outline: none; color: #1f63d3; }
+.help-btn .ico { border-radius: 50%; transition: box-shadow 0.12s, color 0.12s; }
+.help-btn:focus-visible .ico { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #9cc3f7; }
+@media (forced-colors: active) { .help-btn:focus-visible { outline: 2px solid CanvasText; } }
+.help-btn:focus-visible .ico { box-shadow: 0 0 0 4px #a9cbf8; }
+
+/* Külgpaneel / modaal: üks kerimine (ainult sisu), leht taustal ei keri */
+html:has(dialog.help-dialog[open]) { overflow: hidden; }
+.help-dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
+.help-dialog .help-head { flex: 0 0 auto; position: static; }
+.help-dialog .help-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+#nominalToggle[aria-pressed="true"] { background: var(--navy, #002f63); color: #fff; border-color: var(--navy, #002f63); }
+.help-dialog[open] { overflow: clip; }
+
+/* Taust ei liigu külgpaneeli ajal: kerimisriba ruum jääb alles (sisu ei nihku), leht lukus (JS kinnitab body paigale). */
+html.scroll-locked { overflow: hidden; }
+
+/* „?“ reas kohe teksti järel (nagu Tuleva InfoTooltip): ka kaherealise sildi korral viimase sõna kõrval. 44 px puutеala, rida ei kõrgene. */
+.label-row { display: block; margin-bottom: 0.5rem; }
+.label-row .form-label { display: inline; margin: 0; }
+.label-row .help-btn, legend .help-btn { display: inline-grid; width: 44px; height: 44px; margin: -12px -12px -12px -6px; vertical-align: middle; }
+.label-row .help-btn .ico, legend .help-btn .ico { width: 1.25rem; height: 1.25rem; }
+
+/* Joondus: „?“ sildi viimase rea kõrval; lauaarvutis on rea sildid sama kõrged ja all, nii et lahtrid on ühel joonel. */
+.label-row { display: flex; align-items: flex-end; gap: 0.1rem; margin-bottom: 0.5rem; }
+.label-row .form-label { display: block; margin: 0; }
+.label-row .help-btn { flex: 0 0 44px; margin: -10px -12px -11px -6px; }
+
+
+/* Tuleva _base.scss annab <small> elemendile teksti värvi; tumedal ribal pärib see riba värvi (kontrast). */
+.pot-item small { color: inherit; }
+
+/* Sildid ühel visuaalsel real sama kõrged (JS alignLabels), sisu all → lahtrid ühel joonel; ainult kui mõni silt murdub. */
+.fields > [class*="col-"] > .form-label { display: flex; align-items: flex-end; }
+
+/* „?“ täpselt nagu tuleva.ee (.inline-help, kontrollitud 17.10.2026): 16 px, tavaolekus valge ring #006ce6 äärise ja
+   küsimärgiga, hover ja fookus täidetud #006ce6 ring valge küsimärgiga, klaviatuurifookusel rõngas rgba(0,108,230,.25) 0.25rem.
+   Nupu puuteala jääb 44 px (WCAG 2.5.5), nähtav ikoon 16 px. */
+.help-btn, .help-btn:hover, .help-btn:focus-visible { color: inherit; background: none; }
+.help-btn .ico-help { width: 16px; height: 16px; border-radius: 50%; transition: none; }
+.help-btn .h-ring { fill: #fff; stroke: #006ce6; }
+.help-btn .h-q { fill: #006ce6; }
+.help-btn:hover .h-ring, .help-btn:focus .h-ring { fill: #006ce6; }
+.help-btn:hover .h-q, .help-btn:focus .h-q { fill: #fff; }
+.help-btn:focus-visible .ico-help { box-shadow: 0 0 0 0.25rem rgba(0, 108, 230, 0.25); }
+.help-btn:focus-visible .ico { box-shadow: none; }
+@media (forced-colors: active) { .help-btn .h-ring { fill: Canvas; stroke: ButtonText; } .help-btn .h-q { fill: ButtonText; } }

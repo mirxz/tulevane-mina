@@ -52,4 +52,17 @@ assert.deepStrictEqual(sp.firstPillar.paid, 'oldAge', '900 + lisa > 920');
 assert.ok(near(row(sp, pa).i1g, 900 + 10.5 * A));
 // 6. Ilma lasteta ja hazard-ita: tulemus muutumatu.
 assert.deepStrictEqual(P.simulate({ ...base, kids: { b1991: 0, b2012: 0, b2013: 0, user: 'me', inForecast: 'no' } }, T, { id: 'D' }).rows, P.simulate(base, T, { id: 'D' }).rows);
+// 8. Õigused eraldi: varem pensionile ja pensionilisa võivad olla eri vanematel.
+assert.strictEqual(P.earlyYears(K({ b2012: 4, earlyUser: 'other', supUser: 'me' })), 0);
+assert.ok(near(P.childSupplement(K({ b2012: 4, earlyUser: 'other', supUser: 'me' })), 14 * A));
+assert.strictEqual(P.earlyYears(K({ b2012: 4, earlyUser: 'me', supUser: 'other' })), 3);
+assert.strictEqual(P.childSupplement(K({ b2012: 4, earlyUser: 'me', supUser: 'other' })), 0);
 console.log('Lapsed OK');
+// 7. Sugu „muu“ (X): meeste ja naiste elutabeli keskmine.
+{
+  const e = (sx) => P.fundPensionTerm(T, sx, 65);
+  assert.strictEqual(e('X'), Math.max(1, Math.round((T.elada_jaanud.M[65] + T.elada_jaanud.N[65]) / 2)));
+  const sx = P.simulate({ ...base, sex: 'X' }, T, { id: 'D' });
+  assert.ok(sx.horizonAge >= P.simulate({ ...base, sex: 'M' }, T, { id: 'D' }).horizonAge && sx.horizonAge <= P.simulate({ ...base, sex: 'N' }, T, { id: 'D' }).horizonAge, 'X horisont M ja N vahel');
+  console.log('Sugu muu OK');
+}
